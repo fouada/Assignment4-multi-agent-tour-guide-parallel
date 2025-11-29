@@ -10,18 +10,17 @@ Test Coverage:
 - Retry hooks
 - Decorator usage
 """
+
 import pytest
-import time
-from unittest.mock import MagicMock, patch
 
 from src.core.resilience.retry import (
-    RetryPolicy,
-    RetryError,
-    with_retry,
-    retry,
     AGGRESSIVE_RETRY,
     CONSERVATIVE_RETRY,
-    NO_RETRY
+    NO_RETRY,
+    RetryError,
+    RetryPolicy,
+    retry,
+    with_retry,
 )
 
 

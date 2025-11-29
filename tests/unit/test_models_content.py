@@ -7,11 +7,12 @@ Test Coverage:
 - ContentResult model creation and validation
 - Edge cases: boundary values, missing fields, invalid data
 """
-import pytest
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
 
-from src.models.content import ContentType, AgentStatus, ContentResult
+from src.models.content import AgentStatus, ContentResult, ContentType
 
 
 class TestContentType:

@@ -46,9 +46,12 @@ class MusicAgent(BaseAgent):
 
         # Try YouTube search for music
         try:
-            from youtubesearchpython import VideosSearch
-            self.youtube_music_available = True
-            logger.info("YouTube music search available")
+            import importlib.util
+            if importlib.util.find_spec("youtubesearchpython") is not None:
+                self.youtube_music_available = True
+                logger.info("YouTube music search available")
+            else:
+                logger.warning("youtube-search-python not available for music search")
         except ImportError:
             logger.warning("youtube-search-python not available for music search")
 

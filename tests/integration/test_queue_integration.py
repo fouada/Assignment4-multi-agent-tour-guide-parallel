@@ -7,17 +7,15 @@ Test Coverage:
 - End-to-end queue processing
 - Graceful degradation scenarios
 """
-import pytest
 import threading
 import time
-from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.core.smart_queue import (
-    SmartAgentQueue,
     QueueManager,
     QueueStatus,
-    QueueMetrics,
-    NoResultsError
+    SmartAgentQueue,
 )
 from src.models.content import ContentResult, ContentType
 from src.models.route import RoutePoint
@@ -219,7 +217,7 @@ class TestQueueManagerIntegration:
 
         # All points should have results
         assert len(results) == 5
-        for point_id, point_results in results.items():
+        for _point_id, point_results in results.items():
             assert len(point_results) == 3
 
     def test_queue_manager_stats(self):

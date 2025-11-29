@@ -8,11 +8,9 @@ Test Coverage:
 - Coordinate handling
 - Edge cases: empty routes, missing data
 """
-import pytest
 from datetime import datetime
-import uuid
 
-from src.models.route import RoutePoint, Route
+from src.models.route import Route, RoutePoint
 
 
 class TestRoutePoint:

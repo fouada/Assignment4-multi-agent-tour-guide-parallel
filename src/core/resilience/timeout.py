@@ -69,11 +69,11 @@ def with_timeout(
         future = executor.submit(func, *args, **kwargs)
         try:
             return future.result(timeout=seconds)
-        except FuturesTimeout:
+        except FuturesTimeout as err:
             raise TimeoutError(
                 f"Operation timed out after {seconds} seconds",
                 seconds,
-            )
+            ) from err
 
 
 def timeout(
@@ -161,11 +161,11 @@ async def async_with_timeout(
     """
     try:
         return await asyncio.wait_for(coro, timeout=seconds)
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError as err:
         raise TimeoutError(
             f"Async operation timed out after {seconds} seconds",
             seconds,
-        )
+        ) from err
 
 
 def async_timeout(seconds: float) -> Callable:

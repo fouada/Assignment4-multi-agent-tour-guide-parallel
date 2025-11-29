@@ -418,7 +418,7 @@ def create_readiness_probe(
             return True
         else:
             # All critical checks must pass
-            for name, result in results.items():
+            for _name, result in results.items():
                 if result.details.get("critical") and result.status != HealthStatus.HEALTHY:
                     return False
             return True

@@ -7,16 +7,16 @@ Test Coverage:
 - Content result generation
 - Agent execution flow
 """
-import pytest
-from unittest.mock import MagicMock, patch
 from datetime import datetime
+from unittest.mock import patch
 
-from src.agents.base_agent import BaseAgent
-from src.agents.video_agent import VideoAgent
+import pytest
+
 from src.agents.music_agent import MusicAgent
 from src.agents.text_agent import TextAgent
-from src.models.route import RoutePoint
+from src.agents.video_agent import VideoAgent
 from src.models.content import ContentResult, ContentType
+from src.models.route import RoutePoint
 
 
 class TestAgentExecution:
@@ -109,7 +109,7 @@ class TestAgentExecution:
             agent.youtube_client = None
             agent.llm_client = None
 
-        result = agent.execute(sample_point)
+        agent.execute(sample_point)
 
         # After execution, agent should have tracked point and thread
         assert agent.current_point_id == sample_point.id

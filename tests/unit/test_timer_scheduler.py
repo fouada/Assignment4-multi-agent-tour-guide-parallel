@@ -1,21 +1,28 @@
 """
-Unit tests for the Timer/Scheduler module.
+Unit tests for Timer/Scheduler module.
 
 Tests cover:
-- TravelSimulator initialization and lifecycle
-- InstantTravelSimulator functionality
-- ScheduledPointEmitter functionality
-- Point arrival callbacks
-- Progress tracking
+- TravelSimulator lifecycle (start, stop, pause, resume)
+- Point emission and callbacks
+- InstantTravelSimulator for immediate processing
+- ScheduledPointEmitter for controlled emission
+- Edge cases: empty routes, callback errors
 
 MIT Level Testing - 85%+ Coverage Target
 """
 
+import threading
 import time
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
+from src.core.timer_scheduler import (
+    InstantTravelSimulator,
+    ScheduledPointEmitter,
+    TravelSimulator,
+    log_timer_tick,
+)
 from src.models.route import Route, RoutePoint
 
 
@@ -23,37 +30,64 @@ from src.models.route import Route, RoutePoint
 def sample_route():
     """Create a sample route for testing."""
     return Route(
-        source="A",
-        destination="B",
+        source="Start",
+        destination="End",
         points=[
             RoutePoint(
-                id="p1",
+                id=f"point_{i}",
+                index=i,
+                address=f"Address {i}",
+                location_name=f"Location {i}",
+                latitude=32.0 + i * 0.1,
+                longitude=34.0 + i * 0.1,
+            )
+            for i in range(5)
+        ],
+        total_distance=10000,
+        total_duration=600,
+    )
+
+
+@pytest.fixture
+def empty_route():
+    """Create an empty route for edge case testing."""
+    return Route(
+        source="Start",
+        destination="End",
+        points=[],
+        total_distance=0,
+        total_duration=0,
+    )
+
+
+@pytest.fixture
+def single_point_route():
+    """Create a route with just one point."""
+    return Route(
+        source="Start",
+        destination="End",
+        points=[
+            RoutePoint(
+                id="single_point",
                 index=0,
-                address="Point 1",
-                location_name="Loc1",
+                address="Single Address",
+                location_name="Single Location",
                 latitude=32.0,
                 longitude=34.0,
-            ),
-            RoutePoint(
-                id="p2",
-                index=1,
-                address="Point 2",
-                location_name="Loc2",
-                latitude=32.1,
-                longitude=34.1,
-            ),
-            RoutePoint(
-                id="p3",
-                index=2,
-                address="Point 3",
-                location_name="Loc3",
-                latitude=32.2,
-                longitude=34.2,
-            ),
+            )
         ],
-        total_distance=3000,
-        total_duration=180,
+        total_distance=1000,
+        total_duration=60,
     )
+
+
+class TestLogTimerTick:
+    """Tests for log_timer_tick function."""
+
+    def test_log_timer_tick_executes(self):
+        """Test log_timer_tick doesn't raise."""
+        # Should not raise
+        log_timer_tick("test_point", "Test Location")
 
 
 class TestTravelSimulator:
@@ -61,191 +95,152 @@ class TestTravelSimulator:
 
     def test_initialization(self, sample_route):
         """Test TravelSimulator initialization."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        simulator = TravelSimulator(sample_route, interval_seconds=1.0)
 
-                callback = Mock()
-                simulator = TravelSimulator(
-                    route=sample_route, interval_seconds=1.0, on_point_arrival=callback
-                )
+        assert simulator.route == sample_route
+        assert simulator.interval == 1.0
+        assert simulator._current_index == 0
+        assert not simulator.is_running
 
-                assert simulator.route == sample_route
-                assert simulator.interval == 1.0
-                assert simulator.on_point_arrival == callback
-                assert simulator._current_index == 0
-                assert not simulator._is_running
+    def test_initialization_with_callback(self, sample_route):
+        """Test initialization with callback."""
+        callback = Mock()
+        simulator = TravelSimulator(
+            sample_route,
+            interval_seconds=0.1,
+            on_point_arrival=callback,
+        )
 
-    def test_current_point_property(self, sample_route):
-        """Test current_point property."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        assert simulator.on_point_arrival == callback
 
-                simulator = TravelSimulator(route=sample_route, interval_seconds=0.1)
+    def test_current_point_initial(self, sample_route):
+        """Test current_point returns first point initially."""
+        simulator = TravelSimulator(sample_route)
+        assert simulator.current_point == sample_route.points[0]
 
-                assert simulator.current_point == sample_route.points[0]
+    def test_current_point_empty_route(self, empty_route):
+        """Test current_point returns None for empty route."""
+        simulator = TravelSimulator(empty_route)
+        assert simulator.current_point is None
 
-                # Move to next
-                simulator._current_index = 1
-                assert simulator.current_point == sample_route.points[1]
+    def test_progress_initial(self, sample_route):
+        """Test progress is 0% initially."""
+        simulator = TravelSimulator(sample_route)
+        assert simulator.progress == 0.0
 
-    def test_current_point_out_of_range(self, sample_route):
-        """Test current_point returns None when out of range."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
-
-                simulator = TravelSimulator(route=sample_route, interval_seconds=0.1)
-
-                simulator._current_index = 100  # Out of range
-                assert simulator.current_point is None
-
-    def test_progress_property(self, sample_route):
-        """Test progress property."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
-
-                simulator = TravelSimulator(route=sample_route, interval_seconds=0.1)
-
-                assert simulator.progress == 0.0
-
-                simulator._current_index = 1
-                assert simulator.progress == pytest.approx(33.33, rel=0.1)
-
-                simulator._current_index = 3
-                assert simulator.progress == 100.0
-
-    def test_is_running_property(self, sample_route):
-        """Test is_running property."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
-
-                simulator = TravelSimulator(route=sample_route, interval_seconds=0.1)
-
-                assert not simulator.is_running
-
-                simulator._is_running = True
-                simulator._should_stop.clear()
-                assert simulator.is_running
-
-                simulator._should_stop.set()
-                assert not simulator.is_running
+    def test_progress_empty_route(self, empty_route):
+        """Test progress is 100% for empty route."""
+        simulator = TravelSimulator(empty_route)
+        assert simulator.progress == 100.0
 
     def test_start_stop(self, sample_route):
         """Test start and stop lifecycle."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        simulator = TravelSimulator(sample_route, interval_seconds=10.0)
 
-                callback = Mock()
-                simulator = TravelSimulator(
-                    route=sample_route, interval_seconds=0.1, on_point_arrival=callback
-                )
+        assert not simulator.is_running
 
-                simulator.start()
-                assert simulator._is_running
+        simulator.start()
+        assert simulator.is_running
 
-                time.sleep(0.2)  # Let it run briefly
+        simulator.stop()
+        assert not simulator.is_running
 
-                simulator.stop()
-                assert not simulator._is_running
+    def test_start_already_running(self, sample_route):
+        """Test starting when already running."""
+        simulator = TravelSimulator(sample_route, interval_seconds=10.0)
 
-    def test_start_when_already_running(self, sample_route):
-        """Test starting when already running does nothing."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        simulator.start()
+        simulator.start()  # Should log warning but not raise
 
-                simulator = TravelSimulator(route=sample_route, interval_seconds=1.0)
-
-                simulator._is_running = True
-                thread_before = simulator._thread
-
-                simulator.start()
-
-                # Thread should not change
-                assert simulator._thread == thread_before
+        simulator.stop()
 
     def test_pause_resume(self, sample_route):
-        """Test pause and resume functionality."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        """Test pause and resume."""
+        simulator = TravelSimulator(sample_route, interval_seconds=10.0)
 
-                simulator = TravelSimulator(route=sample_route, interval_seconds=0.1)
+        simulator.start()
 
-                simulator.start()
-                time.sleep(0.15)
+        simulator.pause()
+        assert simulator._is_paused.is_set()
 
-                simulator.pause()
-                assert simulator._is_paused.is_set()
+        simulator.resume()
+        assert not simulator._is_paused.is_set()
 
-                simulator.resume()
-                assert not simulator._is_paused.is_set()
-
-                simulator.stop()
+        simulator.stop()
 
     def test_skip_to_next(self, sample_route):
-        """Test skip_to_next functionality."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        """Test skip_to_next advances index."""
+        callback = Mock()
+        simulator = TravelSimulator(
+            sample_route,
+            interval_seconds=10.0,
+            on_point_arrival=callback,
+        )
 
-                callback = Mock()
-                simulator = TravelSimulator(
-                    route=sample_route, interval_seconds=1.0, on_point_arrival=callback
-                )
+        initial_index = simulator._current_index
+        simulator.skip_to_next()
 
-                assert simulator._current_index == 0
+        assert simulator._current_index == initial_index + 1
+        callback.assert_called_once()
 
-                simulator.skip_to_next()
+    def test_skip_to_next_at_end(self, single_point_route):
+        """Test skip_to_next at last point does nothing."""
+        simulator = TravelSimulator(single_point_route)
 
-                assert simulator._current_index == 1
-                callback.assert_called_once()
+        simulator.skip_to_next()
+        assert simulator._current_index == 0  # Unchanged
 
-    def test_skip_at_end_does_nothing(self, sample_route):
-        """Test skip at end does nothing."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+    def test_point_emission_with_callback(self, sample_route):
+        """Test points are emitted to callback."""
+        received_points = []
 
-                simulator = TravelSimulator(route=sample_route, interval_seconds=1.0)
+        def callback(point):
+            received_points.append(point)
 
-                # Move to last point
-                simulator._current_index = len(sample_route.points) - 1
+        simulator = TravelSimulator(
+            sample_route,
+            interval_seconds=0.05,  # Fast for testing
+            on_point_arrival=callback,
+        )
 
-                simulator.skip_to_next()
+        simulator.start()
+        time.sleep(0.3)  # Allow some emissions
+        simulator.stop()
 
-                # Should not change
-                assert simulator._current_index == len(sample_route.points) - 1
+        assert len(received_points) > 0
+        assert received_points[0] == sample_route.points[0]
 
-    def test_callback_error_handled(self, sample_route):
+    def test_callback_error_handling(self, sample_route):
         """Test callback errors are handled gracefully."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        def failing_callback(point):
+            raise Exception("Callback error")
 
-                callback = Mock(side_effect=Exception("Callback error"))
-                simulator = TravelSimulator(
-                    route=sample_route, interval_seconds=0.1, on_point_arrival=callback
-                )
+        simulator = TravelSimulator(
+            sample_route,
+            interval_seconds=0.05,
+            on_point_arrival=failing_callback,
+        )
 
-                # Should not raise
-                simulator._emit_current_point()
+        simulator.start()
+        time.sleep(0.2)
+        simulator.stop()
 
-    def test_emit_no_callback(self, sample_route):
-        """Test emit with no callback."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        # Should not crash
 
-                simulator = TravelSimulator(route=sample_route, interval_seconds=0.1)
+    def test_simulation_completes_naturally(self, single_point_route):
+        """Test simulation stops when reaching destination."""
+        callback = Mock()
+        simulator = TravelSimulator(
+            single_point_route,
+            interval_seconds=0.05,
+            on_point_arrival=callback,
+        )
 
-                # Should not raise
-                simulator._emit_current_point()
+        simulator.start()
+        time.sleep(0.3)
+
+        # Should have stopped naturally
+        assert not simulator.is_running
 
 
 class TestInstantTravelSimulator:
@@ -253,76 +248,71 @@ class TestInstantTravelSimulator:
 
     def test_initialization(self, sample_route):
         """Test InstantTravelSimulator initialization."""
-        from src.core.timer_scheduler import InstantTravelSimulator
-
-        callback = Mock()
-        simulator = InstantTravelSimulator(
-            route=sample_route, on_point_arrival=callback, delay_between_points=0.1
-        )
+        simulator = InstantTravelSimulator(sample_route)
 
         assert simulator.route == sample_route
-        assert simulator.on_point_arrival == callback
+        assert simulator.delay == 0.0
+
+    def test_initialization_with_delay(self, sample_route):
+        """Test initialization with delay."""
+        simulator = InstantTravelSimulator(sample_route, delay_between_points=0.1)
         assert simulator.delay == 0.1
 
-    def test_process_all(self, sample_route):
+    def test_process_all_returns_all_points(self, sample_route):
         """Test process_all returns all points."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import InstantTravelSimulator
+        simulator = InstantTravelSimulator(sample_route)
 
-                callback = Mock()
-                simulator = InstantTravelSimulator(
-                    route=sample_route, on_point_arrival=callback
-                )
+        result = simulator.process_all()
 
-                points = simulator.process_all()
+        assert result == sample_route.points
+        assert len(result) == 5
 
-                assert len(points) == len(sample_route.points)
-                assert callback.call_count == len(sample_route.points)
+    def test_process_all_calls_callback(self, sample_route):
+        """Test process_all calls callback for each point."""
+        callback = Mock()
+        simulator = InstantTravelSimulator(sample_route, on_point_arrival=callback)
 
-    def test_process_all_with_delay(self, sample_route):
-        """Test process_all with delay."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import InstantTravelSimulator
+        simulator.process_all()
 
-                simulator = InstantTravelSimulator(
-                    route=sample_route, delay_between_points=0.05
-                )
+        assert callback.call_count == 5
 
-                start = time.time()
-                simulator.process_all()
-                elapsed = time.time() - start
+    def test_process_all_empty_route(self, empty_route):
+        """Test process_all with empty route."""
+        callback = Mock()
+        simulator = InstantTravelSimulator(empty_route, on_point_arrival=callback)
 
-                # Should take at least delay * (points - 1)
-                expected_min = 0.05 * (len(sample_route.points) - 1)
-                assert elapsed >= expected_min * 0.8  # Allow some tolerance
+        result = simulator.process_all()
 
-    def test_process_all_callback_error(self, sample_route):
-        """Test process_all handles callback errors."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import InstantTravelSimulator
+        assert result == []
+        callback.assert_not_called()
 
-                callback = Mock(side_effect=Exception("Error"))
-                simulator = InstantTravelSimulator(
-                    route=sample_route, on_point_arrival=callback
-                )
+    def test_process_all_with_delay(self, single_point_route):
+        """Test process_all respects delay."""
+        simulator = InstantTravelSimulator(
+            single_point_route,
+            delay_between_points=0.1,
+        )
 
-                # Should not raise
-                points = simulator.process_all()
-                assert len(points) == len(sample_route.points)
+        start = time.time()
+        simulator.process_all()
+        elapsed = time.time() - start
 
-    def test_process_all_no_callback(self, sample_route):
-        """Test process_all without callback."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import InstantTravelSimulator
+        # Should have added delay
+        assert elapsed >= 0.1
 
-                simulator = InstantTravelSimulator(route=sample_route)
+    def test_callback_error_handling(self, sample_route):
+        """Test callback errors are handled."""
+        def failing_callback(point):
+            raise Exception("Callback error")
 
-                points = simulator.process_all()
-                assert len(points) == len(sample_route.points)
+        simulator = InstantTravelSimulator(
+            sample_route,
+            on_point_arrival=failing_callback,
+        )
+
+        # Should not raise
+        result = simulator.process_all()
+        assert len(result) == 5
 
 
 class TestScheduledPointEmitter:
@@ -330,200 +320,131 @@ class TestScheduledPointEmitter:
 
     def test_initialization(self, sample_route):
         """Test ScheduledPointEmitter initialization."""
-        from src.core.timer_scheduler import ScheduledPointEmitter
-
-        callback = Mock()
-        emitter = ScheduledPointEmitter(route=sample_route, on_point_arrival=callback)
+        emitter = ScheduledPointEmitter(sample_route)
 
         assert emitter.route == sample_route
-        assert emitter.on_point_arrival == callback
-        assert len(emitter._emitted_indices) == 0
+        assert emitter.remaining_count == 5
+        assert emitter.progress == 0.0
 
-    def test_emit_point_valid(self, sample_route):
-        """Test emitting a valid point."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
+    def test_emit_point_valid_index(self, sample_route):
+        """Test emit_point with valid index."""
+        callback = Mock()
+        emitter = ScheduledPointEmitter(sample_route, on_point_arrival=callback)
 
-            callback = Mock()
-            emitter = ScheduledPointEmitter(
-                route=sample_route, on_point_arrival=callback
-            )
+        result = emitter.emit_point(0)
 
-            point = emitter.emit_point(0)
-
-            assert point == sample_route.points[0]
-            callback.assert_called_once_with(sample_route.points[0])
-            assert 0 in emitter._emitted_indices
+        assert result == sample_route.points[0]
+        callback.assert_called_once_with(sample_route.points[0])
 
     def test_emit_point_invalid_index(self, sample_route):
-        """Test emitting with invalid index."""
-        from src.core.timer_scheduler import ScheduledPointEmitter
+        """Test emit_point with invalid index."""
+        emitter = ScheduledPointEmitter(sample_route)
 
-        emitter = ScheduledPointEmitter(route=sample_route)
+        result = emitter.emit_point(-1)
+        assert result is None
 
-        # Negative index
-        point = emitter.emit_point(-1)
-        assert point is None
+        result = emitter.emit_point(100)
+        assert result is None
 
-        # Out of range
-        point = emitter.emit_point(100)
-        assert point is None
+    def test_emit_point_duplicate(self, sample_route):
+        """Test emit_point for already emitted point."""
+        callback = Mock()
+        emitter = ScheduledPointEmitter(sample_route, on_point_arrival=callback)
 
-    def test_emit_point_already_emitted(self, sample_route):
-        """Test emitting already emitted point."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
+        emitter.emit_point(0)
+        result = emitter.emit_point(0)  # Duplicate
 
-            callback = Mock()
-            emitter = ScheduledPointEmitter(
-                route=sample_route, on_point_arrival=callback
-            )
-
-            # Emit once
-            emitter.emit_point(0)
-
-            # Emit again
-            point = emitter.emit_point(0)
-
-            assert point == sample_route.points[0]
-            assert callback.call_count == 1  # Only called once
+        assert result == sample_route.points[0]
+        assert callback.call_count == 1  # Only called once
 
     def test_emit_next(self, sample_route):
-        """Test emit_next functionality."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
+        """Test emit_next emits sequentially."""
+        emitter = ScheduledPointEmitter(sample_route)
 
-            callback = Mock()
-            emitter = ScheduledPointEmitter(
-                route=sample_route, on_point_arrival=callback
-            )
+        for i in range(5):
+            result = emitter.emit_next()
+            assert result == sample_route.points[i]
 
-            # First call
-            point1 = emitter.emit_next()
-            assert point1 == sample_route.points[0]
-
-            # Second call
-            point2 = emitter.emit_next()
-            assert point2 == sample_route.points[1]
-
-    def test_emit_next_when_all_emitted(self, sample_route):
-        """Test emit_next returns None when all emitted."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
-
-            emitter = ScheduledPointEmitter(route=sample_route)
-
-            # Emit all
-            for _ in sample_route.points:
-                emitter.emit_next()
-
-            # Next should return None
-            point = emitter.emit_next()
-            assert point is None
+        # After all emitted
+        result = emitter.emit_next()
+        assert result is None
 
     def test_emit_all_remaining(self, sample_route):
-        """Test emit_all_remaining functionality."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
+        """Test emit_all_remaining."""
+        emitter = ScheduledPointEmitter(sample_route)
 
-            emitter = ScheduledPointEmitter(route=sample_route)
+        # Emit first two manually
+        emitter.emit_point(0)
+        emitter.emit_point(1)
 
-            # Emit first one
-            emitter.emit_point(0)
+        # Emit remaining
+        result = emitter.emit_all_remaining()
 
-            # Emit remaining
-            remaining = emitter.emit_all_remaining()
-
-            assert len(remaining) == len(sample_route.points) - 1
-
-    def test_remaining_count(self, sample_route):
-        """Test remaining_count property."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
-
-            emitter = ScheduledPointEmitter(route=sample_route)
-
-            assert emitter.remaining_count == len(sample_route.points)
-
-            emitter.emit_point(0)
-            assert emitter.remaining_count == len(sample_route.points) - 1
-
-    def test_progress(self, sample_route):
-        """Test progress property."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
-
-            emitter = ScheduledPointEmitter(route=sample_route)
-
-            assert emitter.progress == 0.0
-
-            emitter.emit_point(0)
-            expected = (1 / len(sample_route.points)) * 100
-            assert emitter.progress == pytest.approx(expected)
-
-    def test_progress_empty_route(self):
-        """Test progress with empty route."""
-        from src.core.timer_scheduler import ScheduledPointEmitter
-
-        empty_route = Route(
-            source="A", destination="B", points=[], total_distance=0, total_duration=0
-        )
-
-        emitter = ScheduledPointEmitter(route=empty_route)
+        assert len(result) == 3
+        assert emitter.remaining_count == 0
         assert emitter.progress == 100.0
 
-    def test_callback_error_handled(self, sample_route):
-        """Test callback error is handled."""
-        with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-            from src.core.timer_scheduler import ScheduledPointEmitter
+    def test_progress_tracking(self, sample_route):
+        """Test progress updates correctly."""
+        emitter = ScheduledPointEmitter(sample_route)
 
-            callback = Mock(side_effect=Exception("Error"))
-            emitter = ScheduledPointEmitter(
-                route=sample_route, on_point_arrival=callback
-            )
+        assert emitter.progress == 0.0
 
-            # Should not raise
-            point = emitter.emit_point(0)
-            assert point == sample_route.points[0]
+        emitter.emit_point(0)
+        assert emitter.progress == 20.0
 
+        emitter.emit_point(1)
+        assert emitter.progress == 40.0
 
-class TestEmptyRoute:
-    """Test edge cases with empty routes."""
+    def test_remaining_count(self, sample_route):
+        """Test remaining_count decreases."""
+        emitter = ScheduledPointEmitter(sample_route)
 
-    def test_travel_simulator_empty_route(self):
-        """Test TravelSimulator with empty route."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import TravelSimulator
+        assert emitter.remaining_count == 5
 
-                empty_route = Route(
-                    source="A",
-                    destination="B",
-                    points=[],
-                    total_distance=0,
-                    total_duration=0,
-                )
+        emitter.emit_point(0)
+        assert emitter.remaining_count == 4
 
-                simulator = TravelSimulator(route=empty_route, interval_seconds=0.1)
+        emitter.emit_all_remaining()
+        assert emitter.remaining_count == 0
 
-                assert simulator.progress == 100.0
-                assert simulator.current_point is None
+    def test_progress_empty_route(self, empty_route):
+        """Test progress for empty route."""
+        emitter = ScheduledPointEmitter(empty_route)
+        assert emitter.progress == 100.0
 
-    def test_instant_simulator_empty_route(self):
-        """Test InstantTravelSimulator with empty route."""
-        with patch("src.core.timer_scheduler.set_log_context", create=True):
-            with patch("src.core.timer_scheduler.log_timer_tick", create=True):
-                from src.core.timer_scheduler import InstantTravelSimulator
+    def test_callback_error_handling(self, sample_route):
+        """Test callback errors are handled."""
+        def failing_callback(point):
+            raise Exception("Callback error")
 
-                empty_route = Route(
-                    source="A",
-                    destination="B",
-                    points=[],
-                    total_distance=0,
-                    total_duration=0,
-                )
+        emitter = ScheduledPointEmitter(
+            sample_route,
+            on_point_arrival=failing_callback,
+        )
 
-                simulator = InstantTravelSimulator(route=empty_route)
-                points = simulator.process_all()
+        # Should not raise
+        result = emitter.emit_point(0)
+        assert result is not None
 
-                assert points == []
+    def test_thread_safety(self, sample_route):
+        """Test thread-safe emission."""
+        emitter = ScheduledPointEmitter(sample_route)
+        emitted = []
+        lock = threading.Lock()
+
+        def emit_worker():
+            for _ in range(10):
+                result = emitter.emit_next()
+                if result:
+                    with lock:
+                        emitted.append(result)
+
+        threads = [threading.Thread(target=emit_worker) for _ in range(3)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        # Should have emitted exactly 5 points (no duplicates)
+        assert len(emitted) == 5

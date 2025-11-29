@@ -7,15 +7,14 @@ Test Coverage:
 - SystemState tracking
 - Edge cases: empty routes, missing decisions
 """
-import pytest
 from datetime import datetime
-from io import StringIO
-import sys
 
-from src.models.output import TourGuideOutput, SystemState
-from src.models.route import Route, RoutePoint
+import pytest
+
+from src.models.content import AgentStatus, ContentResult, ContentType
 from src.models.decision import JudgeDecision
-from src.models.content import ContentResult, ContentType, AgentStatus
+from src.models.output import SystemState, TourGuideOutput
+from src.models.route import Route, RoutePoint
 
 
 class TestTourGuideOutput:

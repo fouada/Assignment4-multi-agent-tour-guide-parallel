@@ -7,17 +7,18 @@ Test Coverage:
 - Memory efficiency
 - Response time under load
 """
-import pytest
-import time
-import threading
 import statistics
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from src.core.smart_queue import SmartAgentQueue, QueueManager, QueueStatus
+import pytest
+
+from src.core.resilience.circuit_breaker import CircuitBreaker
+from src.core.resilience.rate_limiter import RateLimiter, TokenBucket
+from src.core.smart_queue import SmartAgentQueue
 from src.models.content import ContentResult, ContentType
 from src.models.route import Route, RoutePoint
-from src.core.resilience.circuit_breaker import CircuitBreaker
-from src.core.resilience.rate_limiter import TokenBucket, RateLimiter
 
 
 class TestQueuePerformance:
@@ -154,10 +155,10 @@ class TestConcurrencyPerformance:
             results = []
             lock = threading.Lock()
 
-            def task():
+            def task(lock_ref=lock, results_ref=results):
                 time.sleep(0.01)  # Simulate work
-                with lock:
-                    results.append(1)
+                with lock_ref:
+                    results_ref.append(1)
 
             start = time.time()
 

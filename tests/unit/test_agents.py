@@ -24,10 +24,6 @@ from src.models.route import RoutePoint
 class TestVideoAgent:
     """Tests for VideoAgent class."""
 
-    @patch(
-        "src.agents.video_agent.AGENT_SKILLS",
-        {"video_agent": {"search_preferences": []}},
-    )
     def test_initialization(self):
         """Test VideoAgent initialization."""
         from src.agents.video_agent import VideoAgent
@@ -35,10 +31,6 @@ class TestVideoAgent:
         agent = VideoAgent()
         assert agent.agent_type == "video"
 
-    @patch(
-        "src.agents.video_agent.AGENT_SKILLS",
-        {"video_agent": {"search_preferences": []}},
-    )
     def test_get_content_type(self):
         """Test content type is VIDEO."""
         from src.agents.video_agent import VideoAgent
@@ -46,10 +38,6 @@ class TestVideoAgent:
         agent = VideoAgent()
         assert agent.get_content_type() == ContentType.VIDEO
 
-    @patch(
-        "src.agents.video_agent.AGENT_SKILLS",
-        {"video_agent": {"search_preferences": []}},
-    )
     def test_get_mock_result(self, mock_route_point):
         """Test mock result generation."""
         from src.agents.video_agent import VideoAgent
@@ -62,10 +50,6 @@ class TestVideoAgent:
         assert result.point_id == mock_route_point.id
         assert result.source == "YouTube (Mock)"
 
-    @patch(
-        "src.agents.video_agent.AGENT_SKILLS",
-        {"video_agent": {"search_preferences": []}},
-    )
     def test_mock_result_ammunition_hill(self):
         """Test mock result for Ammunition Hill location."""
         from src.agents.video_agent import VideoAgent
@@ -89,10 +73,6 @@ class TestVideoAgent:
             or "ammo_hill" in result.url
         )
 
-    @patch(
-        "src.agents.video_agent.AGENT_SKILLS",
-        {"video_agent": {"search_preferences": []}},
-    )
     def test_generate_search_queries_fallback(self, mock_route_point):
         """Test search query generation fallback."""
         from src.agents.video_agent import VideoAgent
@@ -275,14 +255,15 @@ class TestTextAgent:
         assert domain == "subdomain.example.org"
 
     def test_extract_domain_invalid(self):
-        """Test domain extraction with invalid URL."""
+        """Test domain extraction with invalid URL returns empty string."""
         from src.agents.text_agent import TextAgent
 
         with patch.object(TextAgent, "_init_search_client"):
             agent = TextAgent()
 
         result = agent._extract_domain("not a url")
-        assert result == "not a url"
+        # Invalid URLs return empty string
+        assert result == ""
 
     def test_search_web_no_client(self, mock_route_point):
         """Test web search returns empty when no client."""

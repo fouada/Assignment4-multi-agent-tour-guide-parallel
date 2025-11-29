@@ -8,17 +8,17 @@ Test Coverage:
 - Async timeout (when applicable)
 - Edge cases
 """
-import pytest
-import time
 import asyncio
-from unittest.mock import MagicMock
+import time
+
+import pytest
 
 from src.core.resilience.timeout import (
     TimeoutError,
-    with_timeout,
-    timeout,
+    async_timeout,
     async_with_timeout,
-    async_timeout
+    timeout,
+    with_timeout,
 )
 
 
@@ -136,7 +136,6 @@ class TestAsyncTimeout:
 
     def test_async_with_timeout_sync(self):
         """Test async timeout can be run with asyncio.run."""
-        import asyncio
 
         async def fast_async():
             await asyncio.sleep(0.01)
@@ -150,7 +149,6 @@ class TestAsyncTimeout:
 
     def test_async_slow_times_out_sync(self):
         """Test slow async function times out when run."""
-        import asyncio
 
         async def slow_async():
             await asyncio.sleep(5.0)
@@ -164,7 +162,6 @@ class TestAsyncTimeout:
 
     def test_async_decorator_sync(self):
         """Test async_timeout decorator when run."""
-        import asyncio
 
         @async_timeout(seconds=1.0)
         async def fast_decorated():
@@ -176,7 +173,6 @@ class TestAsyncTimeout:
 
     def test_async_decorator_timeout_sync(self):
         """Test async_timeout decorator times out when run."""
-        import asyncio
 
         @async_timeout(seconds=0.1)
         async def slow_decorated():

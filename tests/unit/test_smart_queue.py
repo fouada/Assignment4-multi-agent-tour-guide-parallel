@@ -9,18 +9,17 @@ Test Coverage:
 - QueueManager singleton behavior
 - Edge cases: all fail, partial success, concurrent access
 """
-import pytest
 import threading
 import time
-from datetime import datetime
-from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.core.smart_queue import (
-    SmartAgentQueue,
+    NoResultsError,
     QueueManager,
-    QueueStatus,
     QueueMetrics,
-    NoResultsError
+    QueueStatus,
+    SmartAgentQueue,
 )
 from src.models.content import ContentResult, ContentType
 
@@ -270,7 +269,7 @@ class TestQueueManagerSingleton:
         manager._queues.clear()
         manager._completed_metrics.clear()
 
-        queue = manager.get_or_create_queue("point_test")
+        manager.get_or_create_queue("point_test")
         metrics = QueueMetrics(point_id="point_test")
         metrics.complete(QueueStatus.COMPLETE)
 

@@ -9,18 +9,18 @@ Test Coverage:
 - Blocking vs non-blocking modes
 - Statistics tracking
 """
-import pytest
-import time
 import threading
-from unittest.mock import patch
+import time
+
+import pytest
 
 from src.core.resilience.rate_limiter import (
-    TokenBucket,
-    SlidingWindowLimiter,
     RateLimiter,
-    RateLimitExceeded,
     RateLimiterStats,
-    rate_limit
+    RateLimitExceeded,
+    SlidingWindowLimiter,
+    TokenBucket,
+    rate_limit,
 )
 
 
@@ -372,7 +372,7 @@ class TestRateLimiterEdgeCases:
         # This should block and wait for refill
         start = time.time()
         result = limiter.acquire()
-        elapsed = time.time() - start
+        time.time() - start
 
         # Should have waited some time for token refill
         assert result is True

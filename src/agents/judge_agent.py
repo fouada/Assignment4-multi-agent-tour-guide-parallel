@@ -21,7 +21,7 @@ from src.models.content import ContentResult, ContentType
 from src.models.decision import JudgeDecision
 from src.models.route import RoutePoint
 from src.models.user_profile import AgeGroup, UserProfile
-from src.utils.logger import get_logger
+from src.utils.logger import get_logger, log_judge_decision
 
 logger = get_logger(__name__)
 

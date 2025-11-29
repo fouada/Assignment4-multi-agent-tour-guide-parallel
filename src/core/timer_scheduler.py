@@ -8,9 +8,15 @@ from collections.abc import Callable
 
 from src.models.route import Route, RoutePoint
 from src.utils.config import settings
-from src.utils.logger import get_logger
+from src.utils.logger import get_logger, set_log_context
 
 logger = get_logger(__name__)
+
+
+def log_timer_tick(point_id: str, location: str):
+    """Log timer tick for a point."""
+    set_log_context(point_id=point_id, agent_type='timer')
+    logger.info(f"⏰ Arrived at: {location}")
 
 
 class TravelSimulator:

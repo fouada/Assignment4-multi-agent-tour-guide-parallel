@@ -9,23 +9,24 @@ This module provides shared fixtures for all test suites:
 
 MIT Level Testing - 85%+ Coverage Target
 """
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.models.route import RoutePoint, Route
 from src.models.content import ContentResult, ContentType
 from src.models.decision import JudgeDecision
+from src.models.route import Route, RoutePoint
 from src.models.user_profile import (
-    UserProfile,
     AgeGroup,
     Gender,
-    get_kid_profile,
-    get_family_profile,
+    UserProfile,
     get_driver_profile,
+    get_family_profile,
+    get_kid_profile,
 )
 
 
@@ -216,14 +217,14 @@ def mock_route_with_decisions(mock_route, mock_video_result, mock_music_result, 
                 source="Wikipedia",
                 relevance_score=9.0 + (i * 0.1)
             )
-        
+
         decisions.append(JudgeDecision(
             point_id=point.id,
             selected_content=content,
             all_candidates=[content],
             reasoning=f"Best content for {point.location_name}"
         ))
-    
+
     return mock_route, decisions
 
 

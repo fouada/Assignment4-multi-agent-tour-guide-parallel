@@ -7,11 +7,12 @@ Test Coverage:
 - Duration calculation
 - Edge cases: empty candidates, missing results
 """
-import pytest
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from src.models.decision import JudgeDecision, AgentTask
-from src.models.content import ContentResult, ContentType, AgentStatus
+import pytest
+
+from src.models.content import AgentStatus, ContentResult, ContentType
+from src.models.decision import AgentTask, JudgeDecision
 
 
 class TestJudgeDecision:

@@ -7,11 +7,10 @@ Test Coverage:
 - Default values
 - Agent skills configuration
 """
-import pytest
 import os
 from unittest.mock import patch
 
-from src.utils.config import Settings, settings, AGENT_SKILLS
+from src.utils.config import AGENT_SKILLS, Settings, settings
 
 
 class TestSettings:

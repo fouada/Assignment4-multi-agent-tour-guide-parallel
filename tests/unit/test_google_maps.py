@@ -1,305 +1,472 @@
 """
-Unit tests for the Google Maps service module.
+Unit tests for Google Maps service module.
 
 Tests cover:
-- MockGoogleMapsClient functionality
-- Route generation
-- Helper functions
-- get_mock_route function
-
-Note: GoogleMapsClient tests require the googlemaps package.
-These tests focus on the MockGoogleMapsClient which doesn't require external dependencies.
+- GoogleMapsClient initialization and route fetching
+- MockGoogleMapsClient for testing without API
+- Route parsing and address extraction
+- Edge cases: missing API key, empty routes, invalid data
 
 MIT Level Testing - 85%+ Coverage Target
 """
 
 import sys
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.models.route import Route, RoutePoint
+# Mock googlemaps before importing the module
+sys.modules['googlemaps'] = MagicMock()
 
-
-# Mock googlemaps before importing
-@pytest.fixture(autouse=True)
-def mock_googlemaps():
-    """Mock the googlemaps module."""
-    mock_module = MagicMock()
-    mock_module.Client = MagicMock()
-    sys.modules["googlemaps"] = mock_module
-    yield mock_module
-    # Clean up
-    if "googlemaps" in sys.modules:
-        del sys.modules["googlemaps"]
+from src.models.route import Route, RoutePoint  # noqa: E402
+from src.services.google_maps import (  # noqa: E402
+    GoogleMapsClient,
+    MockGoogleMapsClient,
+    get_maps_client,
+    get_mock_route,
+)
 
 
 class TestMockGoogleMapsClient:
     """Tests for MockGoogleMapsClient class."""
 
-    def test_initialization(self, mock_googlemaps):
+    def test_initialization(self):
         """Test MockGoogleMapsClient initialization."""
-        # Force reimport with mocked googlemaps
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import MockGoogleMapsClient
-
         MockGoogleMapsClient()
         # Should not raise
 
-    def test_get_route_returns_route(self, mock_googlemaps):
+    def test_initialization_with_api_key(self):
+        """Test initialization ignores API key."""
+        MockGoogleMapsClient(api_key="test_key")
+        # Should not raise
+
+    def test_get_route_returns_route(self):
         """Test get_route returns a Route object."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import MockGoogleMapsClient
-
         client = MockGoogleMapsClient()
-        route = client.get_route("Tel Aviv", "Jerusalem")
+
+        route = client.get_route("Origin", "Destination")
 
         assert isinstance(route, Route)
-        assert route.source == "Tel Aviv"
-        assert route.destination == "Jerusalem"
+        assert route.source == "Origin"
+        assert route.destination == "Destination"
+        assert len(route.points) == 4
 
-    def test_get_route_has_points(self, mock_googlemaps):
-        """Test get_route returns route with points."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import MockGoogleMapsClient
-
+    def test_get_route_points_valid(self):
+        """Test mock route has valid points."""
         client = MockGoogleMapsClient()
-        route = client.get_route("Tel Aviv", "Jerusalem")
 
-        assert len(route.points) > 0
-        assert all(isinstance(p, RoutePoint) for p in route.points)
-
-    def test_get_route_points_have_required_fields(self, mock_googlemaps):
-        """Test route points have all required fields."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import MockGoogleMapsClient
-
-        client = MockGoogleMapsClient()
-        route = client.get_route("Tel Aviv", "Jerusalem")
+        route = client.get_route("A", "B")
 
         for point in route.points:
-            assert point.id is not None
+            assert isinstance(point, RoutePoint)
+            assert point.latitude != 0
+            assert point.longitude != 0
             assert point.address is not None
-            assert point.latitude is not None
-            assert point.longitude is not None
 
-    def test_get_place_details_returns_dict(self, mock_googlemaps):
-        """Test get_place_details returns a dict."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import MockGoogleMapsClient
-
+    def test_get_route_with_kwargs(self):
+        """Test get_route accepts extra kwargs."""
         client = MockGoogleMapsClient()
-        details = client.get_place_details("Tel Aviv")
 
-        assert isinstance(details, dict)
-        assert details["name"] == "Tel Aviv"
-        assert details["mock"] is True
+        route = client.get_route("A", "B", mode="walking", waypoints=["C"])
+
+        assert isinstance(route, Route)
+
+    def test_get_place_details(self):
+        """Test get_place_details returns dict."""
+        client = MockGoogleMapsClient()
+
+        result = client.get_place_details("Test Place")
+
+        assert result is not None
+        assert result["name"] == "Test Place"
+        assert result["mock"] is True
+
+
+class TestGoogleMapsClient:
+    """Tests for GoogleMapsClient class."""
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_initialization_with_api_key(self, mock_client):
+        """Test initialization with explicit API key."""
+        client = GoogleMapsClient(api_key="test_api_key")
+
+        assert client.api_key == "test_api_key"
+        mock_client.assert_called_once_with(key="test_api_key")
+
+    def test_initialization_without_api_key_raises(self):
+        """Test initialization without API key raises ValueError."""
+        with patch("src.services.google_maps.settings") as mock_settings:
+            mock_settings.google_maps_api_key = None
+
+            with pytest.raises(ValueError, match="API key is required"):
+                GoogleMapsClient()
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_route_success(self, mock_client_class):
+        """Test successful route fetching."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+
+        # Mock directions response
+        mock_client.directions.return_value = [
+            {
+                "legs": [
+                    {
+                        "start_location": {"lat": 32.0, "lng": 34.0},
+                        "start_address": "Start Address",
+                        "end_location": {"lat": 32.1, "lng": 34.1},
+                        "end_address": "End Address",
+                        "distance": {"value": 10000},
+                        "duration": {"value": 600},
+                        "steps": [
+                            {
+                                "end_location": {"lat": 32.1, "lng": 34.1},
+                                "distance": {"value": 10000},
+                                "duration": {"value": 600},
+                                "html_instructions": "<b>Head</b> north",
+                            }
+                        ],
+                    }
+                ]
+            }
+        ]
+        mock_client.reverse_geocode.return_value = [
+            {"formatted_address": "Test Address"}
+        ]
+
+        client = GoogleMapsClient(api_key="test_key")
+        route = client.get_route("Origin", "Destination")
+
+        assert isinstance(route, Route)
+        assert route.source == "Origin"
+        assert route.destination == "Destination"
+        assert len(route.points) > 0
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_route_no_results(self, mock_client_class):
+        """Test get_route when no route found."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.directions.return_value = []
+
+        client = GoogleMapsClient(api_key="test_key")
+
+        with pytest.raises(ValueError, match="No route found"):
+            client.get_route("Origin", "Destination")
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_route_api_error(self, mock_client_class):
+        """Test get_route handles API errors."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.directions.side_effect = Exception("API Error")
+
+        client = GoogleMapsClient(api_key="test_key")
+
+        with pytest.raises(Exception, match="API Error"):
+            client.get_route("Origin", "Destination")
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_route_with_waypoints(self, mock_client_class):
+        """Test get_route with waypoints."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.directions.return_value = [
+            {
+                "legs": [
+                    {
+                        "start_location": {"lat": 32.0, "lng": 34.0},
+                        "start_address": "Start",
+                        "distance": {"value": 5000},
+                        "duration": {"value": 300},
+                        "steps": [],
+                    }
+                ]
+            }
+        ]
+
+        client = GoogleMapsClient(api_key="test_key")
+        client.get_route("A", "B", waypoints=["C", "D"], mode="walking")
+
+        mock_client.directions.assert_called_once()
+        call_kwargs = mock_client.directions.call_args[1]
+        assert call_kwargs["waypoints"] == ["C", "D"]
+        assert call_kwargs["mode"] == "walking"
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_extract_location_name(self, mock_client_class):
+        """Test location name extraction from address."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+
+        client = GoogleMapsClient(api_key="test_key")
+
+        # Test normal address
+        result = client._extract_location_name("123 Main Street, City, Country")
+        assert result == "Main Street"
+
+        # Test empty address
+        result = client._extract_location_name("")
+        assert result is None
+
+        # Test None
+        result = client._extract_location_name(None)
+        assert result is None
+
+        # Test address with no number
+        result = client._extract_location_name("Central Park, New York")
+        assert result == "Central Park"
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_clean_html(self, mock_client_class):
+        """Test HTML cleaning."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+
+        client = GoogleMapsClient(api_key="test_key")
+
+        result = client._clean_html("<b>Turn</b> <i>left</i> on <div>Main St</div>")
+        assert result == "Turn left on Main St"
+
+        result = client._clean_html("No HTML here")
+        assert result == "No HTML here"
+
+        result = client._clean_html("")
+        assert result == ""
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_address_from_location_success(self, mock_client_class):
+        """Test reverse geocoding success."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.reverse_geocode.return_value = [
+            {"formatted_address": "123 Test Street"}
+        ]
+
+        client = GoogleMapsClient(api_key="test_key")
+        result = client._get_address_from_location(32.0, 34.0)
+
+        assert result == "123 Test Street"
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_address_from_location_empty(self, mock_client_class):
+        """Test reverse geocoding with no results."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.reverse_geocode.return_value = []
+
+        client = GoogleMapsClient(api_key="test_key")
+        result = client._get_address_from_location(32.0, 34.0)
+
+        assert result is None
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_address_from_location_error(self, mock_client_class):
+        """Test reverse geocoding error handling."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.reverse_geocode.side_effect = Exception("API Error")
+
+        client = GoogleMapsClient(api_key="test_key")
+        result = client._get_address_from_location(32.0, 34.0)
+
+        assert result is None
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_place_details_success(self, mock_client_class):
+        """Test successful place details fetch."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.places.return_value = {
+            "results": [{"place_id": "abc123", "name": "Test Place"}]
+        }
+        mock_client.place.return_value = {
+            "result": {"name": "Test Place", "rating": 4.5}
+        }
+
+        client = GoogleMapsClient(api_key="test_key")
+        result = client.get_place_details("Test Place")
+
+        assert result is not None
+        assert result["name"] == "Test Place"
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_place_details_no_results(self, mock_client_class):
+        """Test place details with no search results."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.places.return_value = {"results": []}
+
+        client = GoogleMapsClient(api_key="test_key")
+        result = client.get_place_details("Unknown Place")
+
+        assert result is None
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_get_place_details_error(self, mock_client_class):
+        """Test place details error handling."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
+        mock_client.places.side_effect = Exception("API Error")
+
+        client = GoogleMapsClient(api_key="test_key")
+        result = client.get_place_details("Test Place")
+
+        assert result is None
+
+
+class TestGetMapsClient:
+    """Tests for get_maps_client factory function."""
+
+    def test_get_mock_client_explicitly(self):
+        """Test getting mock client when requested."""
+        client = get_maps_client(use_mock=True)
+
+        assert isinstance(client, MockGoogleMapsClient)
+
+    @patch("src.services.google_maps.settings")
+    def test_get_mock_client_no_api_key(self, mock_settings):
+        """Test getting mock client when no API key."""
+        mock_settings.google_maps_api_key = None
+
+        client = get_maps_client(use_mock=False)
+
+        assert isinstance(client, MockGoogleMapsClient)
+
+    @patch("src.services.google_maps.googlemaps.Client")
+    @patch("src.services.google_maps.settings")
+    def test_get_real_client_with_api_key(self, mock_settings, mock_client):
+        """Test getting real client when API key is set."""
+        mock_settings.google_maps_api_key = "valid_api_key"
+
+        client = get_maps_client(use_mock=False)
+
+        assert isinstance(client, GoogleMapsClient)
 
 
 class TestGetMockRoute:
-    """Tests for get_mock_route function."""
+    """Tests for get_mock_route helper function."""
 
-    def test_get_mock_route_default(self, mock_googlemaps):
+    def test_get_mock_route_default(self):
         """Test get_mock_route with default params."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import get_mock_route
-
         route = get_mock_route()
 
         assert isinstance(route, Route)
         assert route.source == "Tel Aviv, Israel"
         assert route.destination == "Jerusalem, Israel"
+        assert len(route.points) > 0
 
-    def test_get_mock_route_custom(self, mock_googlemaps):
+    def test_get_mock_route_custom(self):
         """Test get_mock_route with custom params."""
-        import importlib
+        route = get_mock_route(origin="Custom Origin", destination="Custom Dest")
 
-        import src.services.google_maps
+        assert route.source == "Custom Origin"
+        assert route.destination == "Custom Dest"
 
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import get_mock_route
-
-        route = get_mock_route(origin="A", destination="B")
-
-        assert route.source == "A"
-        assert route.destination == "B"
-
-
-class TestGetMapsClient:
-    """Tests for get_maps_client function."""
-
-    def test_get_maps_client_mock(self, mock_googlemaps):
-        """Test get_maps_client returns mock when requested."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import MockGoogleMapsClient, get_maps_client
-
-        client = get_maps_client(use_mock=True)
-        assert isinstance(client, MockGoogleMapsClient)
-
-
-class TestGoogleMapsClientHelpers:
-    """Tests for GoogleMapsClient helper methods."""
-
-    def test_extract_location_name(self, mock_googlemaps):
-        """Test location name extraction."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import GoogleMapsClient
-
-        # Create client with mocked API
-        with patch.object(GoogleMapsClient, "__init__", lambda x, **k: None):
-            client = GoogleMapsClient()
-            client.api_key = "test"
-            client.client = Mock()
-
-            # Add the method manually since __init__ is mocked
-            from src.services.google_maps import GoogleMapsClient as OrigClass
-
-            client._extract_location_name = OrigClass._extract_location_name.__get__(
-                client, OrigClass
-            )
-
-            # Test with address
-            name = client._extract_location_name("Tel Aviv, Israel")
-            assert name == "Tel Aviv"
-
-            # Test with street number
-            name = client._extract_location_name("123 Main Street, City")
-            assert name == "Main Street"
-
-            # Test with empty
-            name = client._extract_location_name("")
-            assert name is None
-
-            # Test with None
-            name = client._extract_location_name(None)
-            assert name is None
-
-    def test_clean_html(self, mock_googlemaps):
-        """Test HTML cleaning."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import GoogleMapsClient
-
-        with patch.object(GoogleMapsClient, "__init__", lambda x, **k: None):
-            client = GoogleMapsClient()
-
-            from src.services.google_maps import GoogleMapsClient as OrigClass
-
-            client._clean_html = OrigClass._clean_html.__get__(client, OrigClass)
-
-            # Test with HTML
-            clean = client._clean_html("<div>Turn <b>left</b></div>")
-            assert clean == "Turn left"
-
-            # Test without HTML
-            clean = client._clean_html("Plain text")
-            assert clean == "Plain text"
-
-
-class TestRoutePoints:
-    """Additional tests for route point structure."""
-
-    def test_mock_route_has_latrun(self, mock_googlemaps):
-        """Test mock route includes Latrun."""
-        import importlib
-
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import get_mock_route
-
+    def test_mock_route_has_required_fields(self):
+        """Test mock route points have all required fields."""
         route = get_mock_route()
 
-        latrun_point = next((p for p in route.points if "Latrun" in p.address), None)
-        assert latrun_point is not None
+        for point in route.points:
+            assert point.id is not None
+            assert point.index >= 0
+            assert point.address is not None
+            assert point.latitude != 0
+            assert point.longitude != 0
 
-    def test_mock_route_has_ammunition_hill(self, mock_googlemaps):
-        """Test mock route includes Ammunition Hill."""
-        import importlib
 
-        import src.services.google_maps
+class TestRouteParsingEdgeCases:
+    """Tests for route parsing edge cases."""
 
-        importlib.reload(src.services.google_maps)
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_parse_route_missing_fields(self, mock_client_class):
+        """Test parsing route with missing optional fields."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
 
-        from src.services.google_maps import get_mock_route
+        # Minimal route data
+        mock_client.directions.return_value = [
+            {
+                "legs": [
+                    {
+                        "start_location": {"lat": 32.0, "lng": 34.0},
+                        "steps": [],
+                    }
+                ]
+            }
+        ]
 
-        route = get_mock_route()
+        client = GoogleMapsClient(api_key="test_key")
+        route = client.get_route("A", "B")
 
-        ammo_point = next((p for p in route.points if "Ammunition" in p.address), None)
-        assert ammo_point is not None
+        assert isinstance(route, Route)
+        assert route.total_distance == 0
+        assert route.total_duration == 0
 
-    def test_mock_route_points_ordered(self, mock_googlemaps):
-        """Test mock route points are ordered by index."""
-        import importlib
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_parse_route_multiple_legs(self, mock_client_class):
+        """Test parsing route with multiple legs (waypoints)."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
 
-        import src.services.google_maps
+        mock_client.directions.return_value = [
+            {
+                "legs": [
+                    {
+                        "start_location": {"lat": 32.0, "lng": 34.0},
+                        "start_address": "Start",
+                        "distance": {"value": 5000},
+                        "duration": {"value": 300},
+                        "steps": [],
+                    },
+                    {
+                        "start_location": {"lat": 32.1, "lng": 34.1},
+                        "start_address": "Waypoint",
+                        "distance": {"value": 5000},
+                        "duration": {"value": 300},
+                        "steps": [],
+                    },
+                ]
+            }
+        ]
 
-        importlib.reload(src.services.google_maps)
+        client = GoogleMapsClient(api_key="test_key")
+        route = client.get_route("A", "B", waypoints=["C"])
 
-        from src.services.google_maps import get_mock_route
+        assert route.total_distance == 10000
+        assert route.total_duration == 600
 
-        route = get_mock_route()
+    @patch("src.services.google_maps.googlemaps.Client")
+    def test_parse_route_step_fallback_address(self, mock_client_class):
+        """Test step address fallback to coordinates."""
+        mock_client = MagicMock()
+        mock_client_class.return_value = mock_client
 
-        for i, point in enumerate(route.points):
-            assert point.index == i
+        mock_client.directions.return_value = [
+            {
+                "legs": [
+                    {
+                        "start_location": {"lat": 32.0, "lng": 34.0},
+                        "start_address": "Start",
+                        "distance": {"value": 1000},
+                        "duration": {"value": 60},
+                        "steps": [
+                            {
+                                "end_location": {"lat": 32.1234, "lng": 34.5678},
+                                "distance": {"value": 1000},
+                                "duration": {"value": 60},
+                                "html_instructions": "Turn right",
+                            }
+                        ],
+                    }
+                ]
+            }
+        ]
+        # Return None for reverse geocode to trigger fallback
+        mock_client.reverse_geocode.return_value = None
 
-    def test_mock_route_total_distance(self, mock_googlemaps):
-        """Test mock route has valid total distance."""
-        import importlib
+        client = GoogleMapsClient(api_key="test_key")
+        route = client.get_route("A", "B")
 
-        import src.services.google_maps
-
-        importlib.reload(src.services.google_maps)
-
-        from src.services.google_maps import get_mock_route
-
-        route = get_mock_route()
-
-        assert route.total_distance > 0
-        assert route.total_duration > 0
+        # Should have a fallback address with coordinates
+        assert "32.1234" in route.points[-1].address

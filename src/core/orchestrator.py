@@ -16,9 +16,18 @@ from src.models.content import ContentResult
 from src.models.decision import JudgeDecision
 from src.models.route import RoutePoint
 from src.utils.config import settings
-from src.utils.logger import get_logger
+from src.utils.logger import get_logger, set_log_context
 
 logger = get_logger(__name__)
+
+
+def log_orchestrator_event(event: str, details: str = ""):
+    """Log orchestrator event."""
+    set_log_context(agent_type='orchestrator')
+    msg = f"🎭 {event}"
+    if details:
+        msg += f": {details}"
+    logger.info(msg)
 
 
 class PointProcessor:

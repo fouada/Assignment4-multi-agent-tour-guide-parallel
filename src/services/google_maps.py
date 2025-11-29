@@ -8,7 +8,7 @@ import googlemaps
 
 from src.models.route import Route, RoutePoint
 from src.utils.config import settings
-from src.utils.logger import get_logger
+from src.utils.logger import get_logger, set_log_context
 
 logger = get_logger(__name__)
 

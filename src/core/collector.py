@@ -3,14 +3,22 @@ Collector - Aggregates results from the judge and produces the final tour guide 
 Maintains order and provides the final playlist.
 """
 import threading
+from collections.abc import Callable
 from datetime import datetime
+from typing import Any
 
 from src.models.decision import JudgeDecision
 from src.models.output import TourGuideOutput
 from src.models.route import Route
-from src.utils.logger import get_logger
+from src.utils.logger import get_logger, set_log_context
 
 logger = get_logger(__name__)
+
+
+def log_collector_update(point_id: str, content: str):
+    """Log collector update."""
+    set_log_context(point_id=point_id, agent_type='collector')
+    logger.info(f"📥 Collected: {content}")
 
 
 class ResultCollector:
@@ -182,7 +190,7 @@ class StreamingCollector(ResultCollector):
     Provides results as they arrive rather than waiting for completion.
     """
 
-    def __init__(self, route: Route, on_decision: callable | None = None):
+    def __init__(self, route: Route, on_decision: Callable[[JudgeDecision], Any] | None = None):
         """
         Initialize streaming collector.
 

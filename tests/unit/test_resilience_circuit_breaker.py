@@ -10,18 +10,16 @@ Test Coverage:
 - Decorator and context manager usage
 - Statistics tracking
 """
-import pytest
 import time
-import threading
-from datetime import datetime
-from unittest.mock import MagicMock
+
+import pytest
 
 from src.core.resilience.circuit_breaker import (
     CircuitBreaker,
-    CircuitState,
     CircuitBreakerOpen,
     CircuitBreakerStats,
-    circuit_breaker
+    CircuitState,
+    circuit_breaker,
 )
 
 
@@ -389,7 +387,7 @@ class TestCircuitBreakerRegistry:
         assert b2.state == CircuitState.CLOSED
 
 
-class TestCircuitBreakerStats:
+class TestCircuitBreakerGetStats:
     """Tests for get_stats method."""
 
     def test_get_stats(self):

@@ -13,7 +13,6 @@ _thread_local = threading.local()
 try:
     from rich.console import Console
     from rich.logging import RichHandler
-    from rich.theme import Theme
     HAS_RICH = True
 except ImportError:
     HAS_RICH = False
