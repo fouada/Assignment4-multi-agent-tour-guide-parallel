@@ -15,7 +15,7 @@ The Judge WAITS for the Smart Queue to provide results (with timeout mechanism).
 """
 
 import re
-from typing import Any
+from typing import Any, cast
 
 from src.agents.base_agent import BaseAgent
 from src.models.content import ContentResult, ContentType
@@ -27,7 +27,7 @@ from src.utils.logger import get_logger, log_judge_decision
 logger = get_logger(__name__)
 
 # Agent skills (can be loaded from YAML)
-AGENT_SKILLS = {}
+AGENT_SKILLS: dict[str, Any] = {}
 
 
 class JudgeAgent(BaseAgent):
@@ -267,8 +267,9 @@ REASONING: [2-3 sentences explaining why this content is best for THIS user]"""
                 result["reasoning"] = reasoning_match.group(1).strip()
 
             # Set scores
+            scores_dict = cast(dict[ContentType, float], result["scores"])
             for _i, c in enumerate(candidates):
-                result["scores"][c.content_type] = c.relevance_score
+                scores_dict[c.content_type] = c.relevance_score
 
         except Exception as e:
             logger.warning(f"Error parsing two-candidate response: {e}")
@@ -420,12 +421,13 @@ REASONING: [2-3 sentences explaining why this content is the best choice for THI
             music_match = re.search(r"Music:\s*([\d.]+)", response, re.IGNORECASE)
             text_match = re.search(r"Text:\s*([\d.]+)", response, re.IGNORECASE)
 
+            scores_dict = cast(dict[ContentType, float], result["scores"])
             if video_match:
-                result["scores"][ContentType.VIDEO] = float(video_match.group(1))
+                scores_dict[ContentType.VIDEO] = float(video_match.group(1))
             if music_match:
-                result["scores"][ContentType.MUSIC] = float(music_match.group(1))
+                scores_dict[ContentType.MUSIC] = float(music_match.group(1))
             if text_match:
-                result["scores"][ContentType.TEXT] = float(text_match.group(1))
+                scores_dict[ContentType.TEXT] = float(text_match.group(1))
 
             # Parse winner
             winner_match = re.search(r"WINNER:\s*(\d+)", response)
@@ -450,7 +452,13 @@ REASONING: [2-3 sentences explaining why this content is the best choice for THI
                     result["reasoning"] = parts[1].strip()[:200]
 
             # Validate winner index
-            if result["winner_index"] < 0 or result["winner_index"] >= len(candidates):
+            winner_idx_value = result["winner_index"]
+            winner_idx = (
+                int(winner_idx_value)
+                if isinstance(winner_idx_value, (int, float, str))
+                else 0
+            )
+            if winner_idx < 0 or winner_idx >= len(candidates):
                 result["winner_index"] = 0
 
         except Exception as e:

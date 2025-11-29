@@ -129,10 +129,11 @@ class PointProcessor:
 
         self.completed.set()
 
-    def _run_agent(self, agent) -> ContentResult | None:
+    def _run_agent(self, agent) -> ContentResult | None:  # type: ignore[no-untyped-def]
         """Run a single agent and return its result."""
         try:
-            return agent.execute(self.point)
+            result = agent.execute(self.point)
+            return result  # type: ignore[no-any-return]
         except Exception as e:
             logger.error(f"Agent execution error: {e}")
             return None
@@ -144,7 +145,7 @@ class Orchestrator:
     Manages thread pools and ensures proper parallel execution.
     """
 
-    def __init__(self, max_concurrent_points: int = None):
+    def __init__(self, max_concurrent_points: int | None = None):
         """
         Initialize the orchestrator.
 
@@ -157,7 +158,7 @@ class Orchestrator:
         self.active_processors: dict[str, PointProcessor] = {}
         self.results: dict[str, JudgeDecision] = {}
         self.results_lock = threading.Lock()
-        self.results_queue = queue.Queue()
+        self.results_queue: queue.Queue[JudgeDecision] = queue.Queue()
         self.executor: ThreadPoolExecutor | None = None
         self.is_running = False
         self._futures: dict[Future, str] = {}
@@ -189,6 +190,8 @@ class Orchestrator:
         processor = PointProcessor(point, self._on_point_complete)
         self.active_processors[point.id] = processor
 
+        if self.executor is None:
+            raise RuntimeError("Orchestrator not started")
         future = self.executor.submit(processor.process)
         self._futures[future] = point.id
 
@@ -248,7 +251,7 @@ class Orchestrator:
             self.is_running = False
             log_orchestrator_event("Stopped")
 
-    def wait_for_completion(self, timeout: float = None):
+    def wait_for_completion(self, timeout: float | None = None) -> None:
         """
         Wait for all submitted points to complete.
 
@@ -267,7 +270,7 @@ class Orchestrator:
         with self.results_lock:
             return self.results.get(point_id)
 
-    def get_next_result(self, timeout: float = None) -> JudgeDecision | None:
+    def get_next_result(self, timeout: float | None = None) -> JudgeDecision | None:
         """
         Get the next completed result from the queue.
         Useful for streaming results as they complete.

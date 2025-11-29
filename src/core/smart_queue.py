@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from src.models.content import ContentResult
+from src.models.content import ContentResult, ContentType
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -250,15 +250,17 @@ class QueueManager:
     Provides global metrics and monitoring.
     """
 
-    _instance = None
+    _instance: "QueueManager | None" = None
     _lock = threading.Lock()
+    _queues: dict[str, SmartAgentQueue]
+    _completed_metrics: list[QueueMetrics]
 
-    def __new__(cls):
+    def __new__(cls) -> "QueueManager":
         with cls._lock:
             if cls._instance is None:
                 cls._instance = super().__new__(cls)
-                cls._instance._queues: dict[str, SmartAgentQueue] = {}
-                cls._instance._completed_metrics: list[QueueMetrics] = []
+                cls._instance._queues = {}
+                cls._instance._completed_metrics = []
             return cls._instance
 
     def get_or_create_queue(self, point_id: str) -> SmartAgentQueue:
@@ -275,7 +277,7 @@ class QueueManager:
             if point_id in self._queues:
                 del self._queues[point_id]
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, int | float]:
         """Get aggregate statistics for monitoring"""
         if not self._completed_metrics:
             return {"total": 0}
@@ -326,11 +328,12 @@ if __name__ == "__main__":
             queue.submit_failure(agent_type, "API timeout")
         else:
             result = ContentResult(
-                type=agent_type,
+                content_type=ContentType(agent_type),
                 title=f"{agent_type.title()} content for {queue.point_id}",
                 description=f"Found by {agent_type} agent",
                 url=f"https://example.com/{agent_type}",
-                score=random.uniform(0.5, 1.0),
+                source=f"Mock {agent_type.title()}",
+                relevance_score=random.uniform(0.5, 1.0) * 10,
             )
             queue.submit_success(agent_type, result)
 

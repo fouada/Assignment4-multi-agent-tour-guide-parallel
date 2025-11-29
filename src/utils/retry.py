@@ -140,7 +140,9 @@ def retry_with_backoff(
                             f"All {max_retries + 1} attempts failed. Last error: {e}"
                         )
 
-            raise last_exception
+            if last_exception is not None:
+                raise last_exception
+            raise RuntimeError("Unexpected error in retry logic")
 
         return wrapper
 
@@ -223,7 +225,9 @@ class RetryExecutor:
                         f"[{point_id}][{agent_type}] All {self.max_retries + 1} attempts failed"
                     )
 
-        raise RetryExhaustedError(agent_type, self.attempts_made, last_error)
+        raise RetryExhaustedError(
+            agent_type, self.attempts_made, last_error or "Unknown error"
+        )
 
     def get_stats(self) -> dict:
         """Get retry statistics."""

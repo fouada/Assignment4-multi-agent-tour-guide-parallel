@@ -19,7 +19,7 @@ from src.utils.logger import get_logger
 logger = get_logger(__name__)
 
 # Agent skills loaded from config (can be extended via YAML)
-AGENT_SKILLS = {}
+AGENT_SKILLS: dict[str, Any] = {}
 
 
 class BaseAgent(ABC):
@@ -97,7 +97,7 @@ class BaseAgent(ABC):
                     system=system_prompt or self._get_system_prompt(),
                     messages=messages,
                 )
-                return response.content[0].text
+                return str(response.content[0].text)
             else:  # OpenAI
                 messages = []
                 if system_prompt or self._get_system_prompt():
@@ -114,7 +114,7 @@ class BaseAgent(ABC):
                     messages=messages,
                     temperature=settings.llm_temperature,
                 )
-                return response.choices[0].message.content
+                return str(response.choices[0].message.content or "")
 
         except Exception as e:
             logger.error(f"{self.name}: LLM call failed - {e}")

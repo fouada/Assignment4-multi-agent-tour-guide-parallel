@@ -363,9 +363,9 @@ class PluginManager:
                     )
                 )
 
-                for callback in self._on_plugin_failed:
+                for failed_callback in self._on_plugin_failed:
                     try:
-                        callback(name, e)
+                        failed_callback(name, e)
                     except Exception:
                         pass
 

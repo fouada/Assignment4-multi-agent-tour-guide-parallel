@@ -68,6 +68,7 @@ def get_logger(name: str = "tour_guide") -> logging.Logger:
     logger.addFilter(context_filter)
 
     # Console handler
+    handler: logging.Handler
     if HAS_RICH:
         console = Console()
         handler = RichHandler(

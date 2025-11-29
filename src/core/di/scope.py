@@ -37,7 +37,7 @@ class ScopeContext:
     def get(self, service_type: type[T]) -> T | None:
         """Get scoped instance."""
         if service_type in self.instances:
-            return self.instances[service_type]
+            return self.instances[service_type]  # type: ignore[no-any-return]
         if self.parent:
             return self.parent.get(service_type)
         return None

@@ -234,7 +234,7 @@ class Container:
 
             # Return existing singleton
             if registration.lifetime == Lifetime.SINGLETON and registration.instance:
-                return registration.instance
+                return registration.instance  # type: ignore[no-any-return]
 
             # Track resolution stack
             resolving_stack = resolving_stack | {service_type}
@@ -246,7 +246,7 @@ class Container:
             if registration.lifetime == Lifetime.SINGLETON:
                 registration.instance = instance
 
-            return instance
+            return instance  # type: ignore[no-any-return]
 
     def _create_instance(
         self,
@@ -312,18 +312,19 @@ class Container:
 
     def resolve_all(self, service_type: type[T]) -> list[T]:
         """Resolve all registrations that implement a type."""
-        results = []
+        results: list[T] = []
 
         with self._lock:
             for reg_type, registration in self._registrations.items():
-                if issubclass(registration.implementation, service_type):
+                impl = registration.implementation
+                if isinstance(impl, type) and issubclass(impl, service_type):
                     results.append(self.resolve(reg_type))
 
         return results
 
     def resolve_by_tag(self, tag: str) -> list[Any]:
         """Resolve all services with a specific tag."""
-        results = []
+        results: list[Any] = []
 
         with self._lock:
             for service_type, registration in self._registrations.items():

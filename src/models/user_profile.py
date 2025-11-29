@@ -1132,9 +1132,9 @@ class ProfileBuilder:
 
     def set_demographics(
         self,
-        age_group: AgeGroup = None,
-        gender: Gender = None,
-        language: LanguagePreference = None,
+        age_group: AgeGroup | None = None,
+        gender: Gender | None = None,
+        language: LanguagePreference | None = None,
     ) -> "ProfileBuilder":
         if age_group:
             self._profile.age_group = age_group
@@ -1146,10 +1146,10 @@ class ProfileBuilder:
 
     def set_travel_context(
         self,
-        mode: TravelMode = None,
-        purpose: TripPurpose = None,
-        pace: TravelPace = None,
-        is_driver: bool = None,
+        mode: TravelMode | None = None,
+        purpose: TripPurpose | None = None,
+        pace: TravelPace | None = None,
+        is_driver: bool | None = None,
     ) -> "ProfileBuilder":
         if mode:
             self._profile.travel_mode = mode
@@ -1163,10 +1163,10 @@ class ProfileBuilder:
 
     def set_preferences(
         self,
-        content_type: ContentPreference = None,
-        depth: ContentDepth = None,
-        interests: list[str] = None,
-        music_genres: list[MusicGenre] = None,
+        content_type: ContentPreference | None = None,
+        depth: ContentDepth | None = None,
+        interests: list[str] | None = None,
+        music_genres: list[MusicGenre] | None = None,
     ) -> "ProfileBuilder":
         if content_type:
             self._profile.content_preference = content_type
@@ -1179,7 +1179,9 @@ class ProfileBuilder:
         return self
 
     def set_accessibility(
-        self, needs: list[AccessibilityNeed] = None, subtitles: bool = None
+        self,
+        needs: list[AccessibilityNeed] | None = None,
+        subtitles: bool | None = None,
     ) -> "ProfileBuilder":
         if needs:
             self._profile.accessibility_needs = needs
@@ -1187,10 +1189,11 @@ class ProfileBuilder:
             self._profile.requires_subtitles = subtitles
         return self
 
-    def set_exclusions(self, topics: list[str] = None) -> "ProfileBuilder":
+    def set_exclusions(self, topics: list[str] | None = None) -> "ProfileBuilder":
         if topics:
             self._profile.exclude_topics = topics
         return self
 
-    def build(self) -> UserProfile:
-        return self._profile
+    def build(self) -> "UserProfile":
+        profile: UserProfile = self._profile
+        return profile

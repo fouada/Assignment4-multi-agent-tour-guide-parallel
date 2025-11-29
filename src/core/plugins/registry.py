@@ -25,7 +25,7 @@ from typing import (
     TypeVar,
 )
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 
 from src.core.plugins.base import (
     BasePlugin,
@@ -428,7 +428,7 @@ class PluginRegistry:
         cls.register_plugin(name, plugin_class, metadata=metadata)
         cls._discovered.add(name)
 
-        return name
+        return str(name)
 
     @classmethod
     def add_search_path(cls, path: str | Path) -> None:

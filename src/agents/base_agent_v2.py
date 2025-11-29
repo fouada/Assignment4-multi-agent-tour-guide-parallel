@@ -249,7 +249,7 @@ class EnhancedBaseAgent(ABC, Generic[TConfig]):
         Args:
             config: Agent configuration
         """
-        self._config = config or (
+        self._config: TConfig = config or (  # type: ignore[assignment]
             self.config_class() if self.config_class else AgentConfig()
         )
         self._state = AgentState.IDLE
@@ -263,16 +263,21 @@ class EnhancedBaseAgent(ABC, Generic[TConfig]):
         self._total_duration = 0.0
 
         # Initialize circuit breaker
+        config = self._config
+        cb_threshold = getattr(config, "circuit_breaker_threshold", 5)
+        cb_reset_timeout = getattr(config, "circuit_breaker_reset_timeout", 60.0)
         self._circuit_breaker = CircuitBreaker(
             name=f"agent_{self.name}",
-            failure_threshold=self._config.circuit_breaker_threshold,
-            reset_timeout=self._config.circuit_breaker_reset_timeout,
+            failure_threshold=cb_threshold,
+            reset_timeout=cb_reset_timeout,
         )
 
         # Initialize retry policy
+        max_retries = getattr(config, "max_retries", 3)
+        backoff_factor = getattr(config, "retry_backoff_factor", 2.0)
         self._retry_policy = RetryPolicy(
-            max_attempts=self._config.max_retries,
-            backoff_factor=self._config.retry_backoff_factor,
+            max_attempts=max_retries,
+            backoff_factor=backoff_factor,
             initial_delay=1.0,
             max_delay=30.0,
         )
@@ -306,7 +311,7 @@ class EnhancedBaseAgent(ABC, Generic[TConfig]):
     @property
     def config(self) -> TConfig:
         """Agent configuration."""
-        return self._config
+        return self._config  # type: ignore[return-value]
 
     @property
     def state(self) -> AgentState:
@@ -458,7 +463,8 @@ class EnhancedBaseAgent(ABC, Generic[TConfig]):
                     point,
                 )
 
-        return with_retry(_inner, self._retry_policy)
+        result = with_retry(_inner, self._retry_policy)
+        return result  # type: ignore[no-any-return]
 
     def _handle_failure(
         self,

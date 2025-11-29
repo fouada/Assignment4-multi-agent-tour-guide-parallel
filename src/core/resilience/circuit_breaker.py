@@ -140,7 +140,7 @@ class CircuitBreaker:
         self._failure_count = 0
         self._success_count = 0
         self._last_failure_time: float | None = None
-        self._lock = threading.RLock()
+        self._instance_lock = threading.RLock()
 
         # Statistics
         self.stats = CircuitBreakerStats()
@@ -152,7 +152,7 @@ class CircuitBreaker:
     @property
     def state(self) -> CircuitState:
         """Get current state, transitioning if necessary."""
-        with self._lock:
+        with self._instance_lock:
             if self._state == CircuitState.OPEN:
                 if self._should_try_reset():
                     self._transition_to(CircuitState.HALF_OPEN)
@@ -179,7 +179,7 @@ class CircuitBreaker:
 
     def record_success(self) -> None:
         """Record a successful call."""
-        with self._lock:
+        with self._instance_lock:
             self.stats.total_calls += 1
             self.stats.successful_calls += 1
             self.stats.last_success = datetime.now()
@@ -199,7 +199,7 @@ class CircuitBreaker:
             logger.debug(f"Excluded exception: {type(exception).__name__}")
             return
 
-        with self._lock:
+        with self._instance_lock:
             self.stats.total_calls += 1
             self.stats.failed_calls += 1
             self.stats.last_failure = datetime.now()
@@ -254,12 +254,12 @@ class CircuitBreaker:
 
     def reset(self) -> None:
         """Manually reset the circuit breaker to CLOSED state."""
-        with self._lock:
+        with self._instance_lock:
             self._transition_to(CircuitState.CLOSED)
 
     def trip(self) -> None:
         """Manually trip the circuit breaker to OPEN state."""
-        with self._lock:
+        with self._instance_lock:
             self._last_failure_time = time.time()
             self._transition_to(CircuitState.OPEN)
 

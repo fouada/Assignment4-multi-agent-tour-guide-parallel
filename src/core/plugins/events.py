@@ -270,11 +270,11 @@ class EventBus:
         def decorator(handler: Callable[[T], None]) -> Callable[[T], None]:
             cls.add_handler(
                 event_type,
-                handler,
+                handler,  # type: ignore[arg-type]
                 priority=priority,
                 once=once,
                 weak=weak,
-                filter_fn=filter_fn,
+                filter_fn=filter_fn,  # type: ignore[arg-type]
             )
             return handler
 
@@ -436,11 +436,13 @@ class EventBus:
                 if reg.is_async:
                     if sync:
                         # Run async in thread pool
-                        future = cls._executor.submit(asyncio.run, reg.handler(event))
+                        coro = reg.handler(event)
+                        future: Any = cls._executor.submit(asyncio.run, coro)  # type: ignore[arg-type]
                         if wait:
                             future.result()
                     else:
-                        asyncio.create_task(reg.handler(event))
+                        coro = reg.handler(event)
+                        asyncio.create_task(coro)  # type: ignore[arg-type]
                 else:
                     if sync:
                         reg.handler(event)
@@ -480,7 +482,9 @@ class EventBus:
 
             try:
                 if reg.is_async:
-                    await reg.handler(event)
+                    coro = reg.handler(event)
+                    if coro is not None:
+                        await coro
                 else:
                     reg.handler(event)
             except Exception as e:

@@ -249,6 +249,7 @@ class RateLimiter:
         self.block_timeout = block_timeout
 
         # Create underlying limiter
+        self._limiter: TokenBucket | SlidingWindowLimiter
         if algorithm == "token_bucket":
             rate = max_calls / period
             capacity = burst_size if burst_size is not None else max_calls

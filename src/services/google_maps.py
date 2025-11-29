@@ -39,7 +39,7 @@ class GoogleMapsClient:
         origin: str,
         destination: str,
         waypoints: list[str] | None = None,
-        mode: str = None,
+        mode: str | None = None,
     ) -> Route:
         """
         Get a route from origin to destination with detailed waypoints.
@@ -183,7 +183,7 @@ class GoogleMapsClient:
         try:
             result = self.client.reverse_geocode((lat, lng), language=settings.language)
             if result:
-                return result[0].get("formatted_address", "")
+                return str(result[0].get("formatted_address", ""))
         except Exception:
             pass
         return None
@@ -240,7 +240,7 @@ class GoogleMapsClient:
                     place_id=place_id, language=settings.language
                 )
 
-                return details.get("result", {})
+                return dict(details.get("result", {}))
         except Exception as e:
             logger.warning(f"Could not get place details for {place_name}: {e}")
 
@@ -312,7 +312,7 @@ class MockGoogleMapsClient:
         return {"name": place_name, "mock": True}
 
 
-def get_maps_client(use_mock: bool = False) -> GoogleMapsClient:
+def get_maps_client(use_mock: bool = False) -> GoogleMapsClient | MockGoogleMapsClient:
     """
     Get the appropriate maps client.
 

@@ -79,7 +79,7 @@ class ResultCollector:
         with self._lock:
             return len(self.decisions) >= len(self.route.points)
 
-    def wait_for_completion(self, timeout: float = None) -> bool:
+    def wait_for_completion(self, timeout: float | None = None) -> bool:
         """
         Wait for all results to be collected.
 
@@ -126,8 +126,8 @@ class ResultCollector:
         ordered_decisions = self.get_ordered_decisions()
 
         # Calculate statistics
-        content_type_counts = {}
-        total_score = 0
+        content_type_counts: dict[str, int] = {}
+        total_score: float = 0
 
         for decision in ordered_decisions:
             content_type = decision.selected_content.content_type.value
@@ -208,7 +208,7 @@ class StreamingCollector(ResultCollector):
         """
         super().__init__(route)
         self.on_decision = on_decision
-        self._decision_order = []
+        self._decision_order: list[str] = []
 
     def add_decision(self, decision: JudgeDecision):
         """Add decision and notify callback."""

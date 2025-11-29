@@ -14,7 +14,7 @@ Benefits of YAML configs:
 from pathlib import Path
 from typing import Any
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from logger_setup import logger
 
 
@@ -78,7 +78,7 @@ class AgentConfigLoader:
             self._cache[agent_name] = config
 
             logger.info(f"Loaded config for {agent_name} from {config_file}")
-            return config
+            return dict(config) if config else self._get_default_config(agent_name)
 
         except Exception as e:
             logger.error(f"Error loading config {config_file}: {e}")
@@ -106,26 +106,26 @@ class AgentConfigLoader:
     def get_prompt(self, agent_name: str) -> str:
         """Get the system prompt for an agent."""
         config = self.load(agent_name)
-        return config.get("prompt", "")
+        return str(config.get("prompt", ""))
 
-    def get_skills(self, agent_name: str) -> list:
+    def get_skills(self, agent_name: str) -> list[Any]:
         """Get the skills defined for an agent."""
         config = self.load(agent_name)
-        return config.get("skills", [])
+        return list(config.get("skills", []))
 
-    def get_tools(self, agent_name: str) -> list:
+    def get_tools(self, agent_name: str) -> list[Any]:
         """Get the tools configured for an agent."""
         config = self.load(agent_name)
-        return config.get("tools", [])
+        return list(config.get("tools", []))
 
-    def list_available_agents(self) -> list:
+    def list_available_agents(self) -> list[str]:
         """List all available agent configurations."""
         if not self.config_dir.exists():
             return []
 
         return [f.stem for f in self.config_dir.glob("*.yaml")]
 
-    def reload(self, agent_name: str = None):
+    def reload(self, agent_name: str | None = None) -> None:
         """
         Reload configuration(s) from disk.
 

@@ -29,8 +29,8 @@ class TravelSimulator:
     def __init__(
         self,
         route: Route,
-        interval_seconds: float = None,
-        on_point_arrival: Callable[[RoutePoint], None] = None,
+        interval_seconds: float | None = None,
+        on_point_arrival: Callable[[RoutePoint], None] | None = None,
     ):
         """
         Initialize the travel simulator.
@@ -151,7 +151,7 @@ class TravelSimulator:
     def _emit_current_point(self):
         """Emit the current point to the callback."""
         point = self.current_point
-        if point and self.on_point_arrival:
+        if point and self.on_point_arrival is not None:
             log_timer_tick(point.id, point.address)
             try:
                 self.on_point_arrival(point)
@@ -168,7 +168,7 @@ class InstantTravelSimulator:
     def __init__(
         self,
         route: Route,
-        on_point_arrival: Callable[[RoutePoint], None] = None,
+        on_point_arrival: Callable[[RoutePoint], None] | None = None,
         delay_between_points: float = 0.0,
     ):
         """
@@ -216,11 +216,11 @@ class ScheduledPointEmitter:
     """
 
     def __init__(
-        self, route: Route, on_point_arrival: Callable[[RoutePoint], None] = None
+        self, route: Route, on_point_arrival: Callable[[RoutePoint], None] | None = None
     ):
         self.route = route
         self.on_point_arrival = on_point_arrival
-        self._emitted_indices = set()
+        self._emitted_indices: set[int] = set()
         self._lock = threading.Lock()
 
     def emit_point(self, index: int) -> RoutePoint | None:
@@ -248,7 +248,7 @@ class ScheduledPointEmitter:
 
             log_timer_tick(point.id, point.address)
 
-            if self.on_point_arrival:
+            if self.on_point_arrival is not None:
                 try:
                     self.on_point_arrival(point)
                 except Exception as e:

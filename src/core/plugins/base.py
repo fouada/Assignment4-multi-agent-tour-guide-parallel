@@ -30,7 +30,7 @@ from typing import (
     runtime_checkable,
 )
 
-import yaml
+import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel, Field, field_validator
 
 logger = logging.getLogger(__name__)
@@ -349,9 +349,9 @@ class BasePlugin(ABC, Generic[TConfig]):
             try:
                 # Validate config if schema provided
                 if self.config_class:
-                    self._config = self.config_class(**config)
+                    self._config = self.config_class(**config)  # type: ignore[assignment]
                 else:
-                    self._config = config  # type: ignore
+                    self._config = config  # type: ignore[assignment]
 
                 # Call hook for subclass customization
                 self._on_configure(config)

@@ -18,6 +18,7 @@ Usage:
 import argparse
 import sys
 import time
+from typing import Any
 
 from src.models.route import RoutePoint
 from src.models.user_profile import (
@@ -53,8 +54,8 @@ def get_profile(profile_name: str, min_age: int = 5) -> UserProfile:
 
 
 def run_demo_pipeline(
-    mode: str = "queue", profile: UserProfile = None, verbose: bool = False
-):
+    mode: str = "queue", profile: UserProfile | None = None, verbose: bool = False
+) -> list[dict[str, Any]]:
     """
     Run the full pipeline in demo mode with mock data.
     """
@@ -69,7 +70,8 @@ def run_demo_pipeline(
     route = get_mock_route()
     print(f"\n📍 Route: {route.source} → {route.destination}")
     print(f"📊 Points: {route.point_count}")
-    print(f"📏 Distance: {route.total_distance / 1000:.1f} km")
+    distance_km = (route.total_distance or 0) / 1000
+    print(f"📏 Distance: {distance_km:.1f} km")
 
     if profile:
         print(
@@ -115,8 +117,8 @@ def run_demo_pipeline(
 
 
 def process_point_with_queue(
-    point: RoutePoint, profile: UserProfile = None, verbose: bool = False
-) -> dict:
+    point: RoutePoint, profile: UserProfile | None = None, verbose: bool = False
+) -> dict[str, Any]:
     """
     Process a single point using queue-based synchronization.
     This demonstrates the core architecture: agents → queue → judge
@@ -191,14 +193,15 @@ def process_point_with_queue(
 
 
 def process_point_sequential(
-    point: RoutePoint, profile: UserProfile = None, verbose: bool = False
-) -> dict:
+    point: RoutePoint, profile: UserProfile | None = None, verbose: bool = False
+) -> dict[str, Any]:
     """Sequential processing for debugging."""
     from src.agents.music_agent import MusicAgent
     from src.agents.text_agent import TextAgent
     from src.agents.video_agent import VideoAgent
+    from src.models.content import ContentResult
 
-    results = []
+    results: list[dict[str, Any]] = []
 
     for agent_class, name in [
         (VideoAgent, "Video"),
@@ -215,9 +218,11 @@ def process_point_sequential(
 
     if results:
         best = results[0]
+        best_type = str(best["type"]).upper()
+        best_result: ContentResult | None = best["result"]
         return {
-            "winner": best["type"].upper(),
-            "title": best["result"].title if best["result"] else "Mock Content",
+            "winner": best_type,
+            "title": best_result.title if best_result else "Mock Content",
             "point": point.location_name,
         }
 
@@ -225,8 +230,8 @@ def process_point_sequential(
 
 
 def process_point_parallel(
-    point: RoutePoint, profile: UserProfile = None, verbose: bool = False
-) -> dict:
+    point: RoutePoint, profile: UserProfile | None = None, verbose: bool = False
+) -> dict[str, Any]:
     """Parallel processing without queue visualization."""
     return process_point_with_queue(point, profile, verbose)
 
