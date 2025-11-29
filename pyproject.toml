@@ -65,6 +65,11 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.7.0",
     "pre-commit>=3.6.0",
+    # Security
+    "bandit[toml]>=1.7.0",
+    "pip-audit>=2.6.0",
+    # Documentation
+    "pydocstyle>=6.3.0",
 ]
 
 # API server
@@ -216,4 +221,26 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
+]
+
+# ============================================================================
+# Bandit (Security Linter)
+# ============================================================================
+[tool.bandit]
+exclude_dirs = ["tests", "docs"]
+skips = ["B101"]  # Skip assert warnings in tests
+
+[tool.bandit.assert_used]
+skips = ["*_test.py", "test_*.py"]
+
+# ============================================================================
+# Commitizen (Conventional Commits)
+# ============================================================================
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "2.0.0"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:version",
+    "src/__init__.py:__version__",
 ]

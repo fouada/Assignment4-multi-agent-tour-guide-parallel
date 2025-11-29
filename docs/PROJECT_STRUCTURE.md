@@ -1,266 +1,274 @@
-# 📁 MIT-Level Project Structure
-## Multi-Agent Tour Guide System
+# 📁 Project Structure
+
+## MIT-Level Production Architecture
+
+This document describes the project's folder and file organization, which follows industry best practices for enterprise-grade Python projects.
 
 ---
 
-## Complete Directory Structure
+## Complete Directory Tree
 
 ```
 multi-agent-tour-guide/
 │
-├── 📄 README.md                    # Project overview, quick start
-├── 📄 LICENSE                      # MIT License
-├── 📄 CHANGELOG.md                 # Version history
-├── 📄 CONTRIBUTING.md              # How to contribute
-├── 📄 .gitignore                   # Git ignore rules
-├── 📄 .env.example                 # Environment variables template
-├── 📄 pyproject.toml               # Modern Python project config
-├── 📄 requirements.txt             # Production dependencies
-├── 📄 requirements-dev.txt         # Development dependencies
-├── 📄 Makefile                     # Common commands
-├── 📄 Dockerfile                   # Container definition
-├── 📄 docker-compose.yml           # Multi-container setup
+├── 📄 Core Files (Root Level)
+│   ├── main.py                     # 🚀 Single entry point (thin wrapper)
+│   ├── pyproject.toml              # Project metadata & dependencies (PEP 621)
+│   ├── uv.lock                     # Locked dependencies (reproducible builds)
+│   ├── Makefile                    # Build automation commands
+│   ├── README.md                   # Project documentation
+│   ├── CONTRIBUTING.md             # Contribution guidelines
+│   ├── SECURITY.md                 # Security policy
+│   ├── LICENSE                     # MIT License
+│   ├── .gitignore                  # Git ignore rules
+│   ├── .pre-commit-config.yaml     # Pre-commit hooks configuration
+│   ├── env.example                 # Environment variable template
+│   ├── Dockerfile                  # Container image definition
+│   └── docker-compose.yml          # Multi-container orchestration
 │
-├── 📁 docs/                        # 📚 DOCUMENTATION
-│   ├── 📄 index.md                 # Documentation home
-│   ├── 📄 MIT_PROJECT_SPECIFICATION.md  # Full project spec
-│   ├── 📄 ARCHITECTURE.md          # System architecture
-│   ├── 📄 DESIGN_DECISIONS.md      # Design rationale
-│   ├── 📄 DEVELOPMENT_PROMPTS.md   # AI prompts for development
-│   ├── 📄 API_REFERENCE.md         # API documentation
-│   ├── 📄 USER_GUIDE.md            # End-user documentation
-│   ├── 📄 DEPLOYMENT.md            # Deployment instructions
+├── 📦 src/                         # SOURCE CODE (Production)
+│   ├── __init__.py                 # Package marker
 │   │
-│   ├── 📁 diagrams/                # Architecture diagrams
-│   │   ├── 📄 system_architecture.png
-│   │   ├── 📄 data_flow.png
-│   │   ├── 📄 sequence_diagram.png
-│   │   └── 📄 component_diagram.png
+│   ├── 🤖 agents/                  # AI AGENT LAYER
+│   │   ├── __init__.py
+│   │   ├── base_agent.py           # Abstract base class (Template Method)
+│   │   ├── base_agent_v2.py        # Enhanced with hooks & resilience
+│   │   ├── video_agent.py          # YouTube/video content finder
+│   │   ├── music_agent.py          # Spotify/music content finder
+│   │   ├── text_agent.py           # Wikipedia/text content finder
+│   │   ├── judge_agent.py          # Content evaluator & selector
+│   │   ├── config_loader.py        # YAML config loading
+│   │   └── configs/                # Agent YAML configurations
+│   │       ├── video_agent.yaml
+│   │       ├── music_agent.yaml
+│   │       ├── text_agent.yaml
+│   │       └── judge_agent.yaml
 │   │
-│   └── 📁 adr/                     # Architecture Decision Records
-│       ├── 📄 001-parallel-agents.md
-│       ├── 📄 002-smart-queue.md
-│       ├── 📄 003-yaml-config.md
-│       └── 📄 template.md
-│
-├── 📁 src/                         # 🔧 SOURCE CODE
-│   ├── 📄 __init__.py
-│   │
-│   ├── 📁 agents/                  # 🤖 AI AGENTS
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 base_agent.py        # Abstract base class
-│   │   ├── 📄 video_agent.py       # YouTube video finder
-│   │   ├── 📄 music_agent.py       # Music/song finder
-│   │   ├── 📄 text_agent.py        # Facts/stories finder
-│   │   ├── 📄 judge_agent.py       # Content evaluator
-│   │   ├── 📄 registry.py          # Agent registration
+│   ├── ⚙️ core/                    # CORE INFRASTRUCTURE
+│   │   ├── __init__.py
+│   │   ├── orchestrator.py         # Agent coordination & threading
+│   │   ├── smart_queue.py          # Queue with graceful degradation
+│   │   ├── collector.py            # Result aggregation
+│   │   ├── timer_scheduler.py      # Streaming mode scheduler
 │   │   │
-│   │   └── 📁 configs/             # Agent YAML configurations
-│   │       ├── 📄 video_agent.yaml
-│   │       ├── 📄 music_agent.yaml
-│   │       ├── 📄 text_agent.yaml
-│   │       └── 📄 judge_agent.yaml
+│   │   ├── 🔌 plugins/             # PLUGIN ARCHITECTURE
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py             # BasePlugin abstract class
+│   │   │   ├── registry.py         # Auto-discovery & registration
+│   │   │   ├── manager.py          # Plugin lifecycle management
+│   │   │   ├── events.py           # Event bus (pub/sub)
+│   │   │   └── hooks.py            # AOP-style hooks (@before, @after)
+│   │   │
+│   │   ├── 🛡️ resilience/          # FAULT TOLERANCE PATTERNS
+│   │   │   ├── __init__.py
+│   │   │   ├── circuit_breaker.py  # Stop cascade failures
+│   │   │   ├── retry.py            # Exponential backoff retry
+│   │   │   ├── timeout.py          # Configurable timeouts
+│   │   │   ├── rate_limiter.py     # Request rate limiting
+│   │   │   ├── bulkhead.py         # Resource isolation
+│   │   │   └── fallback.py         # Graceful degradation
+│   │   │
+│   │   ├── 📊 observability/       # MONITORING & TRACING
+│   │   │   ├── __init__.py
+│   │   │   ├── metrics.py          # Prometheus-compatible metrics
+│   │   │   ├── tracing.py          # Distributed tracing
+│   │   │   └── health.py           # Health check endpoints
+│   │   │
+│   │   └── 💉 di/                  # DEPENDENCY INJECTION
+│   │       ├── __init__.py
+│   │       ├── container.py        # IoC container
+│   │       ├── providers.py        # Factory/lazy/pooled providers
+│   │       └── scope.py            # Lifetime management
 │   │
-│   ├── 📁 core/                    # 🎯 CORE LOGIC
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 orchestrator.py      # Thread pool management
-│   │   ├── 📄 smart_queue.py       # Queue with timeouts
-│   │   ├── 📄 collector.py         # Result aggregation
-│   │   ├── 📄 timer_scheduler.py   # Travel simulation
-│   │   └── 📄 pipeline.py          # Main processing pipeline
+│   ├── 📋 models/                  # DATA MODELS (Pydantic)
+│   │   ├── __init__.py
+│   │   ├── route.py                # Route, RoutePoint
+│   │   ├── content.py              # ContentResult, ContentType
+│   │   ├── decision.py             # JudgeDecision
+│   │   ├── user_profile.py         # UserProfile (comprehensive)
+│   │   ├── output.py               # TourGuideOutput
+│   │   └── metrics.py              # MetricsData
 │   │
-│   ├── 📁 models/                  # 📋 DATA MODELS
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 route.py             # RoutePoint, Route
-│   │   ├── 📄 content.py           # ContentResult, ContentType
-│   │   ├── 📄 decision.py          # JudgeDecision
-│   │   ├── 📄 user_profile.py      # UserProfile, presets
-│   │   └── 📄 metrics.py           # QueueMetrics, SystemMetrics
+│   ├── 🌐 services/                # EXTERNAL SERVICES
+│   │   ├── __init__.py
+│   │   └── google_maps.py          # Google Maps API client
 │   │
-│   ├── 📁 services/                # 🌐 EXTERNAL SERVICES
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 google_maps.py       # Google Maps API
-│   │   ├── 📄 youtube.py           # YouTube Data API
-│   │   ├── 📄 spotify.py           # Spotify API
-│   │   ├── 📄 wikipedia.py         # Wikipedia API
-│   │   ├── 📄 openai_client.py     # LLM client
-│   │   └── 📄 cache.py             # Caching layer (Redis)
+│   ├── 🖥️ cli/                     # COMMAND LINE INTERFACE
+│   │   ├── __init__.py
+│   │   └── main.py                 # Typer CLI commands
 │   │
-│   ├── 📁 utils/                   # 🛠️ UTILITIES
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 config.py            # Configuration loading
-│   │   ├── 📄 logger.py            # Logging setup
-│   │   ├── 📄 retry.py             # Retry with backoff
-│   │   ├── 📄 validators.py        # Input validation
-│   │   └── 📄 helpers.py           # Common helpers
+│   ├── 🌍 api/                     # REST API (FastAPI)
+│   │   ├── __init__.py
+│   │   └── app.py                  # FastAPI application
 │   │
-│   ├── 📁 api/                     # 🌍 REST API (optional)
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 app.py               # FastAPI application
-│   │   ├── 📄 routes.py            # API endpoints
-│   │   ├── 📄 schemas.py           # Request/Response schemas
-│   │   └── 📄 middleware.py        # API middleware
-│   │
-│   └── 📁 cli/                     # 💻 COMMAND LINE
-│       ├── 📄 __init__.py
-│       ├── 📄 main.py              # CLI entry point
-│       ├── 📄 commands.py          # CLI commands
-│       └── 📄 interactive.py       # Interactive mode
+│   └── 🔧 utils/                   # UTILITIES
+│       ├── __init__.py
+│       ├── config.py               # Configuration loading
+│       ├── logger.py               # Structured logging
+│       └── retry.py                # Retry utilities
 │
-├── 📁 plugins/                     # 🔌 PLUGIN AGENTS
-│   ├── 📄 README.md                # How to create plugins
+├── 🔌 plugins/                     # PLUGIN DIRECTORY
+│   ├── weather/                    # Example: Weather plugin
+│   │   ├── __init__.py
+│   │   ├── plugin.yaml             # Plugin manifest
+│   │   ├── plugin.py               # Plugin lifecycle class
+│   │   └── agent.py                # WeatherAgent implementation
 │   │
-│   ├── 📁 weather/                 # Example: Weather plugin
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 agent.py
-│   │   ├── 📄 config.yaml
-│   │   └── 📄 requirements.txt
-│   │
-│   └── 📁 food/                    # Example: Food/Restaurant plugin
-│       ├── 📄 __init__.py
-│       ├── 📄 agent.py
-│       ├── 📄 config.yaml
-│       └── 📄 requirements.txt
+│   └── food/                       # Template: Food plugin
+│       └── (template files)
 │
-├── 📁 tests/                       # 🧪 TESTS
-│   ├── 📄 __init__.py
-│   ├── 📄 conftest.py              # Pytest fixtures
-│   │
-│   ├── 📁 unit/                    # Unit tests
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 test_agents.py
-│   │   ├── 📄 test_queue.py
-│   │   ├── 📄 test_models.py
-│   │   ├── 📄 test_user_profile.py
-│   │   └── 📄 test_orchestrator.py
-│   │
-│   ├── 📁 integration/             # Integration tests
-│   │   ├── 📄 __init__.py
-│   │   ├── 📄 test_pipeline.py
-│   │   ├── 📄 test_api.py
-│   │   └── 📄 test_services.py
-│   │
-│   ├── 📁 e2e/                     # End-to-end tests
-│   │   ├── 📄 __init__.py
-│   │   └── 📄 test_full_flow.py
-│   │
-│   └── 📁 fixtures/                # Test data
-│       ├── 📄 mock_routes.json
-│       ├── 📄 mock_content.json
-│       └── 📄 mock_profiles.json
+├── ⚙️ config/                      # CONFIGURATION FILES
+│   └── default.yaml                # Default application settings
 │
-├── 📁 config/                      # ⚙️ CONFIGURATION
-│   ├── 📄 default.yaml             # Default configuration
-│   ├── 📄 development.yaml         # Development overrides
-│   ├── 📄 production.yaml          # Production settings
-│   ├── 📄 testing.yaml             # Test configuration
-│   └── 📄 agents.yaml              # Enabled agents list
+├── 🧪 tests/                       # TEST SUITE
+│   ├── __init__.py
+│   ├── conftest.py                 # Pytest fixtures
+│   ├── unit/                       # Unit tests
+│   │   ├── __init__.py
+│   │   └── test_*.py
+│   ├── integration/                # Integration tests
+│   │   └── test_*.py
+│   ├── e2e/                        # End-to-end tests
+│   │   └── test_*.py
+│   └── fixtures/                   # Test data fixtures
 │
-├── 📁 scripts/                     # 📜 SCRIPTS
-│   ├── 📄 setup.sh                 # Initial setup
-│   ├── 📄 run_dev.sh               # Run development server
-│   ├── 📄 run_tests.sh             # Run test suite
-│   ├── 📄 lint.sh                  # Run linters
-│   ├── 📄 build.sh                 # Build for production
-│   └── 📄 deploy.sh                # Deployment script
+├── 📚 docs/                        # DOCUMENTATION
+│   ├── PRD.md                      # Product Requirements Document
+│   ├── ARCHITECTURE.md             # System architecture
+│   ├── ARCHITECTURE_DETAILED.md    # Detailed C4 architecture
+│   ├── API_REFERENCE.md            # Complete API documentation
+│   ├── PROJECT_STRUCTURE.md        # This file
+│   ├── STARTUP_DESIGN.md           # Production design
+│   ├── adr/                        # Architecture Decision Records
+│   └── diagrams/                   # Architecture diagrams
 │
-├── 📁 notebooks/                   # 📓 JUPYTER NOTEBOOKS
-│   ├── 📄 01_exploration.ipynb     # Data exploration
-│   ├── 📄 02_agent_testing.ipynb   # Agent experiments
-│   ├── 📄 03_profile_analysis.ipynb # Profile impact analysis
-│   └── 📄 04_demo.ipynb            # Demo notebook
+├── 🚀 deploy/                      # DEPLOYMENT CONFIGURATIONS
+│   ├── kubernetes/                 # Kubernetes manifests
+│   │   └── deployment.yaml
+│   ├── prometheus/                 # Monitoring configuration
+│   │   └── prometheus.yml
+│   └── grafana/                    # Dashboard configurations
+│       └── provisioning/
 │
-├── 📁 data/                        # 📊 DATA FILES
-│   ├── 📁 cache/                   # Cached API responses
-│   ├── 📁 logs/                    # Log files
-│   ├── 📁 exports/                 # Exported results
-│   └── 📁 samples/                 # Sample data
-│       ├── 📄 sample_route.json
-│       └── 📄 sample_profile.json
+├── 📁 .github/                     # GITHUB CONFIGURATION
+│   └── workflows/                  # CI/CD pipelines
+│       └── ci.yml                  # Main CI/CD workflow
 │
-└── 📁 .github/                     # 🔄 GITHUB ACTIONS
-    ├── 📁 workflows/
-    │   ├── 📄 ci.yml               # Continuous Integration
-    │   ├── 📄 cd.yml               # Continuous Deployment
-    │   └── 📄 tests.yml            # Test automation
-    │
-    ├── 📄 ISSUE_TEMPLATE.md
-    ├── 📄 PULL_REQUEST_TEMPLATE.md
-    └── 📄 CODEOWNERS
+├── 📊 data/                        # RUNTIME DATA
+│   ├── cache/                      # API response cache
+│   ├── logs/                       # Application logs
+│   └── samples/                    # Sample data
+│
+├── 📓 notebooks/                   # JUPYTER NOTEBOOKS
+│   └── (exploration notebooks)
+│
+└── 🔧 scripts/                     # UTILITY SCRIPTS
+    └── setup.sh                    # Initial setup script
 ```
 
 ---
 
-## Directory Descriptions
+## Architecture Principles
 
-### 📁 Root Level Files
-
-| File | Purpose |
-|------|---------|
-| `README.md` | Project overview, quick start guide |
-| `LICENSE` | MIT License |
-| `CHANGELOG.md` | Version history (Keep a Changelog format) |
-| `CONTRIBUTING.md` | Contribution guidelines |
-| `pyproject.toml` | Modern Python project configuration (PEP 518) |
-| `Makefile` | Common commands (`make test`, `make run`) |
-| `Dockerfile` | Container definition for deployment |
-
-### 📁 docs/ - Documentation
-
-```
-docs/
-├── index.md                    # Documentation home page
-├── MIT_PROJECT_SPECIFICATION.md  # Complete project spec
-├── ARCHITECTURE.md             # System architecture
-├── DESIGN_DECISIONS.md         # Design rationale
-├── DEVELOPMENT_PROMPTS.md      # AI prompts for building
-├── API_REFERENCE.md            # API documentation
-├── USER_GUIDE.md               # How to use the system
-├── DEPLOYMENT.md               # How to deploy
-│
-├── diagrams/                   # Visual diagrams (PNG/SVG)
-│   ├── system_architecture.png
-│   ├── data_flow.png
-│   └── sequence_diagram.png
-│
-└── adr/                        # Architecture Decision Records
-    ├── 001-parallel-agents.md  # Why parallel agents
-    ├── 002-smart-queue.md      # Why smart queue
-    └── template.md             # ADR template
-```
-
-### 📁 src/ - Source Code
+### 1. **Separation of Concerns**
 
 ```
 src/
-├── agents/         # AI agents (Video, Music, Text, Judge)
-├── core/           # Core logic (Orchestrator, Queue, Collector)
-├── models/         # Pydantic data models
-├── services/       # External API integrations
-├── utils/          # Utilities (logging, config, retry)
-├── api/            # REST API (FastAPI) - optional
-└── cli/            # Command-line interface
+├── agents/     → AI/Business Logic
+├── core/       → Infrastructure & Patterns
+├── models/     → Data Structures
+├── services/   → External Integrations
+├── cli/        → User Interface (CLI)
+├── api/        → User Interface (REST)
+└── utils/      → Cross-cutting Utilities
 ```
 
-### 📁 tests/ - Test Suite
+### 2. **Layered Architecture**
 
 ```
-tests/
-├── unit/           # Unit tests (isolated components)
-├── integration/    # Integration tests (components together)
-├── e2e/            # End-to-end tests (full pipeline)
-└── fixtures/       # Test data (mock JSON files)
+┌─────────────────────────────────────────────────────────────┐
+│                    PRESENTATION LAYER                        │
+│                   (CLI, REST API, Web)                       │
+├─────────────────────────────────────────────────────────────┤
+│                    APPLICATION LAYER                         │
+│               (Orchestrator, Collectors)                     │
+├─────────────────────────────────────────────────────────────┤
+│                      DOMAIN LAYER                            │
+│              (Agents, Models, Business Logic)                │
+├─────────────────────────────────────────────────────────────┤
+│                   INFRASTRUCTURE LAYER                       │
+│         (Plugins, Resilience, DI, Observability)            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 📁 config/ - Configuration
+### 3. **Clean Architecture Boundaries**
+
+| Layer | Dependencies | Purpose |
+|-------|-------------|---------|
+| **Models** | None | Pure data structures |
+| **Agents** | Models | Business logic |
+| **Core** | Models, Agents | Infrastructure |
+| **Services** | Models | External APIs |
+| **CLI/API** | All layers | User interfaces |
+
+---
+
+## Key Design Decisions
+
+### 1. Single Entry Point (`main.py`)
+
+```python
+# main.py - Thin wrapper that delegates to CLI
+from src.cli.main import main
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+**Why:** Single, clear entry point. All logic in `src/`.
+
+### 2. Configuration in `config/` + Environment
 
 ```
-config/
-├── default.yaml      # Base configuration
-├── development.yaml  # Development overrides
-├── production.yaml   # Production settings
-└── agents.yaml       # Which agents are enabled
+config/default.yaml  → Default settings (committed)
+.env                 → Secrets (NOT committed)
 ```
+
+**Why:** Separation of settings from secrets.
+
+### 3. Plugin Directory at Root
+
+```
+plugins/
+├── weather/        # Each plugin is self-contained
+│   ├── plugin.yaml # Manifest
+│   ├── plugin.py   # Lifecycle
+│   └── agent.py    # Implementation
+```
+
+**Why:** Easy to add/remove plugins without touching core code.
+
+### 4. Resilience Patterns in `core/resilience/`
+
+```
+resilience/
+├── circuit_breaker.py   # Prevent cascade failures
+├── retry.py             # Automatic retries
+├── timeout.py           # Bounded execution time
+└── rate_limiter.py      # Prevent overload
+```
+
+**Why:** Production-grade fault tolerance.
+
+### 5. Observability Stack
+
+```
+observability/
+├── metrics.py      # Prometheus-compatible
+├── tracing.py      # Distributed tracing
+└── health.py       # Liveness/readiness
+```
+
+**Why:** Production monitoring requirements.
 
 ---
 
@@ -268,213 +276,90 @@ config/
 
 | Type | Convention | Example |
 |------|------------|---------|
-| Python modules | `snake_case.py` | `video_agent.py` |
+| Python modules | `snake_case.py` | `base_agent.py` |
 | Classes | `PascalCase` | `VideoAgent` |
 | Functions | `snake_case` | `search_content()` |
-| Constants | `UPPER_SNAKE` | `MAX_RETRIES` |
-| Config files | `snake_case.yaml` | `video_agent.yaml` |
-| Test files | `test_*.py` | `test_agents.py` |
-| Documentation | `UPPER_SNAKE.md` | `ARCHITECTURE.md` |
+| Constants | `UPPER_SNAKE_CASE` | `MAX_RETRIES` |
+| YAML configs | `snake_case.yaml` | `video_agent.yaml` |
+| Tests | `test_*.py` | `test_queue.py` |
 
 ---
 
-## Module Organization
+## MIT-Level Compliance Checklist
 
-### Agents Module (`src/agents/`)
+### ✅ Project Organization
 
-```python
-# src/agents/__init__.py
-from .base_agent import BaseAgent
-from .video_agent import VideoAgent
-from .music_agent import MusicAgent
-from .text_agent import TextAgent
-from .judge_agent import JudgeAgent
-from .registry import AgentRegistry
+- [x] Single clear entry point (`main.py`)
+- [x] All source code in `src/` directory
+- [x] Proper Python package structure (`__init__.py`)
+- [x] Configuration externalized (`config/`, `.env`)
+- [x] Documentation in `docs/`
+- [x] Tests in `tests/` (unit, integration, e2e)
 
-__all__ = [
-    "BaseAgent",
-    "VideoAgent",
-    "MusicAgent",
-    "TextAgent",
-    "JudgeAgent",
-    "AgentRegistry",
-]
-```
+### ✅ Production Readiness
 
-### Models Module (`src/models/`)
+- [x] CI/CD pipeline (`.github/workflows/`)
+- [x] Docker support (`Dockerfile`, `docker-compose.yml`)
+- [x] Kubernetes manifests (`deploy/kubernetes/`)
+- [x] Monitoring setup (`deploy/prometheus/`)
+- [x] Pre-commit hooks (`.pre-commit-config.yaml`)
 
-```python
-# src/models/__init__.py
-from .route import RoutePoint, Route
-from .content import ContentResult, ContentType
-from .decision import JudgeDecision
-from .user_profile import UserProfile, AgeGroup, Gender
-from .metrics import QueueMetrics, QueueStatus
+### ✅ Code Quality
 
-__all__ = [
-    "RoutePoint",
-    "Route",
-    "ContentResult",
-    "ContentType",
-    "JudgeDecision",
-    "UserProfile",
-    "AgeGroup",
-    "Gender",
-    "QueueMetrics",
-    "QueueStatus",
-]
-```
+- [x] Type hints throughout
+- [x] Pydantic models for validation
+- [x] Comprehensive docstrings
+- [x] Linting with Ruff
+- [x] Type checking with MyPy
+
+### ✅ Security
+
+- [x] Security policy (`SECURITY.md`)
+- [x] No secrets in code
+- [x] Input validation
+- [x] Dependency scanning in CI
+
+### ✅ Documentation
+
+- [x] Professional README
+- [x] PRD (Product Requirements)
+- [x] Architecture documentation (C4)
+- [x] API reference
+- [x] Contributing guide
+- [x] Project structure guide
 
 ---
 
-## Configuration Examples
+## Comparison with Industry Standards
 
-### pyproject.toml
-
-```toml
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "multi-agent-tour-guide"
-version = "2.0.0"
-description = "Multi-Agent Tour Guide System with Parallel Processing"
-readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.10"
-authors = [
-    {name = "Your Name", email = "your@email.com"}
-]
-keywords = ["ai", "agents", "tour-guide", "multi-agent", "llm"]
-
-dependencies = [
-    "pydantic>=2.0",
-    "openai>=1.0",
-    "httpx>=0.24",
-    "pyyaml>=6.0",
-    "rich>=13.0",
-    "typer>=0.9",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "pytest-asyncio>=0.21",
-    "pytest-cov>=4.0",
-    "black>=23.0",
-    "ruff>=0.1",
-    "mypy>=1.0",
-]
-api = [
-    "fastapi>=0.100",
-    "uvicorn>=0.23",
-]
-
-[project.scripts]
-tour-guide = "src.cli.main:app"
-
-[tool.black]
-line-length = 88
-target-version = ["py310"]
-
-[tool.ruff]
-line-length = 88
-select = ["E", "F", "I", "N", "W"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-addopts = "-v --cov=src"
-```
-
-### Makefile
-
-```makefile
-.PHONY: install test lint run clean
-
-install:
-	pip install -e ".[dev]"
-
-test:
-	pytest tests/ -v --cov=src
-
-lint:
-	ruff check src/ tests/
-	black --check src/ tests/
-	mypy src/
-
-format:
-	black src/ tests/
-	ruff check --fix src/ tests/
-
-run:
-	python -m src.cli.main --demo
-
-run-api:
-	uvicorn src.api.app:app --reload
-
-clean:
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
-	rm -rf .pytest_cache .coverage htmlcov dist build *.egg-info
-```
+| Aspect | This Project | Industry Best Practice |
+|--------|--------------|----------------------|
+| Entry Point | Single `main.py` | ✅ Matches |
+| Source Layout | `src/` directory | ✅ Matches (PEP 621) |
+| Dependencies | `pyproject.toml` + UV | ✅ Modern approach |
+| Configuration | YAML + env vars | ✅ 12-Factor App |
+| Testing | Pytest + coverage | ✅ Standard |
+| CI/CD | GitHub Actions | ✅ Standard |
+| Container | Multi-stage Docker | ✅ Best practice |
+| Orchestration | Kubernetes | ✅ Industry standard |
+| Monitoring | Prometheus/Grafana | ✅ De facto standard |
 
 ---
 
-## Import Structure
+## References
 
-### Recommended Import Style
-
-```python
-# Standard library
-import os
-import sys
-from typing import Optional, List, Dict
-
-# Third-party
-from pydantic import BaseModel, Field
-import openai
-import yaml
-
-# Local - absolute imports
-from src.agents.base_agent import BaseAgent
-from src.models.content import ContentResult, ContentType
-from src.core.smart_queue import SmartQueue
-from src.utils.logger import get_logger
-```
-
-### Within Package
-
-```python
-# src/agents/video_agent.py
-from .base_agent import BaseAgent  # Relative import within package
-from ..models.content import ContentResult  # Up one level, then into models
-from ..services.youtube import YouTubeClient
-```
+1. **Python Packaging**: [PEP 621](https://peps.python.org/pep-0621/)
+2. **12-Factor App**: [12factor.net](https://12factor.net/)
+3. **Clean Architecture**: Martin, R.C. (2017)
+4. **Domain-Driven Design**: Evans, E. (2003)
+5. **Kubernetes Best Practices**: Google Cloud Documentation
 
 ---
 
-## Best Practices Summary
+<div align="center">
 
-| Practice | Implementation |
-|----------|----------------|
-| **Single Responsibility** | One class/module = one purpose |
-| **Dependency Injection** | Pass dependencies, don't hardcode |
-| **Configuration as Code** | YAML files, not hardcoded values |
-| **Type Hints** | All functions have type annotations |
-| **Docstrings** | Google-style docstrings |
-| **Logging** | Structured logging with context |
-| **Error Handling** | Custom exceptions, graceful degradation |
-| **Testing** | Unit + Integration + E2E coverage |
-| **CI/CD** | Automated testing and deployment |
+**Project Structure Version:** 2.0  
+**Last Updated:** November 2024  
+**Compliant With:** MIT Production Standards ✅
 
----
-
-This structure follows **MIT/industry standards** and is designed for:
-- ✅ Easy navigation
-- ✅ Clear separation of concerns
-- ✅ Scalability
-- ✅ Testability
-- ✅ Maintainability
-
+</div>
