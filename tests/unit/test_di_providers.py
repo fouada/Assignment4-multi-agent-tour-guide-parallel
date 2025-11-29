@@ -15,15 +15,13 @@ MIT Level Testing - 85%+ Coverage Target
 import threading
 from unittest.mock import Mock
 
-import pytest
-
 from src.core.di.providers import (
-    SingletonProvider,
-    TransientProvider,
     FactoryProvider,
-    ValueProvider,
     LazyProvider,
     PooledProvider,
+    SingletonProvider,
+    TransientProvider,
+    ValueProvider,
 )
 
 

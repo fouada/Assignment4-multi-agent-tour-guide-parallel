@@ -29,7 +29,7 @@ from src.services.google_maps import (  # noqa: E402
 
 class TestMockGoogleMapsClient:
     """Tests for MockGoogleMapsClient class."""
-    
+
     def test_initialization(self):
         """Test MockGoogleMapsClient initialization."""
         MockGoogleMapsClient()
@@ -39,24 +39,24 @@ class TestMockGoogleMapsClient:
         """Test initialization ignores API key."""
         MockGoogleMapsClient(api_key="test_key")
         # Should not raise
-    
+
     def test_get_route_returns_route(self):
         """Test get_route returns a Route object."""
         client = MockGoogleMapsClient()
 
         route = client.get_route("Origin", "Destination")
-        
+
         assert isinstance(route, Route)
         assert route.source == "Origin"
         assert route.destination == "Destination"
         assert len(route.points) == 4
-    
+
     def test_get_route_points_valid(self):
         """Test mock route has valid points."""
         client = MockGoogleMapsClient()
 
         route = client.get_route("A", "B")
-        
+
         for point in route.points:
             assert isinstance(point, RoutePoint)
             assert point.latitude != 0
@@ -70,7 +70,7 @@ class TestMockGoogleMapsClient:
         route = client.get_route("A", "B", mode="walking", waypoints=["C"])
 
         assert isinstance(route, Route)
-    
+
     def test_get_place_details(self):
         """Test get_place_details returns dict."""
         client = MockGoogleMapsClient()
@@ -346,16 +346,16 @@ class TestGetMapsClient:
 
 class TestGetMockRoute:
     """Tests for get_mock_route helper function."""
-    
+
     def test_get_mock_route_default(self):
         """Test get_mock_route with default params."""
         route = get_mock_route()
-        
+
         assert isinstance(route, Route)
         assert route.source == "Tel Aviv, Israel"
         assert route.destination == "Jerusalem, Israel"
         assert len(route.points) > 0
-    
+
     def test_get_mock_route_custom(self):
         """Test get_mock_route with custom params."""
         route = get_mock_route(origin="Custom Origin", destination="Custom Dest")
@@ -366,7 +366,7 @@ class TestGetMockRoute:
     def test_mock_route_has_required_fields(self):
         """Test mock route points have all required fields."""
         route = get_mock_route()
-        
+
         for point in route.points:
             assert point.id is not None
             assert point.index >= 0

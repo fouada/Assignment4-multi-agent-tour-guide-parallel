@@ -11,15 +11,16 @@ Tests cover:
 MIT Level Testing - 85%+ Coverage Target
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 from src.utils.retry import (
     RetryConfig,
+    RetryExecutor,
     RetryExhaustedError,
     calculate_backoff_delay,
     retry_with_backoff,
-    RetryExecutor,
 )
 
 

@@ -13,8 +13,7 @@ Tests cover:
 MIT Level Testing - 85%+ Coverage Target
 """
 
-from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -44,7 +43,7 @@ class TestBaseAgentInitialization:
             mock_settings.anthropic_api_key = "test-anthropic-key"
             mock_settings.openai_api_key = None
 
-            with patch("src.agents.base_agent.anthropic.Anthropic") as mock_anthropic:
+            with patch("src.agents.base_agent.anthropic.Anthropic"):
                 from src.agents.video_agent import VideoAgent
                 agent = VideoAgent()
 
@@ -56,7 +55,7 @@ class TestBaseAgentInitialization:
             mock_settings.anthropic_api_key = None
             mock_settings.openai_api_key = "test-openai-key"
 
-            with patch("src.agents.base_agent.OpenAI") as mock_openai:
+            with patch("src.agents.base_agent.OpenAI"):
                 from src.agents.video_agent import VideoAgent
                 agent = VideoAgent()
 

@@ -13,15 +13,16 @@ Tests cover:
 MIT Level Testing - 85%+ Coverage Target
 """
 
-import pytest
 from unittest.mock import Mock
 
+import pytest
+
 from src.core.di.container import (
+    CircularDependencyError,
     Container,
+    DependencyNotFoundError,
     Lifetime,
     Registration,
-    CircularDependencyError,
-    DependencyNotFoundError,
 )
 
 
@@ -50,8 +51,8 @@ class TestRegistration:
             implementation=str,
             lifetime=Lifetime.TRANSIENT,
         )
-        assert reg.service_type == str
-        assert reg.implementation == str
+        assert reg.service_type is str
+        assert reg.implementation is str
         assert reg.lifetime == Lifetime.TRANSIENT
 
     def test_registration_with_factory(self):

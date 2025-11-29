@@ -10,14 +10,15 @@ Tests cover:
 MIT Level Testing - 85%+ Coverage Target
 """
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 
 from src.core.resilience.fallback import (
     Fallback,
     FallbackStats,
-    fallback,
     cache_fallback,
+    fallback,
 )
 
 

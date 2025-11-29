@@ -15,8 +15,6 @@ MIT Level Testing - 85%+ Coverage Target
 from datetime import datetime
 from unittest.mock import Mock
 
-import pytest
-
 from src.core.observability.health import (
     AggregateHealth,
     HealthCheck,

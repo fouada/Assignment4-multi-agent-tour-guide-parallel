@@ -11,8 +11,6 @@ MIT Level Testing - 85%+ Coverage Target
 
 from unittest.mock import Mock
 
-import pytest
-
 from src.core.di.scope import (
     Scope,
     ScopeContext,
@@ -110,7 +108,7 @@ class TestScope:
 
     def test_nested_scopes(self):
         """Test nested scopes have parent."""
-        with Scope("parent") as parent_scope:
+        with Scope("parent"):
             with Scope("child") as child_scope:
                 # Child should have parent
                 assert child_scope._context.parent is not None
@@ -133,7 +131,7 @@ class TestScope:
 
     def test_active_scopes_registry(self):
         """Test scope is tracked in active scopes."""
-        with Scope("test_registry") as scope:
+        with Scope("test_registry"):
             # Scope should be tracked while active
             assert "test_registry" in Scope._active_scopes
 
