@@ -2,8 +2,8 @@
 Music Agent - Specializes in finding relevant songs for locations.
 Uses YouTube Music search (or Spotify) and LLM for smart recommendations.
 """
-from typing import Optional, List, Dict, Any
 import re
+from typing import Any
 
 from src.agents.base_agent import BaseAgent
 from src.models.content import ContentResult, ContentType
@@ -19,22 +19,22 @@ class MusicAgent(BaseAgent):
     Agent specialized in finding songs relevant to locations.
     Can use YouTube, Spotify, or web search for music discovery.
     """
-    
+
     def __init__(self):
         super().__init__("music")
         self._init_music_clients()
-    
+
     def _init_music_clients(self):
         """Initialize music API clients."""
         self.spotify_client = None
         self.youtube_music_available = False
-        
+
         # Try Spotify
         if settings.spotify_client_id and settings.spotify_client_secret:
             try:
                 import spotipy
                 from spotipy.oauth2 import SpotifyClientCredentials
-                
+
                 auth_manager = SpotifyClientCredentials(
                     client_id=settings.spotify_client_id,
                     client_secret=settings.spotify_client_secret
@@ -43,7 +43,7 @@ class MusicAgent(BaseAgent):
                 logger.info("Spotify client initialized")
             except Exception as e:
                 logger.warning(f"Could not initialize Spotify client: {e}")
-        
+
         # Try YouTube search for music
         try:
             from youtubesearchpython import VideosSearch
@@ -51,37 +51,37 @@ class MusicAgent(BaseAgent):
             logger.info("YouTube music search available")
         except ImportError:
             logger.warning("youtube-search-python not available for music search")
-    
+
     def get_content_type(self) -> ContentType:
         return ContentType.MUSIC
-    
-    def _search_content(self, point: RoutePoint) -> Optional[ContentResult]:
+
+    def _search_content(self, point: RoutePoint) -> ContentResult | None:
         """Search for relevant songs."""
-        
+
         # Generate search queries using LLM
         search_queries = self._generate_search_queries(point)
-        
+
         # Try different sources
         songs = []
-        
+
         # Try Spotify first
         if self.spotify_client:
             for query in search_queries[:2]:
                 results = self._search_spotify(query)
                 songs.extend(results)
-        
+
         # Try YouTube Music
         if not songs and self.youtube_music_available:
             for query in search_queries[:2]:
                 results = self._search_youtube_music(query)
                 songs.extend(results)
-        
+
         if not songs:
             return self._get_mock_result(point)
-        
+
         # Rank and select best song
         best_song = self._select_best_song(songs, point)
-        
+
         if best_song:
             return ContentResult(
                 point_id=point.id,
@@ -98,14 +98,14 @@ class MusicAgent(BaseAgent):
                     'preview_url': best_song.get('preview_url')
                 }
             )
-        
+
         return self._get_mock_result(point)
-    
-    def _generate_search_queries(self, point: RoutePoint) -> List[str]:
+
+    def _generate_search_queries(self, point: RoutePoint) -> list[str]:
         """Use LLM to generate music search queries."""
-        
+
         location = point.location_name or point.address
-        
+
         prompt = f"""Generate 3 search queries to find songs related to this location in Israel.
 Songs could be:
 - About the location directly
@@ -126,13 +126,13 @@ Include both Hebrew and English search terms if relevant."""
             return queries[:3] if queries else [f"{location} song", f"{location} music"]
         except Exception:
             return [f"{location} song", f"{location} Israeli song", f"{location} music"]
-    
-    def _search_spotify(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
+
+    def _search_spotify(self, query: str, limit: int = 5) -> list[dict[str, Any]]:
         """Search Spotify for songs."""
-        
+
         if not self.spotify_client:
             return []
-        
+
         try:
             results = self.spotify_client.search(
                 q=query,
@@ -140,7 +140,7 @@ Include both Hebrew and English search terms if relevant."""
                 limit=limit,
                 market='IL'
             )
-            
+
             songs = []
             for track in results.get('tracks', {}).get('items', []):
                 artists = ', '.join([a['name'] for a in track.get('artists', [])])
@@ -153,28 +153,28 @@ Include both Hebrew and English search terms if relevant."""
                     'duration': track.get('duration_ms', 0) // 1000,
                     'source': 'Spotify'
                 })
-            
+
             return songs
-            
+
         except Exception as e:
             logger.warning(f"Spotify search failed: {e}")
             return []
-    
-    def _search_youtube_music(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
+
+    def _search_youtube_music(self, query: str, limit: int = 5) -> list[dict[str, Any]]:
         """Search YouTube for music videos."""
-        
+
         if not self.youtube_music_available:
             return []
-        
+
         try:
             from youtubesearchpython import VideosSearch
-            
+
             # Add "music" or "song" to query for better results
             music_query = f"{query} official music video OR {query} song"
-            
+
             search = VideosSearch(music_query, limit=limit)
             results = search.result()
-            
+
             songs = []
             for video in results.get('result', []):
                 songs.append({
@@ -185,27 +185,27 @@ Include both Hebrew and English search terms if relevant."""
                     'thumbnail': video.get('thumbnails', [{}])[0].get('url') if video.get('thumbnails') else None,
                     'source': 'YouTube Music'
                 })
-            
+
             return songs
-            
+
         except Exception as e:
             logger.warning(f"YouTube music search failed: {e}")
             return []
-    
-    def _select_best_song(self, songs: List[Dict], point: RoutePoint) -> Optional[Dict]:
+
+    def _select_best_song(self, songs: list[dict], point: RoutePoint) -> dict | None:
         """Use LLM to select the most relevant song."""
-        
+
         if not songs:
             return None
-        
+
         location = point.location_name or point.address
-        
+
         # Create song list for LLM
         song_list = "\n".join([
             f"{i+1}. \"{s['title']}\" by {s.get('artist', 'Unknown')}"
             for i, s in enumerate(songs[:5])
         ])
-        
+
         prompt = f"""Select the BEST song for a traveler passing through this location.
 
 Location: {location}
@@ -231,12 +231,12 @@ REASON: [one sentence]"""
 
         try:
             response = self._call_llm(prompt)
-            
+
             # Parse response
             song_match = re.search(r'SONG:\s*(\d+)', response)
             score_match = re.search(r'SCORE:\s*([\d.]+)', response)
             reason_match = re.search(r'REASON:\s*(.+)', response)
-            
+
             if song_match:
                 idx = int(song_match.group(1)) - 1
                 if 0 <= idx < len(songs):
@@ -246,18 +246,18 @@ REASON: [one sentence]"""
                     return selected
         except Exception as e:
             logger.warning(f"Song selection failed: {e}")
-        
+
         # Fallback: return first song
         if songs:
             songs[0]['relevance_score'] = 5.0
             return songs[0]
-        
+
         return None
-    
+
     def _get_mock_result(self, point: RoutePoint) -> ContentResult:
         """Return mock result for testing."""
         location = point.location_name or point.address
-        
+
         # Some realistic mock songs for Israeli locations
         mock_songs = {
             "Ammunition Hill": {
@@ -281,21 +281,21 @@ REASON: [one sentence]"""
                 "url": "https://www.youtube.com/watch?v=latrun"
             }
         }
-        
+
         # Find matching mock or create generic one
         mock = None
         for key, song in mock_songs.items():
             if key in location or key in point.address:
                 mock = song
                 break
-        
+
         if not mock:
             mock = {
                 "title": f"Song About {location}",
                 "artist": "Israeli Artist",
                 "url": f"https://www.youtube.com/watch?v=mock_{point.id}"
             }
-        
+
         return ContentResult(
             point_id=point.id,
             content_type=ContentType.MUSIC,

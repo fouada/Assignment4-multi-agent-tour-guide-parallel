@@ -27,27 +27,16 @@ Example:
         return requests.get("https://api.example.com")
 """
 
-from src.core.resilience.circuit_breaker import (
-    CircuitBreaker,
-    CircuitState,
-    CircuitBreakerOpen,
-    circuit_breaker,
-)
-from src.core.resilience.retry import (
-    RetryPolicy,
-    RetryError,
-    retry,
-    with_retry,
-)
-from src.core.resilience.timeout import (
-    TimeoutError,
-    timeout,
-    with_timeout,
-)
 from src.core.resilience.bulkhead import (
     Bulkhead,
     BulkheadFull,
     bulkhead,
+)
+from src.core.resilience.circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerOpen,
+    CircuitState,
+    circuit_breaker,
 )
 from src.core.resilience.fallback import (
     Fallback,
@@ -56,8 +45,19 @@ from src.core.resilience.fallback import (
 from src.core.resilience.rate_limiter import (
     RateLimiter,
     RateLimitExceeded,
-    rate_limit,
     TokenBucket,
+    rate_limit,
+)
+from src.core.resilience.retry import (
+    RetryError,
+    RetryPolicy,
+    retry,
+    with_retry,
+)
+from src.core.resilience.timeout import (
+    TimeoutError,
+    timeout,
+    with_timeout,
 )
 
 __all__ = [
@@ -88,4 +88,3 @@ __all__ = [
     "rate_limit",
     "TokenBucket",
 ]
-

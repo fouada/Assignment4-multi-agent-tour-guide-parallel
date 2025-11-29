@@ -10,13 +10,12 @@ Production-ready FastAPI application with:
 - Request tracing
 """
 
-from contextlib import asynccontextmanager
-from datetime import datetime
-from typing import Optional
 import logging
 import uuid
+from contextlib import asynccontextmanager
+from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, Request, Depends, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -25,31 +24,29 @@ from pydantic import BaseModel, Field
 # Models
 # =============================================================================
 
+
 class TourRequest(BaseModel):
     """Request to create a new tour."""
+
     source: str = Field(..., min_length=1, description="Starting location")
     destination: str = Field(..., min_length=1, description="Ending location")
-    profile: Optional[dict] = Field(default=None, description="User profile settings")
-    options: Optional[dict] = Field(default=None, description="Processing options")
-    
+    profile: dict | None = Field(default=None, description="User profile settings")
+    options: dict | None = Field(default=None, description="Processing options")
+
     class Config:
         json_schema_extra = {
             "example": {
                 "source": "Tel Aviv, Israel",
                 "destination": "Jerusalem, Israel",
-                "profile": {
-                    "age_group": "adult",
-                    "interests": ["history", "culture"]
-                },
-                "options": {
-                    "mode": "queue"
-                }
+                "profile": {"age_group": "adult", "interests": ["history", "culture"]},
+                "options": {"mode": "queue"},
             }
         }
 
 
 class TourResponse(BaseModel):
     """Response for tour creation."""
+
     tour_id: str
     status: str
     created_at: str
@@ -58,6 +55,7 @@ class TourResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     """Health check response."""
+
     status: str
     version: str
     uptime_seconds: float
@@ -67,6 +65,7 @@ class HealthResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Standard error response."""
+
     status: str = "error"
     error: dict
     meta: dict
@@ -76,7 +75,8 @@ class ErrorResponse(BaseModel):
 # App Lifecycle
 # =============================================================================
 
-startup_time: Optional[datetime] = None
+startup_time: datetime | None = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -84,14 +84,14 @@ async def lifespan(app: FastAPI):
     global startup_time
     startup_time = datetime.now()
     logging.info("🚀 Tour Guide API starting up...")
-    
+
     # Initialize components here
     # - Load configurations
     # - Initialize LLM clients
     # - Set up metrics
-    
+
     yield
-    
+
     # Cleanup
     logging.info("👋 Tour Guide API shutting down...")
 
@@ -139,12 +139,13 @@ app.add_middleware(
 # Request Middleware
 # =============================================================================
 
+
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):
     """Add request ID for tracing."""
     request_id = str(uuid.uuid4())[:8]
     request.state.request_id = request_id
-    
+
     response = await call_next(request)
     response.headers["X-Request-ID"] = request_id
     return response
@@ -153,6 +154,7 @@ async def add_request_id(request: Request, call_next):
 # =============================================================================
 # Health & Status Endpoints
 # =============================================================================
+
 
 @app.get(
     "/health",
@@ -239,6 +241,7 @@ active_tours 0
 # =============================================================================
 # Tour Endpoints
 # =============================================================================
+
 
 @app.post(
     "/api/v1/tours",
@@ -369,6 +372,7 @@ async def cancel_tour(tour_id: str):
 # Profile Endpoints
 # =============================================================================
 
+
 @app.get(
     "/api/v1/profiles/presets",
     tags=["Profiles"],
@@ -415,6 +419,7 @@ async def list_profile_presets():
 # =============================================================================
 # Error Handlers
 # =============================================================================
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
@@ -467,4 +472,3 @@ if __name__ == "__main__":
         reload=True,
         log_level="info",
     )
-

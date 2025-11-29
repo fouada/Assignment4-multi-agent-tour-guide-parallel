@@ -8,7 +8,7 @@ Example:
     # Singleton provider
     provider = SingletonProvider(lambda: ExpensiveService())
     instance = provider.get()  # Same instance every time
-    
+
     # Factory provider
     provider = FactoryProvider(lambda ctx: UserService(ctx.user_id))
     instance = provider.get(context)
@@ -16,10 +16,11 @@ Example:
 
 from __future__ import annotations
 
+import logging
 import threading
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Generic, Optional, TypeVar
-import logging
+from collections.abc import Callable
+from typing import Generic, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -29,15 +30,15 @@ T = TypeVar("T")
 class Provider(ABC, Generic[T]):
     """
     Abstract base class for dependency providers.
-    
+
     A provider knows how to create instances of a dependency.
     """
-    
+
     @abstractmethod
     def get(self, *args, **kwargs) -> T:
         """Get an instance from this provider."""
         pass
-    
+
     @abstractmethod
     def dispose(self) -> None:
         """Dispose of any held resources."""
@@ -47,15 +48,15 @@ class Provider(ABC, Generic[T]):
 class SingletonProvider(Provider[T]):
     """
     Provider that creates a single instance.
-    
+
     Thread-safe lazy initialization.
     """
-    
+
     def __init__(self, factory: Callable[[], T]):
         self._factory = factory
-        self._instance: Optional[T] = None
+        self._instance: T | None = None
         self._lock = threading.Lock()
-    
+
     def get(self, *args, **kwargs) -> T:
         if self._instance is None:
             with self._lock:
@@ -63,7 +64,7 @@ class SingletonProvider(Provider[T]):
                     self._instance = self._factory()
                     logger.debug(f"Created singleton: {type(self._instance)}")
         return self._instance
-    
+
     def dispose(self) -> None:
         with self._lock:
             if self._instance is not None:
@@ -78,15 +79,15 @@ class TransientProvider(Provider[T]):
     """
     Provider that creates a new instance each time.
     """
-    
+
     def __init__(self, factory: Callable[..., T]):
         self._factory = factory
-    
+
     def get(self, *args, **kwargs) -> T:
         instance = self._factory(*args, **kwargs)
         logger.debug(f"Created transient: {type(instance)}")
         return instance
-    
+
     def dispose(self) -> None:
         pass  # Nothing to dispose
 
@@ -94,16 +95,16 @@ class TransientProvider(Provider[T]):
 class FactoryProvider(Provider[T]):
     """
     Provider that uses a factory function with context.
-    
+
     The factory receives any arguments passed to get().
     """
-    
+
     def __init__(self, factory: Callable[..., T]):
         self._factory = factory
-    
+
     def get(self, *args, **kwargs) -> T:
         return self._factory(*args, **kwargs)
-    
+
     def dispose(self) -> None:
         pass
 
@@ -112,13 +113,13 @@ class ValueProvider(Provider[T]):
     """
     Provider that returns a pre-existing value.
     """
-    
+
     def __init__(self, value: T):
         self._value = value
-    
+
     def get(self, *args, **kwargs) -> T:
         return self._value
-    
+
     def dispose(self) -> None:
         if hasattr(self._value, "dispose"):
             self._value.dispose()
@@ -129,20 +130,20 @@ class ValueProvider(Provider[T]):
 class LazyProvider(Provider[T]):
     """
     Provider with lazy initialization.
-    
+
     Delays creation until first access.
     """
-    
+
     def __init__(self, factory: Callable[[], T]):
         self._factory = factory
-        self._instance: Optional[T] = None
+        self._instance: T | None = None
         self._initialized = False
         self._lock = threading.Lock()
-    
+
     @property
     def is_initialized(self) -> bool:
         return self._initialized
-    
+
     def get(self, *args, **kwargs) -> T:
         if not self._initialized:
             with self._lock:
@@ -150,7 +151,7 @@ class LazyProvider(Provider[T]):
                     self._instance = self._factory()
                     self._initialized = True
         return self._instance  # type: ignore
-    
+
     def dispose(self) -> None:
         with self._lock:
             if self._initialized and self._instance is not None:
@@ -165,10 +166,10 @@ class LazyProvider(Provider[T]):
 class PooledProvider(Provider[T]):
     """
     Provider that maintains a pool of instances.
-    
+
     Useful for expensive-to-create objects like database connections.
     """
-    
+
     def __init__(
         self,
         factory: Callable[[], T],
@@ -180,8 +181,8 @@ class PooledProvider(Provider[T]):
         self._in_use: set[int] = set()
         self._lock = threading.Lock()
         self._condition = threading.Condition(self._lock)
-    
-    def get(self, *args, timeout: Optional[float] = None, **kwargs) -> T:
+
+    def get(self, *args, timeout: float | None = None, **kwargs) -> T:
         with self._condition:
             # Try to get from pool
             while True:
@@ -189,7 +190,7 @@ class PooledProvider(Provider[T]):
                     if i not in self._in_use:
                         self._in_use.add(i)
                         return instance
-                
+
                 # Create new if pool not full
                 if len(self._pool) < self._pool_size:
                     instance = self._factory()
@@ -197,11 +198,11 @@ class PooledProvider(Provider[T]):
                     self._pool.append(instance)
                     self._in_use.add(idx)
                     return instance
-                
+
                 # Wait for return
                 if not self._condition.wait(timeout=timeout):
                     raise TimeoutError("Could not acquire pooled instance")
-    
+
     def release(self, instance: T) -> None:
         """Return an instance to the pool."""
         with self._condition:
@@ -211,7 +212,7 @@ class PooledProvider(Provider[T]):
                 self._condition.notify()
             except ValueError:
                 pass  # Not from this pool
-    
+
     def dispose(self) -> None:
         with self._lock:
             for instance in self._pool:
@@ -221,4 +222,3 @@ class PooledProvider(Provider[T]):
                     instance.close()
             self._pool.clear()
             self._in_use.clear()
-

@@ -19,40 +19,40 @@ Example:
     # Metrics
     request_counter = Counter("http_requests_total", labels=["method", "path"])
     request_counter.inc(method="GET", path="/api/users")
-    
+
     # Tracing
     with tracer.span("process_route") as span:
         span.set_attribute("route_id", route.id)
         result = process(route)
-    
+
     # Health checks
     @health_check("database")
     def check_database():
         return db.ping()
 """
 
+from src.core.observability.health import (
+    HealthCheck,
+    HealthRegistry,
+    HealthStatus,
+    get_health_status,
+    health_check,
+)
 from src.core.observability.metrics import (
     Counter,
     Gauge,
     Histogram,
-    Timer,
     MetricsRegistry,
-    timed,
+    Timer,
     counted,
+    timed,
 )
 from src.core.observability.tracing import (
-    Tracer,
     Span,
     SpanContext,
-    trace,
+    Tracer,
     get_tracer,
-)
-from src.core.observability.health import (
-    HealthCheck,
-    HealthStatus,
-    HealthRegistry,
-    health_check,
-    get_health_status,
+    trace,
 )
 
 __all__ = [
@@ -77,4 +77,3 @@ __all__ = [
     "health_check",
     "get_health_status",
 ]
-

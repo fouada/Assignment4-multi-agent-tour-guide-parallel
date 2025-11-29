@@ -1,14 +1,17 @@
 """
 Content-related data models.
 """
+
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 
 class ContentType(str, Enum):
     """Types of content that agents can provide."""
+
     VIDEO = "video"
     MUSIC = "music"
     TEXT = "text"
@@ -16,6 +19,7 @@ class ContentType(str, Enum):
 
 class AgentStatus(str, Enum):
     """Status of an agent's task."""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -25,17 +29,18 @@ class AgentStatus(str, Enum):
 
 class ContentResult(BaseModel):
     """Result from a content agent."""
+
     point_id: str = ""
     content_type: ContentType
     title: str
-    description: Optional[str] = None
-    url: Optional[str] = None
+    description: str | None = None
+    url: str | None = None
     source: str  # e.g., "YouTube", "Spotify", "Wikipedia"
     relevance_score: float = Field(ge=0.0, le=10.0, default=5.0)
-    duration_seconds: Optional[int] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    duration_seconds: int | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
     found_at: datetime = Field(default_factory=datetime.now)
-    
+
     class Config:
         json_schema_extra = {
             "example": {
@@ -47,7 +52,6 @@ class ContentResult(BaseModel):
                 "source": "YouTube",
                 "relevance_score": 9.5,
                 "duration_seconds": 754,
-                "metadata": {"views": 150000, "channel": "History Channel"}
+                "metadata": {"views": 150000, "channel": "History Channel"},
             }
         }
-

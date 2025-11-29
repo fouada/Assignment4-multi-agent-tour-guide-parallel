@@ -27,10 +27,10 @@ Example:
     container = Container()
     container.register(IUserRepository, SqlUserRepository, Lifetime.SINGLETON)
     container.register(UserService, lifetime=Lifetime.TRANSIENT)
-    
+
     # Resolve dependencies
     service = container.resolve(UserService)
-    
+
     # Or use decorator
     @inject
     def handler(service: UserService):
@@ -40,22 +40,22 @@ Example:
 from src.core.di.container import (
     Container,
     Lifetime,
+    get_container,
     inject,
     injectable,
-    get_container,
     set_container,
+)
+from src.core.di.providers import (
+    FactoryProvider,
+    Provider,
+    SingletonProvider,
+    TransientProvider,
+    ValueProvider,
 )
 from src.core.di.scope import (
     Scope,
     ScopeContext,
     scoped,
-)
-from src.core.di.providers import (
-    Provider,
-    SingletonProvider,
-    TransientProvider,
-    FactoryProvider,
-    ValueProvider,
 )
 
 __all__ = [
@@ -77,4 +77,3 @@ __all__ = [
     "FactoryProvider",
     "ValueProvider",
 ]
-

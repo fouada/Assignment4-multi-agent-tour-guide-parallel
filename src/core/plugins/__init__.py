@@ -19,33 +19,38 @@ Example Usage:
     @PluginRegistry.register("weather")
     class WeatherPlugin(BasePlugin):
         ...
-    
+
     # Load all plugins
     manager = PluginManager()
     manager.discover_plugins("plugins/")
     manager.start_all()
 """
 
-from src.core.plugins.base import BasePlugin, PluginMetadata, PluginState, PluginCapability
-from src.core.plugins.registry import PluginRegistry
-from src.core.plugins.manager import PluginManager
-from src.core.plugins.hooks import (
-    Hook,
-    HookType,
-    HookPriority,
-    HookRegistry,
-    hookable,
-    before_hook,
-    after_hook,
+from src.core.plugins.base import (
+    BasePlugin,
+    PluginCapability,
+    PluginMetadata,
+    PluginState,
 )
 from src.core.plugins.events import (
     Event,
     EventBus,
-    EventPriority,
     EventHandler,
+    EventPriority,
     publish,
     subscribe,
 )
+from src.core.plugins.hooks import (
+    Hook,
+    HookPriority,
+    HookRegistry,
+    HookType,
+    after_hook,
+    before_hook,
+    hookable,
+)
+from src.core.plugins.manager import PluginManager
+from src.core.plugins.registry import PluginRegistry
 
 __all__ = [
     # Base
@@ -73,4 +78,3 @@ __all__ = [
     "publish",
     "subscribe",
 ]
-

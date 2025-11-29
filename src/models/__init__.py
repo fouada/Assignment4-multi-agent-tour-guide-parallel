@@ -1,24 +1,25 @@
 """
 Data models for the Multi-Agent Tour Guide system.
 """
-from src.models.content import ContentResult, ContentType, AgentStatus
-from src.models.route import RoutePoint, Route
-from src.models.decision import JudgeDecision, AgentTask
+
+from src.models.content import AgentStatus, ContentResult, ContentType
+from src.models.decision import AgentTask, JudgeDecision
+from src.models.metrics import QueueMetrics, QueueStatus
+from src.models.output import SystemState, TourGuideOutput
+from src.models.route import Route, RoutePoint
 from src.models.user_profile import (
-    UserProfile, 
-    AgeGroup, 
+    AgeGroup,
+    ContentPreference,
     Gender,
     TravelMode,
     TripPurpose,
-    ContentPreference,
-    get_kid_profile,
-    get_teenager_profile,
-    get_senior_profile,
-    get_family_profile,
+    UserProfile,
     get_driver_profile,
+    get_family_profile,
+    get_kid_profile,
+    get_senior_profile,
+    get_teenager_profile,
 )
-from src.models.output import TourGuideOutput, SystemState
-from src.models.metrics import QueueMetrics, QueueStatus
 
 __all__ = [
     # Content
@@ -50,4 +51,3 @@ __all__ = [
     "QueueMetrics",
     "QueueStatus",
 ]
-

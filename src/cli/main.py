@@ -14,20 +14,19 @@ Usage:
     python main.py --demo --mode queue       Show queue synchronization
     python main.py -o "Paris" -d "Lyon"      Custom route (needs API keys)
 """
+
 import argparse
 import sys
 import time
-from typing import Optional
 
-from src.utils.logger import get_logger
-from src.utils.config import settings
+from src.models.route import RoutePoint
 from src.models.user_profile import (
     UserProfile,
+    get_driver_profile,
     get_family_profile,
     get_kid_profile,
-    get_driver_profile,
 )
-from src.models.route import Route, RoutePoint
+from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -53,41 +52,42 @@ def get_profile(profile_name: str, min_age: int = 5) -> UserProfile:
     return profiles.get(profile_name, UserProfile())
 
 
-def run_demo_pipeline(mode: str = "queue", profile: UserProfile = None, verbose: bool = False):
+def run_demo_pipeline(
+    mode: str = "queue", profile: UserProfile = None, verbose: bool = False
+):
     """
     Run the full pipeline in demo mode with mock data.
     """
     print_banner()
     print("🎯 Running FULL PIPELINE in DEMO mode")
     print("─" * 60)
-    
+
     # Import pipeline components
     from src.services.google_maps import get_mock_route
-    from src.core.smart_queue import SmartAgentQueue
-    from src.agents.video_agent import VideoAgent
-    from src.agents.music_agent import MusicAgent
-    from src.agents.text_agent import TextAgent
-    from src.agents.judge_agent import JudgeAgent
-    
+
     # Get mock route
     route = get_mock_route()
     print(f"\n📍 Route: {route.source} → {route.destination}")
     print(f"📊 Points: {route.point_count}")
     print(f"📏 Distance: {route.total_distance / 1000:.1f} km")
-    
+
     if profile:
-        print(f"👤 Profile: {profile.age_group.value if profile.age_group else 'default'}")
-    
+        print(
+            f"👤 Profile: {profile.age_group.value if profile.age_group else 'default'}"
+        )
+
     print("\n" + "═" * 60)
     print("🚀 STARTING MULTI-AGENT PIPELINE")
     print("═" * 60)
-    
+
     results = []
-    
+
     for i, point in enumerate(route.points):
-        print(f"\n📍 [{i+1}/{route.point_count}] Processing: {point.location_name or point.address}")
+        print(
+            f"\n📍 [{i + 1}/{route.point_count}] Processing: {point.location_name or point.address}"
+        )
         print("─" * 40)
-        
+
         if mode == "queue":
             # Queue-based processing (recommended)
             result = process_point_with_queue(point, profile, verbose)
@@ -97,35 +97,37 @@ def run_demo_pipeline(mode: str = "queue", profile: UserProfile = None, verbose:
         else:
             # Parallel without queue
             result = process_point_parallel(point, profile, verbose)
-        
+
         results.append(result)
-        print(f"   🏆 Winner: {result['winner']} - \"{result['title']}\"")
-    
+        print(f'   🏆 Winner: {result["winner"]} - "{result["title"]}"')
+
     # Final summary
     print("\n" + "═" * 60)
     print("📋 FINAL TOUR GUIDE PLAYLIST")
     print("═" * 60)
-    
+
     for i, result in enumerate(results):
-        icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(result['winner'], "📌")
-        print(f"   {icon} Point {i+1}: {result['winner']} - \"{result['title']}\"")
-    
+        icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(result["winner"], "📌")
+        print(f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"')
+
     print("\n✅ Pipeline complete!")
     return results
 
 
-def process_point_with_queue(point: RoutePoint, profile: UserProfile = None, verbose: bool = False) -> dict:
+def process_point_with_queue(
+    point: RoutePoint, profile: UserProfile = None, verbose: bool = False
+) -> dict:
     """
     Process a single point using queue-based synchronization.
     This demonstrates the core architecture: agents → queue → judge
     """
-    from concurrent.futures import ThreadPoolExecutor, as_completed
     import threading
-    
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     # Create queue for this point
     queue_results = []
     queue_lock = threading.Lock()
-    
+
     def run_agent(agent_class, name: str):
         """Run an agent and collect result."""
         start = time.time()
@@ -133,27 +135,25 @@ def process_point_with_queue(point: RoutePoint, profile: UserProfile = None, ver
             agent = agent_class()
             result = agent.execute(point)
             elapsed = time.time() - start
-            
+
             with queue_lock:
-                queue_results.append({
-                    "type": name,
-                    "result": result,
-                    "time": elapsed
-                })
-            
+                queue_results.append({"type": name, "result": result, "time": elapsed})
+
             status = "✅" if result else "⚠️"
-            print(f"   {status} {name} Agent submitted ({len(queue_results)}/3) [{elapsed:.1f}s]")
+            print(
+                f"   {status} {name} Agent submitted ({len(queue_results)}/3) [{elapsed:.1f}s]"
+            )
             return result
         except Exception as e:
             elapsed = time.time() - start
             print(f"   ❌ {name} Agent failed: {e} [{elapsed:.1f}s]")
             return None
-    
+
     # Import agents
-    from src.agents.video_agent import VideoAgent
     from src.agents.music_agent import MusicAgent
     from src.agents.text_agent import TextAgent
-    
+    from src.agents.video_agent import VideoAgent
+
     # Run 3 agents in parallel
     with ThreadPoolExecutor(max_workers=3, thread_name_prefix="Agent") as executor:
         futures = {
@@ -161,14 +161,14 @@ def process_point_with_queue(point: RoutePoint, profile: UserProfile = None, ver
             executor.submit(run_agent, MusicAgent, "Music"): "music",
             executor.submit(run_agent, TextAgent, "Text"): "text",
         }
-        
+
         # Wait for all to complete (with timeout)
-        for future in as_completed(futures, timeout=30):
+        for _future in as_completed(futures, timeout=30):
             pass
-    
+
     # Queue ready - judge evaluates
     print(f"   ⏳ Queue ready ({len(queue_results)}/3)! Judge evaluating...")
-    
+
     # Simple judging (pick best based on available results)
     if queue_results:
         # In real implementation, JudgeAgent would use LLM to compare
@@ -176,29 +176,35 @@ def process_point_with_queue(point: RoutePoint, profile: UserProfile = None, ver
         for r in queue_results:
             if r["result"] and (not best["result"] or r["time"] < best["time"]):
                 best = r
-        
+
         return {
             "winner": best["type"].upper(),
             "title": best["result"].title if best["result"] else "Mock Content",
-            "point": point.location_name
+            "point": point.location_name,
         }
-    
+
     return {
         "winner": "TEXT",
         "title": f"Historical facts about {point.location_name}",
-        "point": point.location_name
+        "point": point.location_name,
     }
 
 
-def process_point_sequential(point: RoutePoint, profile: UserProfile = None, verbose: bool = False) -> dict:
+def process_point_sequential(
+    point: RoutePoint, profile: UserProfile = None, verbose: bool = False
+) -> dict:
     """Sequential processing for debugging."""
-    from src.agents.video_agent import VideoAgent
     from src.agents.music_agent import MusicAgent
     from src.agents.text_agent import TextAgent
-    
+    from src.agents.video_agent import VideoAgent
+
     results = []
-    
-    for agent_class, name in [(VideoAgent, "Video"), (MusicAgent, "Music"), (TextAgent, "Text")]:
+
+    for agent_class, name in [
+        (VideoAgent, "Video"),
+        (MusicAgent, "Music"),
+        (TextAgent, "Text"),
+    ]:
         try:
             agent = agent_class()
             result = agent.execute(point)
@@ -206,19 +212,21 @@ def process_point_sequential(point: RoutePoint, profile: UserProfile = None, ver
             results.append({"type": name, "result": result})
         except Exception as e:
             print(f"   ❌ {name} Agent failed: {e}")
-    
+
     if results:
         best = results[0]
         return {
             "winner": best["type"].upper(),
             "title": best["result"].title if best["result"] else "Mock Content",
-            "point": point.location_name
+            "point": point.location_name,
         }
-    
+
     return {"winner": "TEXT", "title": "Default content", "point": point.location_name}
 
 
-def process_point_parallel(point: RoutePoint, profile: UserProfile = None, verbose: bool = False) -> dict:
+def process_point_parallel(
+    point: RoutePoint, profile: UserProfile = None, verbose: bool = False
+) -> dict:
     """Parallel processing without queue visualization."""
     return process_point_with_queue(point, profile, verbose)
 
@@ -228,18 +236,18 @@ def run_interactive():
     print_banner()
     print("🎯 Interactive Setup Mode")
     print("─" * 60)
-    
+
     source = input("\n📍 Enter starting point: ").strip() or "Tel Aviv, Israel"
     destination = input("🎯 Enter destination: ").strip() or "Jerusalem, Israel"
-    
+
     print("\n👤 Profile Selection:")
     print("   1. Default (Adult)")
     print("   2. Family with Kids")
     print("   3. Driver (no video)")
     print("   4. Custom")
-    
+
     choice = input("\nSelect profile [1-4]: ").strip() or "1"
-    
+
     if choice == "2":
         age = input("   Youngest child's age: ").strip()
         profile = get_family_profile(min_age=int(age) if age.isdigit() else 5)
@@ -247,10 +255,10 @@ def run_interactive():
         profile = get_driver_profile()
     else:
         profile = UserProfile()
-    
-    print(f"\n✅ Setup Complete!")
+
+    print("\n✅ Setup Complete!")
     print(f"   Route: {source} → {destination}")
-    
+
     # Run the pipeline
     run_demo_pipeline(mode="queue", profile=profile)
 
@@ -268,57 +276,42 @@ Examples:
   python main.py --demo --profile family   Family-friendly content
   python main.py --interactive             Interactive setup wizard
   python main.py -o "Paris" -d "Lyon"      Custom route (requires API keys)
-        """
+        """,
     )
-    
+
     parser.add_argument(
-        "--demo", 
+        "--demo",
         action="store_true",
-        help="Run in demo mode with mock data (no API keys needed)"
+        help="Run in demo mode with mock data (no API keys needed)",
     )
     parser.add_argument(
-        "--interactive", "-i",
-        action="store_true",
-        help="Interactive setup mode"
+        "--interactive", "-i", action="store_true", help="Interactive setup mode"
     )
-    parser.add_argument(
-        "--origin", "-o",
-        type=str,
-        help="Origin/starting point"
-    )
-    parser.add_argument(
-        "--destination", "-d", "--dest",
-        type=str,
-        help="Destination"
-    )
+    parser.add_argument("--origin", "-o", type=str, help="Origin/starting point")
+    parser.add_argument("--destination", "-d", "--dest", type=str, help="Destination")
     parser.add_argument(
         "--mode",
         type=str,
         choices=["queue", "sequential", "streaming"],
         default="queue",
-        help="Processing mode: queue (recommended), sequential, streaming"
+        help="Processing mode: queue (recommended), sequential, streaming",
     )
     parser.add_argument(
         "--profile",
         type=str,
         choices=["default", "family", "kid", "driver"],
         default="default",
-        help="User profile preset"
+        help="User profile preset",
     )
     parser.add_argument(
-        "--min-age",
-        type=int,
-        default=5,
-        help="Minimum age for family profile"
+        "--min-age", type=int, default=5, help="Minimum age for family profile"
     )
     parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose logging"
+        "--verbose", "-v", action="store_true", help="Enable verbose logging"
     )
-    
+
     args = parser.parse_args()
-    
+
     try:
         if args.interactive:
             run_interactive()
@@ -342,6 +335,7 @@ Examples:
         logger.error(f"Error: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         return 1
 

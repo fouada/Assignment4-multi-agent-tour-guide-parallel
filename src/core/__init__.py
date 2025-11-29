@@ -43,22 +43,22 @@ Example Usage:
     from src.core.resilience import circuit_breaker, retry
     from src.core.observability import Counter, trace, health_check
     from src.core.di import Container, inject
-    
+
     # Register plugin
     @PluginRegistry.register("my_plugin")
     class MyPlugin(BasePlugin):
         ...
-    
+
     # Use resilience patterns
     @circuit_breaker(failure_threshold=5)
     @retry(max_attempts=3)
     def call_api():
         ...
-    
+
     # Add metrics
     requests = Counter("requests_total", labels=["method"])
     requests.inc(method="GET")
-    
+
     # Dependency injection
     container = Container()
     container.register(IService, ConcreteService)
@@ -66,10 +66,7 @@ Example Usage:
 """
 
 # Import submodules for easier access
-from src.core import plugins
-from src.core import resilience
-from src.core import observability
-from src.core import di
+from src.core import di, observability, plugins, resilience
 
 __all__ = [
     "plugins",

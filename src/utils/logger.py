@@ -4,9 +4,6 @@ Provides thread-safe logging for the multi-agent system.
 """
 import logging
 import sys
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
 import threading
 
 # Thread-local storage for context
@@ -22,7 +19,7 @@ except ImportError:
     HAS_RICH = False
 
 
-def set_log_context(point_id: Optional[str] = None, agent_type: Optional[str] = None):
+def set_log_context(point_id: str | None = None, agent_type: str | None = None):
     """Set logging context for the current thread."""
     if point_id is not None:
         _thread_local.point_id = point_id
@@ -38,7 +35,7 @@ def clear_log_context():
 
 class ContextFilter(logging.Filter):
     """Add context information to log records."""
-    
+
     def filter(self, record):
         record.thread_name = threading.current_thread().name
         record.point_id = getattr(_thread_local, 'point_id', '-')
@@ -50,25 +47,25 @@ class ContextFilter(logging.Filter):
 def get_logger(name: str = "tour_guide") -> logging.Logger:
     """
     Get a configured logger.
-    
+
     Args:
         name: Logger name
-        
+
     Returns:
         Configured logger instance
     """
     logger = logging.getLogger(name)
-    
+
     # Avoid duplicate handlers
     if logger.handlers:
         return logger
-    
+
     logger.setLevel(logging.DEBUG)
-    
+
     # Add context filter
     context_filter = ContextFilter()
     logger.addFilter(context_filter)
-    
+
     # Console handler
     if HAS_RICH:
         console = Console()
@@ -79,13 +76,13 @@ def get_logger(name: str = "tour_guide") -> logging.Logger:
         )
     else:
         handler = logging.StreamHandler(sys.stdout)
-    
+
     handler.setLevel(logging.INFO)
     formatter = logging.Formatter("%(context)s %(message)s")
     handler.setFormatter(formatter)
     handler.addFilter(context_filter)
     logger.addHandler(handler)
-    
+
     return logger
 
 
