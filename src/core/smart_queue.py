@@ -16,8 +16,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
 
-from logger_setup import get_logger
-from models import ContentResult
+from src.utils.logger import get_logger
+from src.models.content import ContentResult
 
 logger = get_logger(__name__)
 

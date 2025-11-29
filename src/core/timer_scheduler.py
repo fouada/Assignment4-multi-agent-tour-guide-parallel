@@ -7,9 +7,11 @@ import time
 from typing import List, Callable, Optional
 from datetime import datetime
 
-from models import Route, RoutePoint
-from config import settings
-from logger_setup import logger, log_timer_tick, set_log_context
+from src.models.route import Route, RoutePoint
+from src.utils.config import settings
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class TravelSimulator:

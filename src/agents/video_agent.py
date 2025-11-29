@@ -4,10 +4,13 @@ Video Agent - Specializes in finding relevant YouTube videos for locations.
 from typing import Optional, List, Dict, Any
 import re
 
-from agents.base_agent import BaseAgent
-from models import ContentResult, ContentType, RoutePoint
-from config import settings
-from logger_setup import logger
+from src.agents.base_agent import BaseAgent
+from src.models.content import ContentResult, ContentType
+from src.models.route import RoutePoint
+from src.utils.config import settings
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class VideoAgent(BaseAgent):

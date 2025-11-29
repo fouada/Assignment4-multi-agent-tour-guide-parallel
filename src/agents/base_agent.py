@@ -10,9 +10,15 @@ from datetime import datetime
 from openai import OpenAI
 import anthropic
 
-from config import settings, AGENT_SKILLS
-from models import ContentResult, ContentType, RoutePoint
-from logger_setup import logger, set_log_context, log_agent_start, log_agent_result, log_agent_error
+from src.utils.config import settings
+from src.models.content import ContentResult, ContentType
+from src.models.route import RoutePoint
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+# Agent skills loaded from config (can be extended via YAML)
+AGENT_SKILLS = {}
 
 
 class BaseAgent(ABC):
@@ -130,8 +136,7 @@ Respond in a structured format that can be easily parsed."""
         self.current_point_id = point.id
         self.thread_name = threading.current_thread().name
         
-        set_log_context(point_id=point.id, agent_type=self.agent_type)
-        log_agent_start(self.agent_type, point.id, point.address)
+        logger.info(f"[{self.agent_type}] Starting search for: {point.address}")
         
         start_time = datetime.now()
         
@@ -140,18 +145,14 @@ Respond in a structured format that can be easily parsed."""
             
             if result:
                 duration = (datetime.now() - start_time).total_seconds()
-                log_agent_result(
-                    self.agent_type, 
-                    point.id, 
-                    f"{result.title} (took {duration:.2f}s)"
-                )
+                logger.info(f"[{self.agent_type}] Found: {result.title} ({duration:.2f}s)")
                 return result
             else:
-                log_agent_error(self.agent_type, point.id, "No content found")
+                logger.warning(f"[{self.agent_type}] No content found for {point.address}")
                 return None
                 
         except Exception as e:
-            log_agent_error(self.agent_type, point.id, str(e))
+            logger.error(f"[{self.agent_type}] Error: {e}")
             return None
     
     @abstractmethod

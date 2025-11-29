@@ -346,6 +346,108 @@ uv run python main.py --demo --mode queue
 
 ---
 
+## 📁 Project Structure
+
+```
+multi-agent-tour-guide/
+├── main.py                    # 🚀 Entry point (thin wrapper)
+├── pyproject.toml             # Project config & dependencies
+├── Makefile                   # Build automation
+├── README.md
+│
+├── src/                       # 📦 SOURCE CODE (Production)
+│   ├── agents/                # AI Agents
+│   │   ├── base_agent.py      #   Base class for all agents
+│   │   ├── base_agent_v2.py   #   Enhanced with hooks & resilience
+│   │   ├── video_agent.py     #   YouTube content finder
+│   │   ├── music_agent.py     #   Spotify/music finder
+│   │   ├── text_agent.py      #   Historical/story finder
+│   │   ├── judge_agent.py     #   Content evaluator
+│   │   └── configs/           #   YAML agent configurations
+│   │
+│   ├── core/                  # Core Infrastructure
+│   │   ├── orchestrator.py    #   Agent coordination
+│   │   ├── smart_queue.py     #   Queue synchronization
+│   │   ├── collector.py       #   Result aggregation
+│   │   ├── timer_scheduler.py #   Travel simulation
+│   │   │
+│   │   ├── plugins/           #   🔌 Plugin Architecture
+│   │   │   ├── base.py        #      Base plugin class
+│   │   │   ├── registry.py    #      Auto-discovery & lifecycle
+│   │   │   ├── events.py      #      Event bus (pub/sub)
+│   │   │   ├── hooks.py       #      AOP-style hooks
+│   │   │   └── manager.py     #      Plugin lifecycle manager
+│   │   │
+│   │   ├── resilience/        #   🛡️ Fault Tolerance
+│   │   │   ├── circuit_breaker.py
+│   │   │   ├── retry.py       #      Exponential backoff
+│   │   │   ├── timeout.py
+│   │   │   ├── rate_limiter.py
+│   │   │   ├── bulkhead.py
+│   │   │   └── fallback.py
+│   │   │
+│   │   ├── observability/     #   📊 Monitoring
+│   │   │   ├── metrics.py     #      Counter, Gauge, Histogram
+│   │   │   ├── tracing.py     #      Distributed tracing
+│   │   │   └── health.py      #      Liveness/readiness probes
+│   │   │
+│   │   └── di/                #   💉 Dependency Injection
+│   │       ├── container.py   #      IoC container
+│   │       ├── scope.py       #      Lifetime management
+│   │       └── providers.py   #      Factory/lazy/pooled
+│   │
+│   ├── models/                # Data Models (Pydantic)
+│   │   ├── content.py         #   ContentResult
+│   │   ├── route.py           #   Route, RoutePoint
+│   │   ├── decision.py        #   JudgeDecision
+│   │   ├── user_profile.py    #   UserProfile
+│   │   └── output.py          #   TourGuideOutput
+│   │
+│   ├── services/              # External Services
+│   │   └── google_maps.py     #   Maps API client
+│   │
+│   ├── cli/                   # Command Line Interface
+│   │   └── main.py            #   CLI commands
+│   │
+│   └── utils/                 # Utilities
+│       ├── config.py          #   Configuration loading
+│       ├── logger.py          #   Structured logging
+│       └── retry.py           #   Retry utilities
+│
+├── plugins/                   # 🔌 PLUGIN DIRECTORY
+│   ├── weather/               #   Example: Weather plugin
+│   │   ├── plugin.yaml        #      Plugin manifest
+│   │   ├── plugin.py          #      Plugin class
+│   │   └── agent.py           #      WeatherAgent
+│   └── food/                  #   Placeholder for food plugin
+│
+├── config/                    # Configuration Files
+│   └── default.yaml           #   Default settings
+│
+├── tests/                     # Test Suite
+│   ├── unit/                  #   Unit tests
+│   ├── integration/           #   Integration tests
+│   └── e2e/                   #   End-to-end tests
+│
+├── docs/                      # Documentation
+│   ├── ARCHITECTURE.md        #   System design
+│   ├── MIT_PRODUCTION_ARCHITECTURE.md
+│   └── ...
+│
+└── data/                      # Runtime Data
+    ├── cache/                 #   API response cache
+    ├── logs/                  #   Log files
+    └── samples/               #   Sample data
+```
+
+**Key Design Decisions:**
+- ✅ **Single `main.py` entry point** - thin wrapper that calls `src/cli/main.py`
+- ✅ **All logic in `src/`** - clean separation of concerns
+- ✅ **Plugin directory at root** - easy to add/remove plugins
+- ✅ **Configuration-driven** - YAML configs for agents and settings
+
+---
+
 ## 🎮 Usage
 
 ### Basic Commands

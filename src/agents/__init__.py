@@ -8,11 +8,11 @@ Contains specialized agents for finding content:
 - JudgeAgent: Evaluates and selects best content
 """
 
-from agents.base_agent import BaseAgent
-from agents.video_agent import VideoAgent
-from agents.music_agent import MusicAgent
-from agents.text_agent import TextAgent
-from agents.judge_agent import JudgeAgent
+from src.agents.base_agent import BaseAgent
+from src.agents.video_agent import VideoAgent
+from src.agents.music_agent import MusicAgent
+from src.agents.text_agent import TextAgent
+from src.agents.judge_agent import JudgeAgent
 
 __all__ = [
     'BaseAgent',

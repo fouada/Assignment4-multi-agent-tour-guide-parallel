@@ -8,12 +8,17 @@ from typing import List, Dict, Optional, Callable
 from datetime import datetime
 import queue
 
-from models import RoutePoint, ContentResult, JudgeDecision, AgentTask, AgentStatus
-from agents import VideoAgent, MusicAgent, TextAgent, JudgeAgent
-from config import settings
-from logger_setup import (
-    logger, log_orchestrator_event, set_log_context, clear_log_context
-)
+from src.models.route import RoutePoint
+from src.models.content import ContentResult
+from src.models.decision import JudgeDecision
+from src.agents.video_agent import VideoAgent
+from src.agents.music_agent import MusicAgent
+from src.agents.text_agent import TextAgent
+from src.agents.judge_agent import JudgeAgent
+from src.utils.config import settings
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class PointProcessor:

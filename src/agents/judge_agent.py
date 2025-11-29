@@ -16,11 +16,18 @@ The Judge WAITS for the Smart Queue to provide results (with timeout mechanism).
 from typing import List, Optional, Dict, Any
 import re
 
-from agents.base_agent import BaseAgent
-from models import ContentResult, ContentType, RoutePoint, JudgeDecision
-from config import settings, AGENT_SKILLS
-from logger_setup import logger, log_judge_decision
-from user_profile import UserProfile, AgeGroup, Gender
+from src.agents.base_agent import BaseAgent
+from src.models.content import ContentResult, ContentType
+from src.models.route import RoutePoint
+from src.models.decision import JudgeDecision
+from src.models.user_profile import UserProfile, AgeGroup, Gender
+from src.utils.config import settings
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+# Agent skills (can be loaded from YAML)
+AGENT_SKILLS = {}
 
 
 class JudgeAgent(BaseAgent):

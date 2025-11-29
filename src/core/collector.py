@@ -6,8 +6,12 @@ import threading
 from typing import List, Dict, Optional
 from datetime import datetime
 
-from models import Route, JudgeDecision, TourGuideOutput, RoutePoint
-from logger_setup import logger, log_collector_update, set_log_context
+from src.models.route import Route, RoutePoint
+from src.models.decision import JudgeDecision
+from src.models.output import TourGuideOutput
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class ResultCollector:

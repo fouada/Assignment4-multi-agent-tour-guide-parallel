@@ -6,9 +6,11 @@ import googlemaps
 from typing import List, Optional, Tuple
 import re
 
-from config import settings
-from models import Route, RoutePoint
-from logger_setup import logger, set_log_context
+from src.utils.config import settings
+from src.models.route import Route, RoutePoint
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class GoogleMapsClient:
@@ -320,4 +322,15 @@ def get_maps_client(use_mock: bool = False) -> GoogleMapsClient:
         logger.warning("Using mock Google Maps client - set GOOGLE_MAPS_API_KEY for real routes")
         return MockGoogleMapsClient()
     return GoogleMapsClient()
+
+
+def get_mock_route(origin: str = "Tel Aviv, Israel", destination: str = "Jerusalem, Israel") -> Route:
+    """
+    Get a mock route for demo/testing purposes.
+    
+    Returns:
+        Route object with sample waypoints
+    """
+    client = MockGoogleMapsClient()
+    return client.get_route(origin, destination)
 
