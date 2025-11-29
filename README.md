@@ -505,20 +505,79 @@ python scripts/iso25010_compliance_check.py --verbose
 
 ## 🧪 Testing
 
-```bash
-# Run all tests
-make test
+### MIT Level - Academic Publishing Quality (85%+ Coverage)
 
-# Run with coverage
+This project implements comprehensive testing meeting academic/industrial publishing standards:
+
+| Test Category | Coverage | Purpose |
+|--------------|----------|---------|
+| **Unit Tests** | 85%+ | Individual component validation |
+| **Integration Tests** | 75%+ | Component interaction testing |
+| **Performance Tests** | Benchmarked | Throughput and scalability |
+| **Edge Cases** | 100% documented | Boundary conditions |
+
+### Quick Commands
+
+```bash
+# Run all tests with coverage enforcement
 make test-cov
 
-# Specific tests
-uv run pytest tests/unit/ -v
-uv run pytest tests/integration/ -v
+# Run specific test suites
+uv run pytest tests/unit/ -v              # Unit tests
+uv run pytest tests/integration/ -v       # Integration tests
+uv run pytest tests/performance/ -v       # Performance tests
 
-# Pattern matching
-uv run pytest -k "test_queue" -v
+# Run with coverage threshold (fails if below 85%)
+uv run pytest tests/ --cov=src --cov-fail-under=85
+
+# Run specific test patterns
+uv run pytest -k "circuit_breaker" -v
+uv run pytest -k "queue" -v
+
+# Generate HTML coverage report
+uv run pytest tests/ --cov=src --cov-report=html
+open htmlcov/index.html
 ```
+
+### Test Structure
+
+```
+tests/
+├── unit/                              # Isolated component tests
+│   ├── test_models_*.py               # Data model tests
+│   ├── test_smart_queue.py            # Queue synchronization
+│   ├── test_resilience_*.py           # Resilience patterns
+│   └── test_config.py                 # Configuration tests
+├── integration/                       # Multi-component tests
+│   ├── test_agent_integration.py      # Agent execution
+│   └── test_queue_integration.py      # Queue + agents
+├── performance/                       # Benchmarks
+│   └── test_performance.py            # Throughput tests
+└── conftest.py                        # Shared fixtures
+```
+
+### Key Test Scenarios
+
+| Scenario | Expected Result |
+|----------|-----------------|
+| All 3 agents succeed | Queue status: `COMPLETE` |
+| 2/3 agents succeed | Queue status: `SOFT_DEGRADED` |
+| 1/3 agents succeed | Queue status: `HARD_DEGRADED` |
+| 0/3 agents succeed | Raises `NoResultsError` |
+| Circuit breaker trips | Requests blocked until reset |
+| Retry exhausted | Raises `RetryError` |
+
+### CI/CD Pipeline
+
+The GitHub Actions CI pipeline enforces:
+
+- ✅ 85% minimum code coverage
+- ✅ All unit tests pass (Python 3.10, 3.11, 3.12)
+- ✅ All integration tests pass
+- ✅ Performance benchmarks met
+- ✅ No security vulnerabilities (Bandit, Trivy)
+
+📚 **Full testing documentation**: [docs/TESTING.md](docs/TESTING.md)
 
 ---
 

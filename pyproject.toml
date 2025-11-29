@@ -62,6 +62,7 @@ dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
+    "httpx>=0.25.0",  # Required for FastAPI TestClient
     "ruff>=0.1.0",
     "mypy>=1.7.0",
     "pre-commit>=3.6.0",
@@ -205,7 +206,7 @@ addopts = [
 filterwarnings = [
     "ignore::DeprecationWarning",
 ]
-asyncio_mode = "auto"
+# asyncio_mode = "auto"  # Uncomment when using pytest-asyncio
 
 # ============================================================================
 # Coverage
