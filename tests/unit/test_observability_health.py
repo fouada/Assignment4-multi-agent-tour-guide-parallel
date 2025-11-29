@@ -277,6 +277,7 @@ class TestHealthCheckDecorator:
 
     def test_decorator_registers_check(self):
         """Test decorator registers the check."""
+
         @health_check("decorated_check")
         def my_check():
             return True
@@ -285,6 +286,7 @@ class TestHealthCheckDecorator:
 
     def test_decorator_with_options(self):
         """Test decorator with options."""
+
         @health_check("custom_check", critical=False, timeout=15.0)
         def my_check():
             return True
@@ -295,6 +297,7 @@ class TestHealthCheckDecorator:
 
     def test_decorator_preserves_function(self):
         """Test decorated function still works."""
+
         @health_check("test")
         def my_check():
             """Check docstring."""

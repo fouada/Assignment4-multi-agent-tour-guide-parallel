@@ -8,6 +8,7 @@ Test Coverage:
 - Coordinate handling
 - Edge cases: empty routes, missing data
 """
+
 from datetime import datetime
 
 from src.models.route import Route, RoutePoint
@@ -19,10 +20,7 @@ class TestRoutePoint:
     def test_create_minimal_route_point(self):
         """Test creating route point with minimum required fields."""
         point = RoutePoint(
-            index=0,
-            address="Tel Aviv, Israel",
-            latitude=32.0853,
-            longitude=34.7818
+            index=0, address="Tel Aviv, Israel", latitude=32.0853, longitude=34.7818
         )
         assert point.index == 0
         assert point.address == "Tel Aviv, Israel"
@@ -41,7 +39,7 @@ class TestRoutePoint:
             longitude=35.2283,
             instruction="Turn right onto Derech Shlomo Goren",
             distance_from_start=55000.0,
-            duration_from_start=2700.0
+            duration_from_start=2700.0,
         )
         assert point.id == "custom_id"
         assert point.location_name == "Ammunition Hill"
@@ -51,18 +49,8 @@ class TestRoutePoint:
 
     def test_route_point_auto_generated_id(self):
         """Test that ID is auto-generated if not provided."""
-        point1 = RoutePoint(
-            index=0,
-            address="Test",
-            latitude=31.0,
-            longitude=35.0
-        )
-        point2 = RoutePoint(
-            index=1,
-            address="Test 2",
-            latitude=31.1,
-            longitude=35.1
-        )
+        point1 = RoutePoint(index=0, address="Test", latitude=31.0, longitude=35.0)
+        point2 = RoutePoint(index=1, address="Test 2", latitude=31.1, longitude=35.1)
         assert point1.id
         assert point2.id
         assert point1.id != point2.id
@@ -70,12 +58,7 @@ class TestRoutePoint:
 
     def test_coordinates_property(self):
         """Test coordinates tuple property."""
-        point = RoutePoint(
-            index=0,
-            address="Test",
-            latitude=31.7683,
-            longitude=35.2137
-        )
+        point = RoutePoint(index=0, address="Test", latitude=31.7683, longitude=35.2137)
         assert point.coordinates == (31.7683, 35.2137)
         assert isinstance(point.coordinates, tuple)
 
@@ -85,7 +68,7 @@ class TestRoutePoint:
             index=0,
             address="Buenos Aires, Argentina",
             latitude=-34.6037,
-            longitude=-58.3816
+            longitude=-58.3816,
         )
         assert point.latitude == -34.6037
         assert point.longitude == -58.3816
@@ -94,40 +77,20 @@ class TestRoutePoint:
     def test_route_point_boundary_coordinates(self):
         """Test extreme coordinate values."""
         # North Pole
-        north = RoutePoint(
-            index=0,
-            address="North Pole",
-            latitude=90.0,
-            longitude=0.0
-        )
+        north = RoutePoint(index=0, address="North Pole", latitude=90.0, longitude=0.0)
         assert north.latitude == 90.0
 
         # South Pole
-        south = RoutePoint(
-            index=1,
-            address="South Pole",
-            latitude=-90.0,
-            longitude=0.0
-        )
+        south = RoutePoint(index=1, address="South Pole", latitude=-90.0, longitude=0.0)
         assert south.latitude == -90.0
 
         # International Date Line
-        dateline = RoutePoint(
-            index=2,
-            address="Pacific",
-            latitude=0.0,
-            longitude=180.0
-        )
+        dateline = RoutePoint(index=2, address="Pacific", latitude=0.0, longitude=180.0)
         assert dateline.longitude == 180.0
 
     def test_route_point_optional_fields(self):
         """Test optional fields default to None."""
-        point = RoutePoint(
-            index=0,
-            address="Test",
-            latitude=31.0,
-            longitude=35.0
-        )
+        point = RoutePoint(index=0, address="Test", latitude=31.0, longitude=35.0)
         assert point.location_name is None
         assert point.instruction is None
         assert point.distance_from_start is None
@@ -141,7 +104,7 @@ class TestRoutePoint:
             address="Jerusalem",
             location_name="Old City",
             latitude=31.7683,
-            longitude=35.2137
+            longitude=35.2137,
         )
         json_dict = point.model_dump()
         assert json_dict["id"] == "test_id"
@@ -155,10 +118,7 @@ class TestRoute:
 
     def test_create_empty_route(self):
         """Test creating route with no points."""
-        route = Route(
-            source="Tel Aviv",
-            destination="Jerusalem"
-        )
+        route = Route(source="Tel Aviv", destination="Jerusalem")
         assert route.source == "Tel Aviv"
         assert route.destination == "Jerusalem"
         assert route.points == []
@@ -167,16 +127,30 @@ class TestRoute:
     def test_create_route_with_points(self):
         """Test creating route with multiple points."""
         points = [
-            RoutePoint(id="p1", index=0, address="Tel Aviv", latitude=32.0853, longitude=34.7818),
-            RoutePoint(id="p2", index=1, address="Latrun", latitude=31.8389, longitude=34.9789),
-            RoutePoint(id="p3", index=2, address="Jerusalem", latitude=31.7683, longitude=35.2137),
+            RoutePoint(
+                id="p1",
+                index=0,
+                address="Tel Aviv",
+                latitude=32.0853,
+                longitude=34.7818,
+            ),
+            RoutePoint(
+                id="p2", index=1, address="Latrun", latitude=31.8389, longitude=34.9789
+            ),
+            RoutePoint(
+                id="p3",
+                index=2,
+                address="Jerusalem",
+                latitude=31.7683,
+                longitude=35.2137,
+            ),
         ]
         route = Route(
             source="Tel Aviv",
             destination="Jerusalem",
             points=points,
             total_distance=55000,
-            total_duration=2700
+            total_duration=2700,
         )
         assert route.point_count == 3
         assert route.total_distance == 55000
@@ -191,9 +165,15 @@ class TestRoute:
     def test_get_point_by_id_found(self):
         """Test getting point by ID when it exists."""
         points = [
-            RoutePoint(id="point_1", index=0, address="Start", latitude=31.0, longitude=35.0),
-            RoutePoint(id="point_2", index=1, address="Middle", latitude=31.5, longitude=35.5),
-            RoutePoint(id="point_3", index=2, address="End", latitude=32.0, longitude=36.0),
+            RoutePoint(
+                id="point_1", index=0, address="Start", latitude=31.0, longitude=35.0
+            ),
+            RoutePoint(
+                id="point_2", index=1, address="Middle", latitude=31.5, longitude=35.5
+            ),
+            RoutePoint(
+                id="point_3", index=2, address="End", latitude=32.0, longitude=36.0
+            ),
         ]
         route = Route(source="Start", destination="End", points=points)
 
@@ -205,7 +185,9 @@ class TestRoute:
     def test_get_point_by_id_not_found(self):
         """Test getting point by ID when it doesn't exist."""
         points = [
-            RoutePoint(id="p1", index=0, address="Start", latitude=31.0, longitude=35.0),
+            RoutePoint(
+                id="p1", index=0, address="Start", latitude=31.0, longitude=35.0
+            ),
         ]
         route = Route(source="Start", destination="End", points=points)
 
@@ -223,7 +205,13 @@ class TestRoute:
         assert route_empty.point_count == 0
 
         points = [
-            RoutePoint(id=f"p{i}", index=i, address=f"Point {i}", latitude=31.0 + i * 0.1, longitude=35.0)
+            RoutePoint(
+                id=f"p{i}",
+                index=i,
+                address=f"Point {i}",
+                latitude=31.0 + i * 0.1,
+                longitude=35.0,
+            )
             for i in range(5)
         ]
         route_with_points = Route(source="A", destination="B", points=points)
@@ -239,13 +227,19 @@ class TestRoute:
     def test_route_json_serialization(self):
         """Test route serialization."""
         points = [
-            RoutePoint(id="p1", index=0, address="Tel Aviv", latitude=32.0853, longitude=34.7818),
+            RoutePoint(
+                id="p1",
+                index=0,
+                address="Tel Aviv",
+                latitude=32.0853,
+                longitude=34.7818,
+            ),
         ]
         route = Route(
             source="Tel Aviv",
             destination="Jerusalem",
             points=points,
-            total_distance=55000
+            total_distance=55000,
         )
         json_dict = route.model_dump()
         assert json_dict["source"] == "Tel Aviv"
@@ -264,14 +258,11 @@ class TestRouteEdgeCases:
             address="ירושלים, ישראל",
             location_name="העיר העתיקה",
             latitude=31.7683,
-            longitude=35.2137
+            longitude=35.2137,
         )
         assert "ירושלים" in point.address
 
-        route = Route(
-            source="תל אביב",
-            destination="ירושלים"
-        )
+        route = Route(source="תל אביב", destination="ירושלים")
         assert route.source == "תל אביב"
 
     def test_very_long_route(self):
@@ -282,7 +273,7 @@ class TestRouteEdgeCases:
                 index=i,
                 address=f"Point {i}",
                 latitude=31.0 + i * 0.001,
-                longitude=35.0
+                longitude=35.0,
             )
             for i in range(1000)
         ]
@@ -293,8 +284,12 @@ class TestRouteEdgeCases:
     def test_duplicate_point_ids(self):
         """Test handling duplicate point IDs (gets first match)."""
         points = [
-            RoutePoint(id="same_id", index=0, address="First", latitude=31.0, longitude=35.0),
-            RoutePoint(id="same_id", index=1, address="Second", latitude=32.0, longitude=36.0),
+            RoutePoint(
+                id="same_id", index=0, address="First", latitude=31.0, longitude=35.0
+            ),
+            RoutePoint(
+                id="same_id", index=1, address="Second", latitude=32.0, longitude=36.0
+            ),
         ]
         route = Route(source="A", destination="B", points=points)
         found = route.get_point_by_id("same_id")
@@ -306,7 +301,7 @@ class TestRouteEdgeCases:
             source="Same Place",
             destination="Same Place",
             total_distance=0,
-            total_duration=0
+            total_duration=0,
         )
         assert route.total_distance == 0
         assert route.total_duration == 0
@@ -317,26 +312,17 @@ class TestRouteEdgeCases:
             source="Sydney",
             destination="London",
             total_distance=17000000,  # ~17000 km in meters
-            total_duration=86400 * 7  # 7 days
+            total_duration=86400 * 7,  # 7 days
         )
         assert route.total_distance == 17000000
         assert route.total_duration == 86400 * 7
 
     def test_route_point_with_empty_address(self):
         """Test route point with empty address."""
-        point = RoutePoint(
-            index=0,
-            address="",
-            latitude=31.0,
-            longitude=35.0
-        )
+        point = RoutePoint(index=0, address="", latitude=31.0, longitude=35.0)
         assert point.address == ""
 
     def test_route_source_destination_same(self):
         """Test route where source and destination are the same."""
-        route = Route(
-            source="Jerusalem",
-            destination="Jerusalem"
-        )
+        route = Route(source="Jerusalem", destination="Jerusalem")
         assert route.source == route.destination
-

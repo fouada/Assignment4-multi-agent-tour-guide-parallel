@@ -104,7 +104,9 @@ class TestCalculateBackoffDelay:
 
     def test_max_delay_cap(self):
         """Test delay is capped at max_delay."""
-        delay = calculate_backoff_delay(10, base_delay=1.0, max_delay=30.0, jitter=False)
+        delay = calculate_backoff_delay(
+            10, base_delay=1.0, max_delay=30.0, jitter=False
+        )
         assert delay == 30.0
 
     def test_jitter_adds_variance(self):
@@ -117,7 +119,9 @@ class TestCalculateBackoffDelay:
 
     def test_custom_exponential_base(self):
         """Test custom exponential base."""
-        delay = calculate_backoff_delay(2, base_delay=1.0, exponential_base=3.0, jitter=False)
+        delay = calculate_backoff_delay(
+            2, base_delay=1.0, exponential_base=3.0, jitter=False
+        )
         assert delay == 9.0  # 1 * 3^2 = 9
 
 
@@ -159,6 +163,7 @@ class TestRetryWithBackoff:
     @patch("src.utils.retry.time.sleep")
     def test_exhausts_retries(self, mock_sleep):
         """Test raises after exhausting retries."""
+
         @retry_with_backoff(max_retries=2)
         def always_fails():
             raise RuntimeError("Persistent error")
@@ -170,6 +175,7 @@ class TestRetryWithBackoff:
     @patch("src.utils.retry.time.sleep")
     def test_only_retries_specified_exceptions(self, mock_sleep):
         """Test only retries specified exceptions."""
+
         @retry_with_backoff(max_retries=3, retryable_exceptions=(ValueError,))
         def raises_type_error():
             raise TypeError("Not retryable")
@@ -198,6 +204,7 @@ class TestRetryWithBackoff:
 
     def test_preserves_function_metadata(self):
         """Test decorator preserves function metadata."""
+
         @retry_with_backoff()
         def my_function():
             """My docstring."""
@@ -298,4 +305,3 @@ class TestRetryExecutor:
 
         stats = executor.get_stats()
         assert stats["attempts_made"] == 1  # From second execution
-

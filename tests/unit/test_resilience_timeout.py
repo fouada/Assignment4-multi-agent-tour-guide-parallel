@@ -8,6 +8,7 @@ Test Coverage:
 - Async timeout (when applicable)
 - Edge cases
 """
+
 import asyncio
 import time
 
@@ -37,6 +38,7 @@ class TestWithTimeout:
 
     def test_fast_function_succeeds(self):
         """Test fast function completes before timeout."""
+
         def fast_func():
             return "fast"
 
@@ -45,6 +47,7 @@ class TestWithTimeout:
 
     def test_slow_function_times_out(self):
         """Test slow function is terminated on timeout."""
+
         def slow_func():
             time.sleep(5.0)
             return "slow"
@@ -56,6 +59,7 @@ class TestWithTimeout:
 
     def test_function_with_arguments(self):
         """Test function with args and kwargs."""
+
         def add(a, b, c=0):
             return a + b + c
 
@@ -64,6 +68,7 @@ class TestWithTimeout:
 
     def test_function_raising_exception(self):
         """Test function exception is propagated."""
+
         def raises():
             raise ValueError("test error")
 
@@ -76,6 +81,7 @@ class TestTimeoutDecorator:
 
     def test_decorator_fast_function(self):
         """Test decorator with fast function."""
+
         @timeout(seconds=1.0)
         def fast():
             return "quick"
@@ -84,6 +90,7 @@ class TestTimeoutDecorator:
 
     def test_decorator_slow_function(self):
         """Test decorator with slow function."""
+
         @timeout(seconds=0.1)
         def slow():
             time.sleep(5.0)
@@ -94,6 +101,7 @@ class TestTimeoutDecorator:
 
     def test_decorator_attaches_timeout(self):
         """Test decorator attaches timeout value."""
+
         @timeout(seconds=5.0)
         def test_func():
             return "ok"
@@ -103,6 +111,7 @@ class TestTimeoutDecorator:
 
     def test_decorator_with_fallback(self):
         """Test decorator with on_timeout fallback."""
+
         @timeout(seconds=0.1, on_timeout=lambda: "fallback_value")
         def slow_with_fallback():
             time.sleep(5.0)
@@ -113,6 +122,7 @@ class TestTimeoutDecorator:
 
     def test_decorator_no_fallback_raises(self):
         """Test decorator without fallback raises TimeoutError."""
+
         @timeout(seconds=0.1)
         def slow_no_fallback():
             time.sleep(5.0)
@@ -123,6 +133,7 @@ class TestTimeoutDecorator:
 
     def test_decorator_preserves_docstring(self):
         """Test decorator preserves function metadata."""
+
         @timeout(seconds=1.0)
         def documented_func():
             """This is a documented function."""
@@ -188,6 +199,7 @@ class TestTimeoutEdgeCases:
 
     def test_zero_timeout(self):
         """Test very small timeout value."""
+
         @timeout(seconds=0.001)
         def any_func():
             return "ok"
@@ -201,6 +213,7 @@ class TestTimeoutEdgeCases:
 
     def test_timeout_with_cpu_bound(self):
         """Test timeout with CPU-bound operation."""
+
         @timeout(seconds=0.1)
         def cpu_bound():
             # This won't be interrupted immediately due to GIL
@@ -219,12 +232,14 @@ class TestTimeoutEdgeCases:
 
     def test_nested_timeouts(self):
         """Test nested timeout decorators."""
+
         @timeout(seconds=1.0)
         def outer():
             @timeout(seconds=0.5)
             def inner():
                 time.sleep(0.8)
                 return "inner"
+
             return inner()
 
         with pytest.raises(TimeoutError):
@@ -232,6 +247,7 @@ class TestTimeoutEdgeCases:
 
     def test_timeout_return_none(self):
         """Test function returning None doesn't cause issues."""
+
         @timeout(seconds=1.0)
         def returns_none():
             return None
@@ -241,10 +257,10 @@ class TestTimeoutEdgeCases:
 
     def test_timeout_return_exception(self):
         """Test function returning exception object (not raising)."""
+
         @timeout(seconds=1.0)
         def returns_exception():
             return ValueError("not raised")
 
         result = returns_exception()
         assert isinstance(result, ValueError)
-

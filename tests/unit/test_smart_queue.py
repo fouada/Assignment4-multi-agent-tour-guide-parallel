@@ -9,6 +9,7 @@ Test Coverage:
 - QueueManager singleton behavior
 - Edge cases: all fail, partial success, concurrent access
 """
+
 import threading
 import time
 
@@ -91,7 +92,7 @@ class TestSmartAgentQueue:
             content_type=ContentType.VIDEO,
             title="Test Video",
             source="YouTube",
-            relevance_score=8.0
+            relevance_score=8.0,
         )
 
     def test_queue_initialization(self, queue):
@@ -120,6 +121,7 @@ class TestSmartAgentQueue:
 
     def test_all_agents_succeed(self, queue, sample_result):
         """Test when all agents succeed."""
+
         def submit_results():
             time.sleep(0.05)
             queue.submit_success("video", sample_result)
@@ -137,6 +139,7 @@ class TestSmartAgentQueue:
 
     def test_two_agents_succeed(self, queue, sample_result):
         """Test when only two agents succeed."""
+
         def submit_results():
             time.sleep(0.05)
             queue.submit_success("video", sample_result)
@@ -154,6 +157,7 @@ class TestSmartAgentQueue:
 
     def test_one_agent_succeeds(self, queue, sample_result):
         """Test when only one agent succeeds."""
+
         def submit_results():
             time.sleep(0.05)
             queue.submit_success("video", sample_result)
@@ -171,6 +175,7 @@ class TestSmartAgentQueue:
 
     def test_all_agents_fail(self, queue):
         """Test when all agents fail."""
+
         def submit_results():
             time.sleep(0.05)
             queue.submit_failure("video", "Failed")
@@ -187,6 +192,7 @@ class TestSmartAgentQueue:
 
     def test_soft_timeout_with_two(self, queue, sample_result):
         """Test soft timeout triggers with 2/3 agents."""
+
         def submit_slow():
             time.sleep(0.05)
             queue.submit_success("video", sample_result)
@@ -204,6 +210,7 @@ class TestSmartAgentQueue:
 
     def test_hard_timeout_with_one(self, queue, sample_result):
         """Test hard timeout triggers with 1/3 agents."""
+
         def submit_very_slow():
             time.sleep(0.05)
             queue.submit_success("video", sample_result)
@@ -332,7 +339,7 @@ class TestSmartQueueConcurrency:
             result = ContentResult(
                 content_type=ContentType.VIDEO,
                 title=f"{agent_type} result",
-                source="Test"
+                source="Test",
             )
             queue.submit_success(agent_type, result)
             with lock:
@@ -364,9 +371,7 @@ class TestSmartQueueConcurrency:
         def submit_delayed():
             time.sleep(0.2)
             result = ContentResult(
-                content_type=ContentType.VIDEO,
-                title="Delayed result",
-                source="Test"
+                content_type=ContentType.VIDEO, title="Delayed result", source="Test"
             )
             queue.submit_success("video", result)
             queue.submit_success("music", result)
@@ -391,14 +396,10 @@ class TestSmartQueueEdgeCases:
         queue = SmartAgentQueue("dup_test")
 
         result1 = ContentResult(
-            content_type=ContentType.VIDEO,
-            title="First submission",
-            source="Test"
+            content_type=ContentType.VIDEO, title="First submission", source="Test"
         )
         result2 = ContentResult(
-            content_type=ContentType.VIDEO,
-            title="Second submission",
-            source="Test"
+            content_type=ContentType.VIDEO, title="Second submission", source="Test"
         )
 
         queue.submit_success("video", result1)
@@ -419,9 +420,7 @@ class TestSmartQueueEdgeCases:
         queue = SmartAgentQueue("mixed_test")
 
         result = ContentResult(
-            content_type=ContentType.VIDEO,
-            title="Video result",
-            source="Test"
+            content_type=ContentType.VIDEO, title="Video result", source="Test"
         )
 
         # Submit success first, then failure for same agent
@@ -431,4 +430,3 @@ class TestSmartQueueEdgeCases:
         # Both should be recorded separately
         assert "video" in queue._results
         assert "video" in queue._failures
-

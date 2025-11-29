@@ -141,6 +141,7 @@ class TestScopedDecorator:
 
     def test_scoped_decorator(self):
         """Test scoped decorator wraps function."""
+
         @scoped
         def my_func():
             return "result"
@@ -151,6 +152,7 @@ class TestScopedDecorator:
 
     def test_scoped_preserves_metadata(self):
         """Test scoped preserves function metadata."""
+
         @scoped
         def my_func():
             """My docstring."""

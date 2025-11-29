@@ -7,6 +7,7 @@ Test Coverage:
 - ContentResult model creation and validation
 - Edge cases: boundary values, missing fields, invalid data
 """
+
 from datetime import datetime
 
 import pytest
@@ -68,7 +69,11 @@ class TestAgentStatus:
             assert status in AgentStatus
 
         # Failure path
-        failure_lifecycle = [AgentStatus.PENDING, AgentStatus.RUNNING, AgentStatus.FAILED]
+        failure_lifecycle = [
+            AgentStatus.PENDING,
+            AgentStatus.RUNNING,
+            AgentStatus.FAILED,
+        ]
         for status in failure_lifecycle:
             assert status in AgentStatus
 
@@ -83,9 +88,7 @@ class TestContentResult:
     def test_create_minimal_content_result(self):
         """Test creating content result with minimum required fields."""
         result = ContentResult(
-            content_type=ContentType.VIDEO,
-            title="Test Video",
-            source="YouTube"
+            content_type=ContentType.VIDEO, title="Test Video", source="YouTube"
         )
         assert result.content_type == ContentType.VIDEO
         assert result.title == "Test Video"
@@ -106,7 +109,7 @@ class TestContentResult:
             relevance_score=8.5,
             duration_seconds=240,
             metadata={"artist": "Test Artist", "album": "Test Album"},
-            found_at=now
+            found_at=now,
         )
         assert result.point_id == "point_123"
         assert result.content_type == ContentType.MUSIC
@@ -126,7 +129,7 @@ class TestContentResult:
             content_type=ContentType.TEXT,
             title="Test",
             source="Wikipedia",
-            relevance_score=0.0
+            relevance_score=0.0,
         )
         assert result_min.relevance_score == 0.0
 
@@ -134,7 +137,7 @@ class TestContentResult:
             content_type=ContentType.TEXT,
             title="Test",
             source="Wikipedia",
-            relevance_score=10.0
+            relevance_score=10.0,
         )
         assert result_max.relevance_score == 10.0
 
@@ -145,7 +148,7 @@ class TestContentResult:
                 content_type=ContentType.TEXT,
                 title="Test",
                 source="Wikipedia",
-                relevance_score=-1.0
+                relevance_score=-1.0,
             )
         assert "greater than or equal to 0" in str(exc_info.value)
 
@@ -156,16 +159,14 @@ class TestContentResult:
                 content_type=ContentType.TEXT,
                 title="Test",
                 source="Wikipedia",
-                relevance_score=11.0
+                relevance_score=11.0,
             )
         assert "less than or equal to 10" in str(exc_info.value)
 
     def test_content_result_optional_fields(self):
         """Test optional fields can be None."""
         result = ContentResult(
-            content_type=ContentType.VIDEO,
-            title="Test",
-            source="YouTube"
+            content_type=ContentType.VIDEO, title="Test", source="YouTube"
         )
         assert result.description is None
         assert result.url is None
@@ -178,7 +179,7 @@ class TestContentResult:
             content_type=ContentType.VIDEO,
             title="Test",
             source="YouTube",
-            relevance_score=7.5
+            relevance_score=7.5,
         )
         json_dict = result.model_dump()
         assert json_dict["point_id"] == "p1"
@@ -189,9 +190,7 @@ class TestContentResult:
     def test_content_result_metadata_default(self):
         """Test metadata defaults to empty dict."""
         result = ContentResult(
-            content_type=ContentType.TEXT,
-            title="Test",
-            source="Wikipedia"
+            content_type=ContentType.TEXT, title="Test", source="Wikipedia"
         )
         assert result.metadata == {}
         assert isinstance(result.metadata, dict)
@@ -202,13 +201,13 @@ class TestContentResult:
             "views": 150000,
             "channel": "History Channel",
             "tags": ["history", "documentary"],
-            "stats": {"likes": 5000, "comments": 100}
+            "stats": {"likes": 5000, "comments": 100},
         }
         result = ContentResult(
             content_type=ContentType.VIDEO,
             title="Documentary",
             source="YouTube",
-            metadata=metadata
+            metadata=metadata,
         )
         assert result.metadata["views"] == 150000
         assert "documentary" in result.metadata["tags"]
@@ -218,9 +217,7 @@ class TestContentResult:
         """Test found_at is automatically set."""
         before = datetime.now()
         result = ContentResult(
-            content_type=ContentType.TEXT,
-            title="Test",
-            source="Wikipedia"
+            content_type=ContentType.TEXT, title="Test", source="Wikipedia"
         )
         after = datetime.now()
         assert before <= result.found_at <= after
@@ -231,7 +228,7 @@ class TestContentResult:
             result = ContentResult(
                 content_type=content_type,
                 title=f"Test {content_type.value}",
-                source="Test Source"
+                source="Test Source",
             )
             assert result.content_type == content_type
 
@@ -242,9 +239,7 @@ class TestContentResultEdgeCases:
     def test_empty_title(self):
         """Test empty title is allowed."""
         result = ContentResult(
-            content_type=ContentType.TEXT,
-            title="",
-            source="Wikipedia"
+            content_type=ContentType.TEXT, title="", source="Wikipedia"
         )
         assert result.title == ""
 
@@ -252,9 +247,7 @@ class TestContentResultEdgeCases:
         """Test very long title is handled."""
         long_title = "A" * 10000
         result = ContentResult(
-            content_type=ContentType.TEXT,
-            title=long_title,
-            source="Wikipedia"
+            content_type=ContentType.TEXT, title=long_title, source="Wikipedia"
         )
         assert len(result.title) == 10000
 
@@ -262,9 +255,7 @@ class TestContentResultEdgeCases:
         """Test unicode characters in title."""
         unicode_title = "ירושלים - 耶路撒冷 - القدس"
         result = ContentResult(
-            content_type=ContentType.TEXT,
-            title=unicode_title,
-            source="Wikipedia"
+            content_type=ContentType.TEXT, title=unicode_title, source="Wikipedia"
         )
         assert result.title == unicode_title
 
@@ -272,10 +263,7 @@ class TestContentResultEdgeCases:
         """Test special characters in URL."""
         url = "https://example.com/path?query=hello%20world&foo=bar#section"
         result = ContentResult(
-            content_type=ContentType.VIDEO,
-            title="Test",
-            source="YouTube",
-            url=url
+            content_type=ContentType.VIDEO, title="Test", source="YouTube", url=url
         )
         assert result.url == url
 
@@ -285,7 +273,7 @@ class TestContentResultEdgeCases:
             content_type=ContentType.VIDEO,
             title="Test",
             source="YouTube",
-            duration_seconds=0
+            duration_seconds=0,
         )
         assert result.duration_seconds == 0
 
@@ -295,7 +283,7 @@ class TestContentResultEdgeCases:
             content_type=ContentType.VIDEO,
             title="Long Documentary",
             source="YouTube",
-            duration_seconds=86400  # 24 hours
+            duration_seconds=86400,  # 24 hours
         )
         assert result.duration_seconds == 86400
 
@@ -305,7 +293,6 @@ class TestContentResultEdgeCases:
             content_type=ContentType.TEXT,
             title="Test",
             source="Wikipedia",
-            relevance_score=7.8234567
+            relevance_score=7.8234567,
         )
         assert result.relevance_score == 7.8234567
-

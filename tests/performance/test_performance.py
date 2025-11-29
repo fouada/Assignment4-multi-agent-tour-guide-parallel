@@ -7,6 +7,7 @@ Test Coverage:
 - Memory efficiency
 - Response time under load
 """
+
 import statistics
 import threading
 import time
@@ -43,9 +44,7 @@ class TestQueuePerformance:
         def submit_all():
             for agent in ["video", "music", "text"]:
                 result = ContentResult(
-                    content_type=ContentType.VIDEO,
-                    title="Test",
-                    source="Test"
+                    content_type=ContentType.VIDEO, title="Test", source="Test"
                 )
                 queue.submit_success(agent, result)
 
@@ -77,7 +76,7 @@ class TestQueuePerformance:
                 result = ContentResult(
                     content_type=ContentType.VIDEO,
                     title=f"Test {point_id}",
-                    source="Test"
+                    source="Test",
                 )
                 queue.submit_success(agent, result)
 
@@ -92,8 +91,7 @@ class TestQueuePerformance:
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             futures = [
-                executor.submit(process_point, f"point_{i}")
-                for i in range(num_points)
+                executor.submit(process_point, f"point_{i}") for i in range(num_points)
             ]
             for f in as_completed(futures):
                 f.result()
@@ -108,7 +106,7 @@ class TestQueuePerformance:
         avg_time = statistics.mean(processing_times)
         print(f"\nThroughput: {num_points} points in {total_elapsed:.2f}s")
         print(f"Average per point: {avg_time:.4f}s")
-        print(f"Points per second: {num_points/total_elapsed:.1f}")
+        print(f"Points per second: {num_points / total_elapsed:.1f}")
 
         # Performance assertion
         assert total_elapsed < 5.0  # Should process 20 points in under 5 seconds
@@ -125,9 +123,7 @@ class TestQueuePerformance:
             queue = SmartAgentQueue(f"mem_test_{i}")
             for agent in ["video", "music", "text"]:
                 result = ContentResult(
-                    content_type=ContentType.VIDEO,
-                    title="Test",
-                    source="Test"
+                    content_type=ContentType.VIDEO, title="Test", source="Test"
                 )
                 queue.submit_success(agent, result)
             queue.wait_for_results()
@@ -247,7 +243,7 @@ class TestResiliencePerformance:
             max_calls=1000,
             period=1.0,
             algorithm="token_bucket",
-            block=False
+            block=False,
         )
 
         allowed = 0
@@ -299,16 +295,12 @@ class TestModelPerformance:
                 index=i,
                 address=f"Point {i}",
                 latitude=31.0 + i * 0.001,
-                longitude=35.0
+                longitude=35.0,
             )
             for i in range(num_points)
         ]
 
-        route = Route(
-            source="Start",
-            destination="End",
-            points=points
-        )
+        route = Route(source="Start", destination="End", points=points)
 
         elapsed = time.time() - start
 
@@ -327,7 +319,7 @@ class TestModelPerformance:
                 index=i,
                 address=f"Point {i}",
                 latitude=31.0 + i * 0.001,
-                longitude=35.0
+                longitude=35.0,
             )
             for i in range(num_points)
         ]
@@ -364,7 +356,7 @@ class TestModelPerformance:
             source="YouTube",
             relevance_score=8.5,
             duration_seconds=300,
-            metadata={"views": 100000, "likes": 5000}
+            metadata={"views": 100000, "likes": 5000},
         )
 
         start = time.time()
@@ -392,4 +384,3 @@ class TestBenchmarks:
         print("=" * 60)
         print("Run individual performance tests for detailed metrics.")
         print("=" * 60)
-

@@ -9,6 +9,7 @@ Test Coverage:
 - Blocking vs non-blocking modes
 - Statistics tracking
 """
+
 import threading
 import time
 
@@ -42,9 +43,7 @@ class TestRateLimiterStats:
     def test_rejection_rate_calculation(self):
         """Test rejection rate calculation."""
         stats = RateLimiterStats(
-            total_requests=100,
-            allowed_requests=80,
-            rejected_requests=20
+            total_requests=100, allowed_requests=80, rejected_requests=20
         )
         assert stats.rejection_rate == 0.2
 
@@ -186,7 +185,7 @@ class TestRateLimiter:
             max_calls=10,
             period=1.0,
             algorithm="token_bucket",
-            block=False
+            block=False,
         )
 
         # Should allow up to burst capacity
@@ -197,10 +196,7 @@ class TestRateLimiter:
         """Test rate limiter with sliding window."""
         RateLimiter._registry.clear()
         limiter = RateLimiter(
-            name="window_test",
-            max_calls=5,
-            period=1.0,
-            algorithm="sliding_window"
+            name="window_test", max_calls=5, period=1.0, algorithm="sliding_window"
         )
 
         for _ in range(5):
@@ -211,12 +207,7 @@ class TestRateLimiter:
     def test_context_manager_success(self):
         """Test context manager allows request."""
         RateLimiter._registry.clear()
-        limiter = RateLimiter(
-            name="ctx_success",
-            max_calls=10,
-            period=1.0,
-            block=False
-        )
+        limiter = RateLimiter(name="ctx_success", max_calls=10, period=1.0, block=False)
 
         with limiter:
             pass  # Should not raise
@@ -231,7 +222,7 @@ class TestRateLimiter:
             max_calls=1,
             period=60.0,
             algorithm="sliding_window",
-            block=False
+            block=False,
         )
 
         with limiter:
@@ -244,12 +235,7 @@ class TestRateLimiter:
     def test_get_stats(self):
         """Test getting rate limiter statistics."""
         RateLimiter._registry.clear()
-        limiter = RateLimiter(
-            name="stats_test",
-            max_calls=10,
-            period=1.0,
-            block=False
-        )
+        limiter = RateLimiter(name="stats_test", max_calls=10, period=1.0, block=False)
 
         limiter.acquire()
         limiter.acquire()
@@ -286,7 +272,13 @@ class TestRateLimitDecorator:
         """Test decorator rejects calls over limit."""
         RateLimiter._registry.clear()
 
-        @rate_limit(max_calls=2, period=60.0, name="deco_reject", algorithm="sliding_window", block=False)
+        @rate_limit(
+            max_calls=2,
+            period=60.0,
+            name="deco_reject",
+            algorithm="sliding_window",
+            block=False,
+        )
         def limited_func():
             return "ok"
 
@@ -315,10 +307,7 @@ class TestRateLimiterEdgeCases:
         """Test very high rate limit."""
         RateLimiter._registry.clear()
         limiter = RateLimiter(
-            name="high_rate",
-            max_calls=10000,
-            period=1.0,
-            block=False
+            name="high_rate", max_calls=10000, period=1.0, block=False
         )
 
         for _ in range(100):
@@ -332,7 +321,7 @@ class TestRateLimiterEdgeCases:
             max_calls=100,
             period=1.0,
             algorithm="token_bucket",
-            block=False
+            block=False,
         )
 
         results = []
@@ -362,7 +351,7 @@ class TestRateLimiterEdgeCases:
             period=1.0,
             algorithm="token_bucket",
             block=True,
-            block_timeout=0.5
+            block_timeout=0.5,
         )
 
         # Use all tokens
@@ -385,7 +374,7 @@ class TestRateLimiterEdgeCases:
             max_calls=1,
             period=1.0,
             algorithm="sliding_window",
-            block=False
+            block=False,
         )
 
         limiter.acquire()
@@ -396,4 +385,3 @@ class TestRateLimiterEdgeCases:
         except RateLimitExceeded as e:
             assert e.limiter_name == "exception_test"
             assert e.retry_after is not None
-

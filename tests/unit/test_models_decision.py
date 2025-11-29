@@ -7,6 +7,7 @@ Test Coverage:
 - Duration calculation
 - Edge cases: empty candidates, missing results
 """
+
 from datetime import datetime
 
 import pytest
@@ -27,21 +28,21 @@ class TestJudgeDecision:
                 content_type=ContentType.VIDEO,
                 title="Test Video",
                 source="YouTube",
-                relevance_score=8.5
+                relevance_score=8.5,
             ),
             ContentResult(
                 point_id="p1",
                 content_type=ContentType.MUSIC,
                 title="Test Song",
                 source="Spotify",
-                relevance_score=7.0
+                relevance_score=7.0,
             ),
             ContentResult(
                 point_id="p1",
                 content_type=ContentType.TEXT,
                 title="Test Article",
                 source="Wikipedia",
-                relevance_score=9.0
+                relevance_score=9.0,
             ),
         ]
 
@@ -51,7 +52,7 @@ class TestJudgeDecision:
             point_id="point_1",
             selected_content=sample_content_results[2],  # Text with highest score
             all_candidates=sample_content_results,
-            reasoning="Text content provides the most educational value"
+            reasoning="Text content provides the most educational value",
         )
         assert decision.point_id == "point_1"
         assert decision.selected_content.title == "Test Article"
@@ -69,9 +70,9 @@ class TestJudgeDecision:
             scores={
                 ContentType.VIDEO: 9.5,
                 ContentType.MUSIC: 7.5,
-                ContentType.TEXT: 8.0
+                ContentType.TEXT: 8.0,
             },
-            confidence=0.95
+            confidence=0.95,
         )
         assert decision.scores[ContentType.VIDEO] == 9.5
         assert decision.scores[ContentType.MUSIC] == 7.5
@@ -85,7 +86,7 @@ class TestJudgeDecision:
             selected_content=sample_content_results[0],
             all_candidates=sample_content_results,
             reasoning="Test",
-            confidence=0.0
+            confidence=0.0,
         )
         assert decision_low.confidence == 0.0
 
@@ -94,7 +95,7 @@ class TestJudgeDecision:
             selected_content=sample_content_results[0],
             all_candidates=sample_content_results,
             reasoning="Test",
-            confidence=1.0
+            confidence=1.0,
         )
         assert decision_high.confidence == 1.0
 
@@ -108,7 +109,7 @@ class TestJudgeDecision:
                 selected_content=sample_content_results[0],
                 all_candidates=sample_content_results,
                 reasoning="Test",
-                confidence=1.5
+                confidence=1.5,
             )
 
         with pytest.raises(ValidationError):
@@ -117,7 +118,7 @@ class TestJudgeDecision:
                 selected_content=sample_content_results[0],
                 all_candidates=sample_content_results,
                 reasoning="Test",
-                confidence=-0.1
+                confidence=-0.1,
             )
 
     def test_judge_decision_single_candidate(self, sample_content_results):
@@ -126,7 +127,7 @@ class TestJudgeDecision:
             point_id="p1",
             selected_content=sample_content_results[0],
             all_candidates=[sample_content_results[0]],
-            reasoning="Only one option available"
+            reasoning="Only one option available",
         )
         assert len(decision.all_candidates) == 1
         assert decision.selected_content == decision.all_candidates[0]
@@ -138,7 +139,7 @@ class TestJudgeDecision:
             point_id="p1",
             selected_content=sample_content_results[0],
             all_candidates=sample_content_results,
-            reasoning="Test"
+            reasoning="Test",
         )
         after = datetime.now()
         assert before <= decision.decided_at <= after
@@ -149,7 +150,7 @@ class TestJudgeDecision:
             point_id="p1",
             selected_content=sample_content_results[0],
             all_candidates=sample_content_results,
-            reasoning="Test"
+            reasoning="Test",
         )
         assert decision.scores == {}
 
@@ -160,7 +161,7 @@ class TestJudgeDecision:
             selected_content=sample_content_results[0],
             all_candidates=sample_content_results,
             reasoning="Best choice",
-            confidence=0.9
+            confidence=0.9,
         )
         json_dict = decision.model_dump()
         assert json_dict["point_id"] == "p1"
@@ -178,7 +179,7 @@ class TestAgentTask:
             point_id="p1",
             agent_type="video",
             location="Jerusalem",
-            address="Old City, Jerusalem"
+            address="Old City, Jerusalem",
         )
         assert task.point_id == "p1"
         assert task.agent_type == "video"
@@ -192,7 +193,7 @@ class TestAgentTask:
             point_id="p1",
             agent_type="music",
             location="Tel Aviv",
-            address="Dizengoff Square"
+            address="Dizengoff Square",
         )
         assert task.status == AgentStatus.PENDING
 
@@ -205,9 +206,7 @@ class TestAgentTask:
         task.status = AgentStatus.COMPLETED
         task.completed_at = datetime.now()
         task.result = ContentResult(
-            content_type=ContentType.MUSIC,
-            title="Tel Aviv Song",
-            source="Spotify"
+            content_type=ContentType.MUSIC, title="Tel Aviv Song", source="Spotify"
         )
         assert task.status == AgentStatus.COMPLETED
         assert task.result is not None
@@ -215,10 +214,7 @@ class TestAgentTask:
     def test_agent_task_lifecycle_failure(self):
         """Test failed task lifecycle."""
         task = AgentTask(
-            point_id="p1",
-            agent_type="text",
-            location="Haifa",
-            address="Bahai Gardens"
+            point_id="p1", agent_type="text", location="Haifa", address="Bahai Gardens"
         )
 
         task.status = AgentStatus.RUNNING
@@ -235,10 +231,7 @@ class TestAgentTask:
     def test_agent_task_timeout(self):
         """Test timeout task status."""
         task = AgentTask(
-            point_id="p1",
-            agent_type="video",
-            location="Test",
-            address="Test Address"
+            point_id="p1", agent_type="video", location="Test", address="Test Address"
         )
 
         task.status = AgentStatus.RUNNING
@@ -253,10 +246,7 @@ class TestAgentTask:
     def test_duration_seconds_property(self):
         """Test duration calculation when completed."""
         task = AgentTask(
-            point_id="p1",
-            agent_type="video",
-            location="Test",
-            address="Test Address"
+            point_id="p1", agent_type="video", location="Test", address="Test Address"
         )
         task.started_at = datetime(2024, 1, 1, 12, 0, 0)
         task.completed_at = datetime(2024, 1, 1, 12, 0, 5)
@@ -266,10 +256,7 @@ class TestAgentTask:
     def test_duration_seconds_not_completed(self):
         """Test duration is None when not completed."""
         task = AgentTask(
-            point_id="p1",
-            agent_type="video",
-            location="Test",
-            address="Test Address"
+            point_id="p1", agent_type="video", location="Test", address="Test Address"
         )
         assert task.duration_seconds is None
 
@@ -279,10 +266,7 @@ class TestAgentTask:
     def test_duration_seconds_long_task(self):
         """Test duration for long-running tasks."""
         task = AgentTask(
-            point_id="p1",
-            agent_type="video",
-            location="Test",
-            address="Test Address"
+            point_id="p1", agent_type="video", location="Test", address="Test Address"
         )
         task.started_at = datetime(2024, 1, 1, 12, 0, 0)
         task.completed_at = datetime(2024, 1, 1, 12, 5, 30)  # 5 min 30 sec
@@ -296,7 +280,7 @@ class TestAgentTask:
             agent_type="video",
             location="Test",
             address="Test",
-            thread_name="Agent-P0-0"
+            thread_name="Agent-P0-0",
         )
         assert task.thread_name == "Agent-P0-0"
 
@@ -307,7 +291,7 @@ class TestAgentTask:
                 point_id="p1",
                 agent_type=agent_type,
                 location="Test",
-                address="Test Address"
+                address="Test Address",
             )
             assert task.agent_type == agent_type
 
@@ -318,7 +302,7 @@ class TestAgentTask:
             agent_type="video",
             location="Jerusalem",
             address="Old City",
-            status=AgentStatus.COMPLETED
+            status=AgentStatus.COMPLETED,
         )
         json_dict = task.model_dump()
         assert json_dict["point_id"] == "p1"
@@ -332,31 +316,27 @@ class TestDecisionEdgeCases:
     def test_decision_with_empty_reasoning(self):
         """Test decision with empty reasoning."""
         content = ContentResult(
-            content_type=ContentType.TEXT,
-            title="Test",
-            source="Wikipedia"
+            content_type=ContentType.TEXT, title="Test", source="Wikipedia"
         )
         decision = JudgeDecision(
             point_id="p1",
             selected_content=content,
             all_candidates=[content],
-            reasoning=""
+            reasoning="",
         )
         assert decision.reasoning == ""
 
     def test_decision_with_very_long_reasoning(self):
         """Test decision with very long reasoning."""
         content = ContentResult(
-            content_type=ContentType.TEXT,
-            title="Test",
-            source="Wikipedia"
+            content_type=ContentType.TEXT, title="Test", source="Wikipedia"
         )
         long_reasoning = "A" * 10000
         decision = JudgeDecision(
             point_id="p1",
             selected_content=content,
             all_candidates=[content],
-            reasoning=long_reasoning
+            reasoning=long_reasoning,
         )
         assert len(decision.reasoning) == 10000
 
@@ -366,7 +346,7 @@ class TestDecisionEdgeCases:
             point_id="p1-2024/01/01",
             agent_type="video",
             location="ירושלים - Jerusalem",
-            address="Old City, 🏛️ Historical District"
+            address="Old City, 🏛️ Historical District",
         )
         assert "ירושלים" in task.location
         assert "🏛️" in task.address
@@ -379,7 +359,7 @@ class TestDecisionEdgeCases:
                 content_type=ContentType.VIDEO,
                 title=f"Video {i}",
                 source="YouTube",
-                relevance_score=float(i % 10)
+                relevance_score=float(i % 10),
             )
             for i in range(100)
         ]
@@ -387,7 +367,6 @@ class TestDecisionEdgeCases:
             point_id="p1",
             selected_content=candidates[50],
             all_candidates=candidates,
-            reasoning="Selected middle option"
+            reasoning="Selected middle option",
         )
         assert len(decision.all_candidates) == 100
-

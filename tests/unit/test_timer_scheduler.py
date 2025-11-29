@@ -195,6 +195,7 @@ class TestTravelSimulator:
 
     def test_callback_error_handling(self, sample_route):
         """Test callback errors are handled gracefully."""
+
         def failing_callback(point):
             raise Exception("Callback error")
 
@@ -269,6 +270,7 @@ class TestInstantTravelSimulator:
 
     def test_callback_error_handling(self, sample_route):
         """Test callback errors are handled."""
+
         def failing_callback(point):
             raise Exception("Callback error")
 
@@ -359,6 +361,7 @@ class TestScheduledPointEmitter:
 
     def test_callback_error_handling(self, sample_route):
         """Test callback errors are handled."""
+
         def failing_callback(point):
             raise Exception("Callback error")
 

@@ -45,6 +45,7 @@ class TestBaseAgentInitialization:
 
             with patch("src.agents.base_agent.anthropic.Anthropic"):
                 from src.agents.video_agent import VideoAgent
+
                 agent = VideoAgent()
 
                 assert agent.llm_type == "anthropic"
@@ -57,6 +58,7 @@ class TestBaseAgentInitialization:
 
             with patch("src.agents.base_agent.OpenAI"):
                 from src.agents.video_agent import VideoAgent
+
                 agent = VideoAgent()
 
                 assert agent.llm_type == "openai"
@@ -68,6 +70,7 @@ class TestBaseAgentInitialization:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
 
             assert agent.llm_client is None
@@ -84,6 +87,7 @@ class TestBaseAgentLLMCalls:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
 
             result = agent._call_llm("Test prompt")
@@ -105,6 +109,7 @@ class TestBaseAgentLLMCalls:
                 mock_anthropic.return_value = mock_client
 
                 from src.agents.video_agent import VideoAgent
+
                 agent = VideoAgent()
 
                 result = agent._call_llm("Test prompt")
@@ -127,6 +132,7 @@ class TestBaseAgentLLMCalls:
                 mock_openai.return_value = mock_client
 
                 from src.agents.video_agent import VideoAgent
+
                 agent = VideoAgent()
 
                 result = agent._call_llm("Test prompt")
@@ -145,6 +151,7 @@ class TestBaseAgentLLMCalls:
                 mock_anthropic.return_value = mock_client
 
                 from src.agents.video_agent import VideoAgent
+
                 agent = VideoAgent()
 
                 result = agent._call_llm("Test prompt")
@@ -161,6 +168,7 @@ class TestBaseAgentMockResponse:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
 
             result = agent._mock_llm_response("Test prompt for response")
@@ -178,6 +186,7 @@ class TestBaseAgentSystemPrompt:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
             agent.scoring_criteria = ["relevance", "quality"]
 
@@ -197,6 +206,7 @@ class TestBaseAgentExecute:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
 
             result = agent.execute(mock_route_point)
@@ -212,6 +222,7 @@ class TestBaseAgentExecute:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
 
             agent.execute(mock_route_point)
@@ -226,10 +237,13 @@ class TestBaseAgentExecute:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
 
             # Mock _search_content to raise exception
-            with patch.object(agent, "_search_content", side_effect=Exception("Search error")):
+            with patch.object(
+                agent, "_search_content", side_effect=Exception("Search error")
+            ):
                 result = agent.execute(mock_route_point)
 
             # Should return mock result on failure
@@ -246,6 +260,7 @@ class TestBaseAgentContentType:
             mock_settings.openai_api_key = None
 
             from src.agents.video_agent import VideoAgent
+
             agent = VideoAgent()
 
             assert agent.get_content_type() == ContentType.VIDEO
@@ -257,6 +272,7 @@ class TestBaseAgentContentType:
             mock_settings.openai_api_key = None
 
             from src.agents.music_agent import MusicAgent
+
             with patch.object(MusicAgent, "_init_music_clients"):
                 agent = MusicAgent()
 
@@ -269,7 +285,7 @@ class TestBaseAgentContentType:
             mock_settings.openai_api_key = None
 
             from src.agents.text_agent import TextAgent
+
             agent = TextAgent()
 
             assert agent.get_content_type() == ContentType.TEXT
-

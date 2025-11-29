@@ -2,6 +2,7 @@
 Logging setup with colored console output.
 Provides thread-safe logging for the multi-agent system.
 """
+
 import logging
 import sys
 import threading
@@ -13,6 +14,7 @@ _thread_local = threading.local()
 try:
     from rich.console import Console
     from rich.logging import RichHandler
+
     HAS_RICH = True
 except ImportError:
     HAS_RICH = False
@@ -28,8 +30,8 @@ def set_log_context(point_id: str | None = None, agent_type: str | None = None):
 
 def clear_log_context():
     """Clear logging context for the current thread."""
-    _thread_local.point_id = '-'
-    _thread_local.agent_type = '-'
+    _thread_local.point_id = "-"
+    _thread_local.agent_type = "-"
 
 
 class ContextFilter(logging.Filter):
@@ -37,8 +39,8 @@ class ContextFilter(logging.Filter):
 
     def filter(self, record):
         record.thread_name = threading.current_thread().name
-        record.point_id = getattr(_thread_local, 'point_id', '-')
-        record.agent_type = getattr(_thread_local, 'agent_type', '-')
+        record.point_id = getattr(_thread_local, "point_id", "-")
+        record.agent_type = getattr(_thread_local, "agent_type", "-")
         record.context = f"[{record.point_id}][{record.agent_type}]"
         return True
 
@@ -109,6 +111,5 @@ def log_agent_error(agent_type: str, point_id: str, error: str):
 
 def log_judge_decision(point_id: str, winner: str, reason: str):
     """Log judge's decision."""
-    set_log_context(point_id=point_id, agent_type='judge')
+    set_log_context(point_id=point_id, agent_type="judge")
     logger.info(f"⚖️ Judge selected: {winner} - Reason: {reason}")
-

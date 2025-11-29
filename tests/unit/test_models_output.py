@@ -7,6 +7,7 @@ Test Coverage:
 - SystemState tracking
 - Edge cases: empty routes, missing decisions
 """
+
 from datetime import datetime
 
 import pytest
@@ -27,12 +28,33 @@ class TestTourGuideOutput:
             source="Tel Aviv, Israel",
             destination="Jerusalem, Israel",
             points=[
-                RoutePoint(id="p1", index=0, address="Tel Aviv", location_name="Rabin Square", latitude=32.0853, longitude=34.7818),
-                RoutePoint(id="p2", index=1, address="Latrun", location_name="Latrun Monastery", latitude=31.8389, longitude=34.9789),
-                RoutePoint(id="p3", index=2, address="Jerusalem", location_name="Old City", latitude=31.7683, longitude=35.2137),
+                RoutePoint(
+                    id="p1",
+                    index=0,
+                    address="Tel Aviv",
+                    location_name="Rabin Square",
+                    latitude=32.0853,
+                    longitude=34.7818,
+                ),
+                RoutePoint(
+                    id="p2",
+                    index=1,
+                    address="Latrun",
+                    location_name="Latrun Monastery",
+                    latitude=31.8389,
+                    longitude=34.9789,
+                ),
+                RoutePoint(
+                    id="p3",
+                    index=2,
+                    address="Jerusalem",
+                    location_name="Old City",
+                    latitude=31.7683,
+                    longitude=35.2137,
+                ),
             ],
             total_distance=55000,
-            total_duration=2700
+            total_duration=2700,
         )
 
     @pytest.fixture
@@ -47,10 +69,10 @@ class TestTourGuideOutput:
                     title="Tel Aviv City Tour",
                     url="https://youtube.com/watch?v=abc",
                     source="YouTube",
-                    relevance_score=8.5
+                    relevance_score=8.5,
                 ),
                 all_candidates=[],
-                reasoning="Great video for city introduction"
+                reasoning="Great video for city introduction",
             ),
             JudgeDecision(
                 point_id="p2",
@@ -60,10 +82,10 @@ class TestTourGuideOutput:
                     title="History of Latrun Monastery",
                     url="https://wikipedia.org/wiki/Latrun",
                     source="Wikipedia",
-                    relevance_score=9.0
+                    relevance_score=9.0,
                 ),
                 all_candidates=[],
-                reasoning="Rich historical content"
+                reasoning="Rich historical content",
             ),
             JudgeDecision(
                 point_id="p3",
@@ -73,10 +95,10 @@ class TestTourGuideOutput:
                     title="Jerusalem of Gold",
                     url="https://spotify.com/track/xyz",
                     source="Spotify",
-                    relevance_score=9.5
+                    relevance_score=9.5,
                 ),
                 all_candidates=[],
-                reasoning="Iconic song for Jerusalem"
+                reasoning="Iconic song for Jerusalem",
             ),
         ]
 
@@ -96,8 +118,8 @@ class TestTourGuideOutput:
                 "total_points": 3,
                 "processed_points": 3,
                 "processing_time_seconds": 5.2,
-                "average_relevance_score": 9.0
-            }
+                "average_relevance_score": 9.0,
+            },
         )
         assert len(output.decisions) == 3
         assert output.processing_stats["total_points"] == 3
@@ -112,10 +134,7 @@ class TestTourGuideOutput:
 
     def test_to_playlist(self, sample_route, sample_decisions):
         """Test playlist generation."""
-        output = TourGuideOutput(
-            route=sample_route,
-            decisions=sample_decisions
-        )
+        output = TourGuideOutput(route=sample_route, decisions=sample_decisions)
         playlist = output.to_playlist()
 
         assert len(playlist) == 3
@@ -149,10 +168,10 @@ class TestTourGuideOutput:
                     point_id="p1",
                     content_type=ContentType.VIDEO,
                     title="Test Video",
-                    source="YouTube"
+                    source="YouTube",
                 ),
                 all_candidates=[],
-                reasoning="Test"
+                reasoning="Test",
             ),
         ]
         output = TourGuideOutput(route=sample_route, decisions=decisions)
@@ -169,10 +188,10 @@ class TestTourGuideOutput:
                     point_id="nonexistent",
                     content_type=ContentType.TEXT,
                     title="Test",
-                    source="Wikipedia"
+                    source="Wikipedia",
                 ),
                 all_candidates=[],
-                reasoning="Test"
+                reasoning="Test",
             ),
         ]
         output = TourGuideOutput(route=sample_route, decisions=decisions)
@@ -182,10 +201,7 @@ class TestTourGuideOutput:
 
     def test_print_playlist(self, sample_route, sample_decisions, capsys):
         """Test print_playlist output."""
-        output = TourGuideOutput(
-            route=sample_route,
-            decisions=sample_decisions
-        )
+        output = TourGuideOutput(route=sample_route, decisions=sample_decisions)
         output.print_playlist()
 
         captured = capsys.readouterr()
@@ -203,18 +219,14 @@ class TestTourGuideOutput:
                 "total_points": 3,
                 "processed_points": 3,
                 "processing_time_seconds": 5.234,
-                "content_type_distribution": {
-                    "video": 1,
-                    "music": 1,
-                    "text": 1
-                },
+                "content_type_distribution": {"video": 1, "music": 1, "text": 1},
                 "average_relevance_score": 9.0,
                 "agent_stats": {
                     "video_agent": {"successes": 3, "failures": 0},
                     "music_agent": {"successes": 2, "failures": 1},
-                    "text_agent": {"successes": 3, "failures": 0}
-                }
-            }
+                    "text_agent": {"successes": 3, "failures": 0},
+                },
+            },
         )
         stats = output.processing_stats
         assert stats["content_type_distribution"]["video"] == 1
@@ -222,10 +234,7 @@ class TestTourGuideOutput:
 
     def test_json_serialization(self, sample_route, sample_decisions):
         """Test output JSON serialization."""
-        output = TourGuideOutput(
-            route=sample_route,
-            decisions=sample_decisions
-        )
+        output = TourGuideOutput(route=sample_route, decisions=sample_decisions)
         json_dict = output.model_dump()
         assert json_dict["route"]["source"] == "Tel Aviv, Israel"
         assert len(json_dict["decisions"]) == 3
@@ -252,8 +261,8 @@ class TestSystemState:
                 "video_agent_0": AgentStatus.RUNNING,
                 "music_agent_0": AgentStatus.RUNNING,
                 "text_agent_0": AgentStatus.COMPLETED,
-                "video_agent_1": AgentStatus.PENDING
-            }
+                "video_agent_1": AgentStatus.PENDING,
+            },
         )
         assert state.active_threads == 5
         assert state.pending_points == 3
@@ -270,10 +279,7 @@ class TestSystemState:
 
     def test_system_state_update(self):
         """Test updating system state."""
-        state = SystemState(
-            active_threads=2,
-            pending_points=5
-        )
+        state = SystemState(active_threads=2, pending_points=5)
         assert state.active_threads == 2
 
         # Simulate state update
@@ -281,7 +287,7 @@ class TestSystemState:
             active_threads=4,
             pending_points=3,
             processed_points=2,
-            active_agents={"video_0": AgentStatus.RUNNING}
+            active_agents={"video_0": AgentStatus.RUNNING},
         )
         assert new_state.active_threads == 4
         assert new_state.pending_points == 3
@@ -294,7 +300,7 @@ class TestSystemState:
                 "agent_running": AgentStatus.RUNNING,
                 "agent_completed": AgentStatus.COMPLETED,
                 "agent_failed": AgentStatus.FAILED,
-                "agent_timeout": AgentStatus.TIMEOUT
+                "agent_timeout": AgentStatus.TIMEOUT,
             }
         )
         assert len(state.active_agents) == 5
@@ -305,7 +311,7 @@ class TestSystemState:
             active_threads=3,
             pending_points=2,
             processed_points=5,
-            active_agents={"agent_0": AgentStatus.RUNNING}
+            active_agents={"agent_0": AgentStatus.RUNNING},
         )
         json_dict = state.model_dump()
         assert json_dict["active_threads"] == 3
@@ -325,10 +331,10 @@ class TestOutputEdgeCases:
                 selected_content=ContentResult(
                     content_type=ContentType.TEXT,
                     title="Orphan Content",
-                    source="Unknown"
+                    source="Unknown",
                 ),
                 all_candidates=[],
-                reasoning="Test"
+                reasoning="Test",
             )
         ]
         output = TourGuideOutput(route=route, decisions=decisions)
@@ -345,12 +351,8 @@ class TestOutputEdgeCases:
                 "processed_points": 1000,
                 "processing_time_seconds": 3600.5,
                 "memory_usage_mb": 512.75,
-                "api_calls": {
-                    "youtube": 3000,
-                    "spotify": 3000,
-                    "wikipedia": 3000
-                }
-            }
+                "api_calls": {"youtube": 3000, "spotify": 3000, "wikipedia": 3000},
+            },
         )
         assert output.processing_stats["total_points"] == 1000
         assert output.processing_stats["api_calls"]["youtube"] == 3000
@@ -367,9 +369,9 @@ class TestOutputEdgeCases:
                     address="ירושלים",
                     location_name="העיר העתיקה",
                     latitude=31.7683,
-                    longitude=35.2137
+                    longitude=35.2137,
                 )
-            ]
+            ],
         )
         decisions = [
             JudgeDecision(
@@ -379,10 +381,10 @@ class TestOutputEdgeCases:
                     content_type=ContentType.MUSIC,
                     title="ירושלים של זהב",
                     url="https://spotify.com/track/hebrew",
-                    source="Spotify"
+                    source="Spotify",
                 ),
                 all_candidates=[],
-                reasoning="שיר אייקוני על ירושלים"
+                reasoning="שיר אייקוני על ירושלים",
             )
         ]
         output = TourGuideOutput(route=route, decisions=decisions)
@@ -395,10 +397,7 @@ class TestOutputEdgeCases:
     def test_system_state_many_agents(self):
         """Test system state with many agents."""
         agents = {f"agent_{i}": AgentStatus.RUNNING for i in range(100)}
-        state = SystemState(
-            active_threads=100,
-            active_agents=agents
-        )
+        state = SystemState(active_threads=100, active_agents=agents)
         assert len(state.active_agents) == 100
 
     def test_playlist_no_url(self):
@@ -407,8 +406,10 @@ class TestOutputEdgeCases:
             source="A",
             destination="B",
             points=[
-                RoutePoint(id="p1", index=0, address="Test", latitude=31.0, longitude=35.0)
-            ]
+                RoutePoint(
+                    id="p1", index=0, address="Test", latitude=31.0, longitude=35.0
+                )
+            ],
         )
         decisions = [
             JudgeDecision(
@@ -418,13 +419,12 @@ class TestOutputEdgeCases:
                     content_type=ContentType.TEXT,
                     title="No URL Content",
                     source="Internal",
-                    url=None
+                    url=None,
                 ),
                 all_candidates=[],
-                reasoning="Test"
+                reasoning="Test",
             )
         ]
         output = TourGuideOutput(route=route, decisions=decisions)
         playlist = output.to_playlist()
         assert playlist[0]["url"] is None
-

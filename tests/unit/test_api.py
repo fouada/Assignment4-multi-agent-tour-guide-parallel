@@ -253,9 +253,7 @@ class TestCORSMiddleware:
 
     def test_cors_headers_present(self, client):
         """Test CORS headers are present on GET requests."""
-        response = client.get(
-            "/health", headers={"Origin": "http://localhost:3000"}
-        )
+        response = client.get("/health", headers={"Origin": "http://localhost:3000"})
 
         # Request should succeed
         assert response.status_code == 200

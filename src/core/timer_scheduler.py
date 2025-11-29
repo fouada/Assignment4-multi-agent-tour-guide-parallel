@@ -2,6 +2,7 @@
 Timer/Scheduler - Simulates live travel by triggering point arrivals at intervals.
 Controls the pace of the tour guide experience.
 """
+
 import threading
 import time
 from collections.abc import Callable
@@ -15,7 +16,7 @@ logger = get_logger(__name__)
 
 def log_timer_tick(point_id: str, location: str):
     """Log timer tick for a point."""
-    set_log_context(point_id=point_id, agent_type='timer')
+    set_log_context(point_id=point_id, agent_type="timer")
     logger.info(f"⏰ Arrived at: {location}")
 
 
@@ -29,7 +30,7 @@ class TravelSimulator:
         self,
         route: Route,
         interval_seconds: float = None,
-        on_point_arrival: Callable[[RoutePoint], None] = None
+        on_point_arrival: Callable[[RoutePoint], None] = None,
     ):
         """
         Initialize the travel simulator.
@@ -49,8 +50,10 @@ class TravelSimulator:
         self._is_paused = threading.Event()
         self._is_running = False
 
-        set_log_context(agent_type='timer')
-        logger.info(f"Timer initialized: {len(route.points)} points, {self.interval}s interval")
+        set_log_context(agent_type="timer")
+        logger.info(
+            f"Timer initialized: {len(route.points)} points, {self.interval}s interval"
+        )
 
     @property
     def current_point(self) -> RoutePoint | None:
@@ -80,14 +83,14 @@ class TravelSimulator:
         self._is_running = True
 
         self._thread = threading.Thread(
-            target=self._simulation_loop,
-            name="TravelSimulator",
-            daemon=True
+            target=self._simulation_loop, name="TravelSimulator", daemon=True
         )
         self._thread.start()
 
-        set_log_context(agent_type='timer')
-        logger.info(f"🚗 Travel simulation started: {self.route.source} → {self.route.destination}")
+        set_log_context(agent_type="timer")
+        logger.info(
+            f"🚗 Travel simulation started: {self.route.source} → {self.route.destination}"
+        )
 
     def stop(self):
         """Stop the travel simulation."""
@@ -96,19 +99,19 @@ class TravelSimulator:
             self._thread.join(timeout=5.0)
         self._is_running = False
 
-        set_log_context(agent_type='timer')
+        set_log_context(agent_type="timer")
         logger.info("🛑 Travel simulation stopped")
 
     def pause(self):
         """Pause the simulation."""
         self._is_paused.set()
-        set_log_context(agent_type='timer')
+        set_log_context(agent_type="timer")
         logger.info("⏸️ Travel simulation paused")
 
     def resume(self):
         """Resume the simulation."""
         self._is_paused.clear()
-        set_log_context(agent_type='timer')
+        set_log_context(agent_type="timer")
         logger.info("▶️ Travel simulation resumed")
 
     def skip_to_next(self):
@@ -119,7 +122,7 @@ class TravelSimulator:
 
     def _simulation_loop(self):
         """Main simulation loop."""
-        set_log_context(agent_type='timer')
+        set_log_context(agent_type="timer")
 
         while not self._should_stop.is_set():
             # Check if paused
@@ -166,7 +169,7 @@ class InstantTravelSimulator:
         self,
         route: Route,
         on_point_arrival: Callable[[RoutePoint], None] = None,
-        delay_between_points: float = 0.0
+        delay_between_points: float = 0.0,
     ):
         """
         Initialize instant simulator.
@@ -187,7 +190,7 @@ class InstantTravelSimulator:
         Returns:
             List of processed points
         """
-        set_log_context(agent_type='timer')
+        set_log_context(agent_type="timer")
         logger.info(f"⚡ Instant processing: {len(self.route.points)} points")
 
         for point in self.route.points:
@@ -213,9 +216,7 @@ class ScheduledPointEmitter:
     """
 
     def __init__(
-        self,
-        route: Route,
-        on_point_arrival: Callable[[RoutePoint], None] = None
+        self, route: Route, on_point_arrival: Callable[[RoutePoint], None] = None
     ):
         self.route = route
         self.on_point_arrival = on_point_arrival
@@ -284,4 +285,3 @@ class ScheduledPointEmitter:
         if not self.route.points:
             return 100.0
         return (len(self._emitted_indices) / len(self.route.points)) * 100
-

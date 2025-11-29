@@ -2,6 +2,7 @@
 Orchestrator - Manages the parallel execution of agents for each route point.
 Coordinates multithreading and ensures proper synchronization.
 """
+
 import queue
 import threading
 from collections.abc import Callable
@@ -23,7 +24,7 @@ logger = get_logger(__name__)
 
 def log_orchestrator_event(event: str, details: str = ""):
     """Log orchestrator event."""
-    set_log_context(agent_type='orchestrator')
+    set_log_context(agent_type="orchestrator")
     msg = f"🎭 {event}"
     if details:
         msg += f": {details}"
@@ -36,7 +37,9 @@ class PointProcessor:
     Each point gets its own set of agents running in separate threads.
     """
 
-    def __init__(self, point: RoutePoint, result_callback: Callable[[JudgeDecision], None]):
+    def __init__(
+        self, point: RoutePoint, result_callback: Callable[[JudgeDecision], None]
+    ):
         """
         Initialize processor for a single point.
 
@@ -59,9 +62,11 @@ class PointProcessor:
         then running the judge on the results.
         """
         self.started_at = datetime.now()
-        set_log_context(point_id=self.point.id, agent_type='orchestrator')
+        set_log_context(point_id=self.point.id, agent_type="orchestrator")
 
-        logger.info(f"🎯 Starting processing for point {self.point.index}: {self.point.address}")
+        logger.info(
+            f"🎯 Starting processing for point {self.point.index}: {self.point.address}"
+        )
 
         # Create agents
         video_agent = VideoAgent()
@@ -70,12 +75,14 @@ class PointProcessor:
         judge_agent = JudgeAgent()
 
         # Run content agents in parallel using ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=3, thread_name_prefix=f"Agent-P{self.point.index}") as executor:
+        with ThreadPoolExecutor(
+            max_workers=3, thread_name_prefix=f"Agent-P{self.point.index}"
+        ) as executor:
             # Submit all agent tasks
             futures = {
-                executor.submit(self._run_agent, video_agent): 'video',
-                executor.submit(self._run_agent, music_agent): 'music',
-                executor.submit(self._run_agent, text_agent): 'text',
+                executor.submit(self._run_agent, video_agent): "video",
+                executor.submit(self._run_agent, music_agent): "music",
+                executor.submit(self._run_agent, text_agent): "text",
             }
 
             # Collect results as they complete
@@ -86,7 +93,9 @@ class PointProcessor:
                     if result:
                         with self.lock:
                             self.content_results.append(result)
-                        logger.info(f"✅ {agent_type} agent completed for point {self.point.index}")
+                        logger.info(
+                            f"✅ {agent_type} agent completed for point {self.point.index}"
+                        )
                 except Exception as e:
                     logger.error(f"❌ {agent_type} agent failed: {e}")
 
@@ -107,7 +116,7 @@ class PointProcessor:
                         selected_content=self.content_results[0],
                         all_candidates=self.content_results,
                         reasoning="Judge failed - using first available content",
-                        scores={}
+                        scores={},
                     )
 
         self.completed_at = datetime.now()
@@ -142,7 +151,9 @@ class Orchestrator:
         Args:
             max_concurrent_points: Maximum number of points to process simultaneously
         """
-        self.max_concurrent_points = max_concurrent_points or (settings.max_concurrent_threads // 4)
+        self.max_concurrent_points = max_concurrent_points or (
+            settings.max_concurrent_threads // 4
+        )
         self.active_processors: dict[str, PointProcessor] = {}
         self.results: dict[str, JudgeDecision] = {}
         self.results_lock = threading.Lock()
@@ -151,7 +162,9 @@ class Orchestrator:
         self.is_running = False
         self._futures: dict[Future, str] = {}
 
-        log_orchestrator_event("Initialized", f"max_concurrent_points={self.max_concurrent_points}")
+        log_orchestrator_event(
+            "Initialized", f"max_concurrent_points={self.max_concurrent_points}"
+        )
 
     def _on_point_complete(self, decision: JudgeDecision):
         """Callback when a point processing is complete."""
@@ -160,7 +173,7 @@ class Orchestrator:
         self.results_queue.put(decision)
         log_orchestrator_event(
             "Point completed",
-            f"point_id={decision.point_id}, content={decision.selected_content.title[:30]}..."
+            f"point_id={decision.point_id}, content={decision.selected_content.title[:30]}...",
         )
 
     def process_point(self, point: RoutePoint):
@@ -179,7 +192,9 @@ class Orchestrator:
         future = self.executor.submit(processor.process)
         self._futures[future] = point.id
 
-        log_orchestrator_event("Point submitted", f"point_id={point.id}, index={point.index}")
+        log_orchestrator_event(
+            "Point submitted", f"point_id={point.id}, index={point.index}"
+        )
 
     def process_points(self, points: list[RoutePoint]) -> list[JudgeDecision]:
         """
@@ -219,10 +234,12 @@ class Orchestrator:
         if not self.is_running:
             self.executor = ThreadPoolExecutor(
                 max_workers=self.max_concurrent_points,
-                thread_name_prefix="PointProcessor"
+                thread_name_prefix="PointProcessor",
             )
             self.is_running = True
-            log_orchestrator_event("Started", f"thread_pool_size={self.max_concurrent_points}")
+            log_orchestrator_event(
+                "Started", f"thread_pool_size={self.max_concurrent_points}"
+            )
 
     def stop(self):
         """Stop the orchestrator and cleanup."""
@@ -268,14 +285,18 @@ class Orchestrator:
 
     def get_stats(self) -> dict:
         """Get current processing statistics."""
-        active_count = sum(1 for p in self.active_processors.values() if not p.completed.is_set())
+        active_count = sum(
+            1 for p in self.active_processors.values() if not p.completed.is_set()
+        )
         completed_count = len(self.results)
 
         return {
-            'active_points': active_count,
-            'completed_points': completed_count,
-            'pending_points': len(self.active_processors) - active_count - completed_count,
-            'is_running': self.is_running
+            "active_points": active_count,
+            "completed_points": completed_count,
+            "pending_points": len(self.active_processors)
+            - active_count
+            - completed_count,
+            "is_running": self.is_running,
         }
 
 
@@ -302,9 +323,7 @@ class StreamingOrchestrator(Orchestrator):
         self._should_stop.clear()
 
         self._processing_thread = threading.Thread(
-            target=self._processing_loop,
-            name="StreamingProcessor",
-            daemon=True
+            target=self._processing_loop, name="StreamingProcessor", daemon=True
         )
         self._processing_thread.start()
         log_orchestrator_event("Streaming started")
@@ -327,4 +346,3 @@ class StreamingOrchestrator(Orchestrator):
                 continue
             except Exception as e:
                 logger.error(f"Streaming processing error: {e}")
-

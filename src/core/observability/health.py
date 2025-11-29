@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 class HealthStatus(Enum):
     """Health status levels."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"  # Some non-critical checks failing
     UNHEALTHY = "unhealthy"  # Critical checks failing
@@ -47,6 +48,7 @@ class HealthStatus(Enum):
 @dataclass
 class HealthCheckResult:
     """Result of a single health check."""
+
     name: str
     status: HealthStatus
     message: str | None = None
@@ -69,6 +71,7 @@ class HealthCheck:
         interval: Minimum seconds between checks
         description: Human-readable description
     """
+
     name: str
     check_fn: Callable[[], bool]
     critical: bool = True
@@ -239,7 +242,9 @@ class HealthRegistry:
                     "name": check.name,
                     "critical": check.critical,
                     "description": check.description,
-                    "last_status": check.last_result.status.value if check.last_result else "unknown",
+                    "last_status": check.last_result.status.value
+                    if check.last_result
+                    else "unknown",
                 }
                 for check in cls._checks.values()
             ]
@@ -254,6 +259,7 @@ class HealthRegistry:
 @dataclass
 class AggregateHealth:
     """Aggregated health status across all checks."""
+
     status: HealthStatus
     checks: dict[str, HealthCheckResult]
     healthy_count: int = 0
@@ -336,6 +342,7 @@ class AggregateHealth:
 
 # ============== Decorator ==============
 
+
 def health_check(
     name: str,
     *,
@@ -360,6 +367,7 @@ def health_check(
             response = requests.get(api_url, timeout=3)
             return response.status_code == 200
     """
+
     def decorator(func: Callable[[], bool]) -> Callable[[], bool]:
         HealthRegistry.register(
             name=name,
@@ -381,6 +389,7 @@ def get_health_status() -> AggregateHealth:
 
 # ============== Standard Health Checks ==============
 
+
 def create_liveness_probe() -> Callable[[], bool]:
     """
     Create a liveness probe check.
@@ -388,6 +397,7 @@ def create_liveness_probe() -> Callable[[], bool]:
     A liveness probe checks if the application is running.
     If it fails, the container should be restarted.
     """
+
     def check() -> bool:
         # Basic check - can we execute Python?
         return True
@@ -407,6 +417,7 @@ def create_readiness_probe(
     Args:
         checks: List of health check names that must pass
     """
+
     def check() -> bool:
         results = HealthRegistry.run_all_checks()
 
@@ -419,9 +430,11 @@ def create_readiness_probe(
         else:
             # All critical checks must pass
             for _name, result in results.items():
-                if result.details.get("critical") and result.status != HealthStatus.HEALTHY:
+                if (
+                    result.details.get("critical")
+                    and result.status != HealthStatus.HEALTHY
+                ):
                     return False
             return True
 
     return check
-

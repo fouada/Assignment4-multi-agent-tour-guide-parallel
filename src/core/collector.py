@@ -2,6 +2,7 @@
 Collector - Aggregates results from the judge and produces the final tour guide output.
 Maintains order and provides the final playlist.
 """
+
 import threading
 from collections.abc import Callable
 from datetime import datetime
@@ -17,7 +18,7 @@ logger = get_logger(__name__)
 
 def log_collector_update(point_id: str, content: str):
     """Log collector update."""
-    set_log_context(point_id=point_id, agent_type='collector')
+    set_log_context(point_id=point_id, agent_type="collector")
     logger.info(f"📥 Collected: {content}")
 
 
@@ -40,8 +41,10 @@ class ResultCollector:
         self._completion_event = threading.Event()
         self.started_at = datetime.now()
 
-        set_log_context(agent_type='collector')
-        logger.info(f"Collector initialized for route: {route.source} → {route.destination}")
+        set_log_context(agent_type="collector")
+        logger.info(
+            f"Collector initialized for route: {route.source} → {route.destination}"
+        )
 
     def add_decision(self, decision: JudgeDecision):
         """
@@ -54,14 +57,11 @@ class ResultCollector:
             self.decisions[decision.point_id] = decision
 
             # Find the point index for logging
-            next(
-                (p for p in self.route.points if p.id == decision.point_id),
-                None
-            )
+            next((p for p in self.route.points if p.id == decision.point_id), None)
 
             log_collector_update(
                 decision.point_id,
-                f"{decision.selected_content.content_type.value}: {decision.selected_content.title[:30]}..."
+                f"{decision.selected_content.content_type.value}: {decision.selected_content.title[:30]}...",
             )
 
             # Check if all points are collected
@@ -98,10 +98,10 @@ class ResultCollector:
             total = len(self.route.points)
 
             return {
-                'collected': collected,
-                'total': total,
-                'percentage': (collected / total * 100) if total > 0 else 0,
-                'remaining': total - collected
+                "collected": collected,
+                "total": total,
+                "percentage": (collected / total * 100) if total > 0 else 0,
+                "remaining": total - collected,
             }
 
     def get_ordered_decisions(self) -> list[JudgeDecision]:
@@ -120,7 +120,7 @@ class ResultCollector:
         Returns:
             Complete TourGuideOutput with all decisions
         """
-        set_log_context(agent_type='collector')
+        set_log_context(agent_type="collector")
 
         duration = (datetime.now() - self.started_at).total_seconds()
         ordered_decisions = self.get_ordered_decisions()
@@ -131,7 +131,9 @@ class ResultCollector:
 
         for decision in ordered_decisions:
             content_type = decision.selected_content.content_type.value
-            content_type_counts[content_type] = content_type_counts.get(content_type, 0) + 1
+            content_type_counts[content_type] = (
+                content_type_counts.get(content_type, 0) + 1
+            )
             total_score += decision.selected_content.relevance_score
 
         avg_score = total_score / len(ordered_decisions) if ordered_decisions else 0
@@ -140,48 +142,52 @@ class ResultCollector:
             route=self.route,
             decisions=ordered_decisions,
             processing_stats={
-                'total_points': len(self.route.points),
-                'processed_points': len(ordered_decisions),
-                'processing_time_seconds': duration,
-                'content_type_distribution': content_type_counts,
-                'average_relevance_score': round(avg_score, 2)
-            }
+                "total_points": len(self.route.points),
+                "processed_points": len(ordered_decisions),
+                "processing_time_seconds": duration,
+                "content_type_distribution": content_type_counts,
+                "average_relevance_score": round(avg_score, 2),
+            },
         )
 
-        logger.info(f"📊 Tour guide generated: {len(ordered_decisions)} points in {duration:.2f}s")
+        logger.info(
+            f"📊 Tour guide generated: {len(ordered_decisions)} points in {duration:.2f}s"
+        )
 
         return output
 
     def print_summary(self):
         """Print a summary of collected results."""
-        set_log_context(agent_type='collector')
+        set_log_context(agent_type="collector")
 
         progress = self.get_progress()
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("📊 COLLECTION SUMMARY")
-        print("="*60)
+        print("=" * 60)
         print(f"Route: {self.route.source} → {self.route.destination}")
-        print(f"Progress: {progress['collected']}/{progress['total']} ({progress['percentage']:.1f}%)")
-        print("-"*60)
+        print(
+            f"Progress: {progress['collected']}/{progress['total']} ({progress['percentage']:.1f}%)"
+        )
+        print("-" * 60)
 
         for point in self.route.points:
             decision = self.decisions.get(point.id)
             if decision:
                 content = decision.selected_content
-                emoji = {
-                    'video': '🎬',
-                    'music': '🎵',
-                    'text': '📖'
-                }.get(content.content_type.value, '📄')
+                emoji = {"video": "🎬", "music": "🎵", "text": "📖"}.get(
+                    content.content_type.value, "📄"
+                )
 
                 print(f"\n📍 {point.index + 1}. {point.location_name or point.address}")
-                print(f"   {emoji} {content.content_type.value.upper()}: {content.title}")
+                print(
+                    f"   {emoji} {content.content_type.value.upper()}: {content.title}"
+                )
                 print(f"   ⭐ Score: {content.relevance_score:.1f}/10")
             else:
                 print(f"\n📍 {point.index + 1}. {point.location_name or point.address}")
                 print("   ⏳ Pending...")
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
 
 
 class StreamingCollector(ResultCollector):
@@ -190,7 +196,9 @@ class StreamingCollector(ResultCollector):
     Provides results as they arrive rather than waiting for completion.
     """
 
-    def __init__(self, route: Route, on_decision: Callable[[JudgeDecision], Any] | None = None):
+    def __init__(
+        self, route: Route, on_decision: Callable[[JudgeDecision], Any] | None = None
+    ):
         """
         Initialize streaming collector.
 
@@ -235,6 +243,7 @@ class StreamingCollector(ResultCollector):
 
             # Small sleep to prevent busy waiting
             import time
+
             time.sleep(0.1)
 
         # Yield any remaining
@@ -243,4 +252,3 @@ class StreamingCollector(ResultCollector):
                 if point_id not in yielded:
                     yielded.add(point_id)
                     yield self.decisions[point_id]
-

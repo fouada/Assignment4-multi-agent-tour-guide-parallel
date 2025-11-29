@@ -7,6 +7,7 @@ Test Coverage:
 - Content result generation
 - Agent execution flow
 """
+
 from datetime import datetime
 from unittest.mock import patch
 
@@ -31,13 +32,13 @@ class TestAgentExecution:
             address="Ammunition Hill, Jerusalem",
             location_name="Ammunition Hill",
             latitude=31.7944,
-            longitude=35.2283
+            longitude=35.2283,
         )
 
     def test_video_agent_mock_execution(self, sample_point):
         """Test video agent produces mock result without API."""
         # Create agent without API keys
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             agent = VideoAgent()
             agent.youtube_client = None
             agent.llm_client = None
@@ -89,11 +90,11 @@ class TestAgentExecution:
                 address=address,
                 location_name=name,
                 latitude=lat,
-                longitude=lng
+                longitude=lng,
             )
 
             # Test with video agent (mock mode)
-            with patch.object(VideoAgent, '_init_youtube_client'):
+            with patch.object(VideoAgent, "_init_youtube_client"):
                 agent = VideoAgent()
                 agent.youtube_client = None
                 agent.llm_client = None
@@ -104,7 +105,7 @@ class TestAgentExecution:
 
     def test_agent_thread_tracking(self, sample_point):
         """Test agent tracks thread information."""
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             agent = VideoAgent()
             agent.youtube_client = None
             agent.llm_client = None
@@ -127,12 +128,12 @@ class TestAgentContentGeneration:
             address="Test Location",
             location_name="Test Place",
             latitude=31.5,
-            longitude=35.0
+            longitude=35.0,
         )
 
     def test_content_result_has_required_fields(self, sample_point):
         """Test generated content has all required fields."""
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             agent = VideoAgent()
             agent.youtube_client = None
             agent.llm_client = None
@@ -147,7 +148,7 @@ class TestAgentContentGeneration:
 
     def test_content_result_metadata(self, sample_point):
         """Test content result includes metadata."""
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             agent = VideoAgent()
             agent.youtube_client = None
             agent.llm_client = None
@@ -160,7 +161,7 @@ class TestAgentContentGeneration:
         """Test content result has proper timestamp."""
         before = datetime.now()
 
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             agent = VideoAgent()
             agent.youtube_client = None
             agent.llm_client = None
@@ -182,7 +183,7 @@ class TestAgentErrorHandling:
             index=0,
             address="Error Location",
             latitude=31.0,
-            longitude=35.0
+            longitude=35.0,
         )
 
     def test_agent_handles_missing_location_name(self):
@@ -193,10 +194,10 @@ class TestAgentErrorHandling:
             address="Some Address Without Name",
             latitude=31.0,
             longitude=35.0,
-            location_name=None  # No location name
+            location_name=None,  # No location name
         )
 
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             agent = VideoAgent()
             agent.youtube_client = None
             agent.llm_client = None
@@ -215,10 +216,10 @@ class TestAgentErrorHandling:
             address="ירושלים, ישראל - 耶路撒冷",
             location_name="העיר העתיקה",
             latitude=31.7683,
-            longitude=35.2137
+            longitude=35.2137,
         )
 
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             agent = VideoAgent()
             agent.youtube_client = None
             agent.llm_client = None
@@ -240,7 +241,7 @@ class TestMultiAgentCoordination:
             address="Jerusalem, Israel",
             location_name="Old City",
             latitude=31.7683,
-            longitude=35.2137
+            longitude=35.2137,
         )
 
     def test_all_agents_produce_results(self, sample_point):
@@ -248,35 +249,35 @@ class TestMultiAgentCoordination:
         results = {}
 
         # Video Agent
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             video_agent = VideoAgent()
             video_agent.youtube_client = None
             video_agent.llm_client = None
-        results['video'] = video_agent.execute(sample_point)
+        results["video"] = video_agent.execute(sample_point)
 
         # Music Agent
         music_agent = MusicAgent()
         music_agent.llm_client = None
-        results['music'] = music_agent.execute(sample_point)
+        results["music"] = music_agent.execute(sample_point)
 
         # Text Agent
         text_agent = TextAgent()
         text_agent.llm_client = None
-        results['text'] = text_agent.execute(sample_point)
+        results["text"] = text_agent.execute(sample_point)
 
         # All should produce results
         assert all(r is not None for r in results.values())
 
         # Each should have correct content type
-        assert results['video'].content_type == ContentType.VIDEO
-        assert results['music'].content_type == ContentType.MUSIC
-        assert results['text'].content_type == ContentType.TEXT
+        assert results["video"].content_type == ContentType.VIDEO
+        assert results["music"].content_type == ContentType.MUSIC
+        assert results["text"].content_type == ContentType.TEXT
 
     def test_all_agents_share_point_id(self, sample_point):
         """Test all agents use same point ID."""
         results = []
 
-        with patch.object(VideoAgent, '_init_youtube_client'):
+        with patch.object(VideoAgent, "_init_youtube_client"):
             video_agent = VideoAgent()
             video_agent.youtube_client = None
             video_agent.llm_client = None
@@ -293,4 +294,3 @@ class TestMultiAgentCoordination:
         # All should have same point_id
         point_ids = [r.point_id for r in results]
         assert all(pid == sample_point.id for pid in point_ids)
-

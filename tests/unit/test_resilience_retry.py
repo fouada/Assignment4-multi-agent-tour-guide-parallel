@@ -45,7 +45,7 @@ class TestRetryPolicy:
             backoff_factor=3.0,
             initial_delay=0.5,
             max_delay=30.0,
-            jitter=0.2
+            jitter=0.2,
         )
         assert policy.max_attempts == 5
         assert policy.backoff_factor == 3.0
@@ -57,7 +57,7 @@ class TestRetryPolicy:
             initial_delay=1.0,
             backoff_factor=2.0,
             max_delay=60.0,
-            jitter=0  # No jitter for predictable test
+            jitter=0,  # No jitter for predictable test
         )
 
         assert policy.calculate_delay(0) == 1.0  # 1 * 2^0
@@ -68,10 +68,7 @@ class TestRetryPolicy:
     def test_calculate_delay_max_cap(self):
         """Test delay is capped at max_delay."""
         policy = RetryPolicy(
-            initial_delay=1.0,
-            backoff_factor=10.0,
-            max_delay=50.0,
-            jitter=0
+            initial_delay=1.0, backoff_factor=10.0, max_delay=50.0, jitter=0
         )
 
         # 1 * 10^3 = 1000, but capped at 50
@@ -83,7 +80,7 @@ class TestRetryPolicy:
             initial_delay=10.0,
             backoff_factor=1.0,  # No exponential increase
             max_delay=60.0,
-            jitter=0.5  # ±50%
+            jitter=0.5,  # ±50%
         )
 
         delays = [policy.calculate_delay(0) for _ in range(100)]
@@ -105,9 +102,7 @@ class TestRetryPolicy:
 
     def test_should_retry_retryable_only(self):
         """Test only retrying specified exceptions."""
-        policy = RetryPolicy(
-            retryable_exceptions={ValueError, TimeoutError}
-        )
+        policy = RetryPolicy(retryable_exceptions={ValueError, TimeoutError})
 
         assert policy.should_retry(ValueError("test")) is True
         assert policy.should_retry(TimeoutError("test")) is True
@@ -115,9 +110,7 @@ class TestRetryPolicy:
 
     def test_should_retry_non_retryable(self):
         """Test not retrying specified exceptions."""
-        policy = RetryPolicy(
-            non_retryable_exceptions={KeyboardInterrupt, SystemExit}
-        )
+        policy = RetryPolicy(non_retryable_exceptions={KeyboardInterrupt, SystemExit})
 
         assert policy.should_retry(ValueError("test")) is True
         assert policy.should_retry(KeyboardInterrupt()) is False
@@ -189,7 +182,7 @@ class TestWithRetry:
         policy = RetryPolicy(
             max_attempts=5,
             non_retryable_exceptions={KeyboardInterrupt},
-            initial_delay=0.01
+            initial_delay=0.01,
         )
 
         with pytest.raises(KeyboardInterrupt):
@@ -209,9 +202,7 @@ class TestWithRetry:
             return "success"
 
         policy = RetryPolicy(
-            max_attempts=5,
-            initial_delay=0.01,
-            retry_on_result=lambda r: r is None
+            max_attempts=5, initial_delay=0.01, retry_on_result=lambda r: r is None
         )
 
         result = with_retry(returns_none_twice, policy)
@@ -235,11 +226,7 @@ class TestWithRetry:
                 raise ValueError("fail")
             return "success"
 
-        policy = RetryPolicy(
-            max_attempts=5,
-            initial_delay=0.01,
-            on_retry=on_retry
-        )
+        policy = RetryPolicy(max_attempts=5, initial_delay=0.01, on_retry=on_retry)
 
         with_retry(fails_twice, policy)
 
@@ -253,6 +240,7 @@ class TestRetryDecorator:
 
     def test_decorator_success(self):
         """Test decorator with successful function."""
+
         @retry(max_attempts=3, initial_delay=0.01)
         def always_succeeds():
             return "success"
@@ -277,6 +265,7 @@ class TestRetryDecorator:
 
     def test_decorator_attaches_policy(self):
         """Test decorator attaches policy to function."""
+
         @retry(max_attempts=5, backoff_factor=3.0)
         def test_func():
             return "ok"
@@ -293,7 +282,7 @@ class TestRetryDecorator:
             max_attempts=5,
             initial_delay=0.01,
             retryable_exceptions={ValueError},
-            non_retryable_exceptions={TypeError}
+            non_retryable_exceptions={TypeError},
         )
         def selective_fail(error_type):
             nonlocal call_count
@@ -364,10 +353,7 @@ class TestRetryEdgeCases:
     def test_very_high_backoff(self):
         """Test delay capped with very high backoff."""
         policy = RetryPolicy(
-            initial_delay=1.0,
-            backoff_factor=100.0,
-            max_delay=60.0,
-            jitter=0
+            initial_delay=1.0, backoff_factor=100.0, max_delay=60.0, jitter=0
         )
 
         # Should be capped at max_delay
@@ -375,6 +361,7 @@ class TestRetryEdgeCases:
 
     def test_callback_exception_handled(self):
         """Test retry callback exceptions are handled."""
+
         def bad_callback(attempt, exception, delay):
             raise RuntimeError("Callback error")
 
@@ -387,13 +374,8 @@ class TestRetryEdgeCases:
                 raise ValueError("fail")
             return "success"
 
-        policy = RetryPolicy(
-            max_attempts=3,
-            initial_delay=0.01,
-            on_retry=bad_callback
-        )
+        policy = RetryPolicy(max_attempts=3, initial_delay=0.01, on_retry=bad_callback)
 
         # Should succeed despite callback error
         result = with_retry(fails_once, policy)
         assert result == "success"
-

@@ -13,6 +13,7 @@ Decision Logic:
 
 The Judge WAITS for the Smart Queue to provide results (with timeout mechanism).
 """
+
 import re
 from typing import Any
 
@@ -60,7 +61,7 @@ class JudgeAgent(BaseAgent):
         self,
         point: RoutePoint,
         candidates: list[ContentResult],
-        user_profile: UserProfile | None = None
+        user_profile: UserProfile | None = None,
     ) -> JudgeDecision:
         """
         Evaluate all candidate content and select the best one.
@@ -97,14 +98,16 @@ class JudgeAgent(BaseAgent):
             candidate = candidates[0]
             reasoning = self._generate_single_candidate_reasoning(candidate, profile)
 
-            logger.info(f"[Judge] Single option available: {candidate.content_type.value}")
+            logger.info(
+                f"[Judge] Single option available: {candidate.content_type.value}"
+            )
 
             return JudgeDecision(
                 point_id=point.id,
                 selected_content=candidate,
                 all_candidates=candidates,
                 reasoning=reasoning,
-                scores={candidate.content_type: candidate.relevance_score}
+                scores={candidate.content_type: candidate.relevance_score},
             )
 
         # ═══════════════════════════════════════════════════════════════════
@@ -120,37 +123,35 @@ class JudgeAgent(BaseAgent):
             evaluation = self._evaluate_candidates(point, candidates, profile)
 
         # Get the winner
-        winner_idx = evaluation.get('winner_index', 0)
+        winner_idx = evaluation.get("winner_index", 0)
         if 0 <= winner_idx < len(candidates):
             winner = candidates[winner_idx]
         else:
             winner = candidates[0]
 
         # Update winner's relevance score with judge's score
-        if evaluation.get('winner_score'):
-            winner.relevance_score = evaluation['winner_score']
+        if evaluation.get("winner_score"):
+            winner.relevance_score = evaluation["winner_score"]
 
         decision = JudgeDecision(
             point_id=point.id,
             selected_content=winner,
             all_candidates=candidates,
-            reasoning=evaluation.get('reasoning', 'Selected based on relevance'),
-            scores=evaluation.get('scores', {c.content_type: c.relevance_score for c in candidates})
+            reasoning=evaluation.get("reasoning", "Selected based on relevance"),
+            scores=evaluation.get(
+                "scores", {c.content_type: c.relevance_score for c in candidates}
+            ),
         )
 
         # Log the decision
         log_judge_decision(
-            point.id,
-            f"{winner.content_type.value}: {winner.title}",
-            decision.reasoning
+            point.id, f"{winner.content_type.value}: {winner.title}", decision.reasoning
         )
 
         return decision
 
     def _generate_single_candidate_reasoning(
-        self,
-        candidate: ContentResult,
-        profile: UserProfile
+        self, candidate: ContentResult, profile: UserProfile
     ) -> str:
         """Generate reasoning when only one option is available."""
         content_type = candidate.content_type.value
@@ -172,10 +173,7 @@ class JudgeAgent(BaseAgent):
         return f"Only {content_type} content available - {match_quality} for {profile.age_group.value} user"
 
     def _evaluate_two_candidates(
-        self,
-        point: RoutePoint,
-        candidates: list[ContentResult],
-        profile: UserProfile
+        self, point: RoutePoint, candidates: list[ContentResult], profile: UserProfile
     ) -> dict[str, Any]:
         """
         Evaluate two candidates (when one agent didn't respond).
@@ -194,11 +192,11 @@ class JudgeAgent(BaseAgent):
             type_emoji = {
                 ContentType.VIDEO: "🎬",
                 ContentType.MUSIC: "🎵",
-                ContentType.TEXT: "📖"
+                ContentType.TEXT: "📖",
             }.get(c.content_type, "📄")
 
             candidate_descriptions.append(
-                f"{i+1}. {type_emoji} [{c.content_type.value.upper()}] {c.title}\n"
+                f"{i + 1}. {type_emoji} [{c.content_type.value.upper()}] {c.title}\n"
                 f"   Description: {c.description[:150] if c.description else 'N/A'}...\n"
                 f"   Initial Score: {c.relevance_score:.1f}/10"
             )
@@ -245,37 +243,32 @@ REASONING: [2-3 sentences explaining why this content is best for THIS user]"""
             return self._fallback_two_candidate_selection(candidates, type_preferences)
 
     def _parse_two_candidate_response(
-        self,
-        response: str,
-        candidates: list[ContentResult]
+        self, response: str, candidates: list[ContentResult]
     ) -> dict[str, Any]:
         """Parse LLM response for two-candidate evaluation."""
-        result = {
-            'scores': {},
-            'winner_index': 0,
-            'winner_score': 5.0,
-            'reasoning': ''
-        }
+        result = {"scores": {}, "winner_index": 0, "winner_score": 5.0, "reasoning": ""}
 
         try:
             # Parse winner
-            winner_match = re.search(r'WINNER:\s*(\d+)', response)
+            winner_match = re.search(r"WINNER:\s*(\d+)", response)
             if winner_match:
-                result['winner_index'] = int(winner_match.group(1)) - 1
+                result["winner_index"] = int(winner_match.group(1)) - 1
 
             # Parse winner score
-            winner_score_match = re.search(r'WINNER_SCORE:\s*([\d.]+)', response)
+            winner_score_match = re.search(r"WINNER_SCORE:\s*([\d.]+)", response)
             if winner_score_match:
-                result['winner_score'] = float(winner_score_match.group(1))
+                result["winner_score"] = float(winner_score_match.group(1))
 
             # Parse reasoning
-            reasoning_match = re.search(r'REASONING:\s*(.+?)(?=$|\n\n)', response, re.DOTALL)
+            reasoning_match = re.search(
+                r"REASONING:\s*(.+?)(?=$|\n\n)", response, re.DOTALL
+            )
             if reasoning_match:
-                result['reasoning'] = reasoning_match.group(1).strip()
+                result["reasoning"] = reasoning_match.group(1).strip()
 
             # Set scores
             for _i, c in enumerate(candidates):
-                result['scores'][c.content_type] = c.relevance_score
+                result["scores"][c.content_type] = c.relevance_score
 
         except Exception as e:
             logger.warning(f"Error parsing two-candidate response: {e}")
@@ -283,9 +276,7 @@ REASONING: [2-3 sentences explaining why this content is best for THIS user]"""
         return result
 
     def _fallback_two_candidate_selection(
-        self,
-        candidates: list[ContentResult],
-        type_preferences: dict[str, float]
+        self, candidates: list[ContentResult], type_preferences: dict[str, float]
     ) -> dict[str, Any]:
         """Fallback selection based on user profile preferences."""
         scored = []
@@ -300,17 +291,14 @@ REASONING: [2-3 sentences explaining why this content is best for THIS user]"""
         best_idx, best_content, best_score = scored[0]
 
         return {
-            'winner_index': best_idx,
-            'winner_score': min(best_score, 10.0),
-            'reasoning': f"Selected {best_content.content_type.value} based on user profile preferences",
-            'scores': {c.content_type: c.relevance_score for c in candidates}
+            "winner_index": best_idx,
+            "winner_score": min(best_score, 10.0),
+            "reasoning": f"Selected {best_content.content_type.value} based on user profile preferences",
+            "scores": {c.content_type: c.relevance_score for c in candidates},
         }
 
     def _evaluate_candidates(
-        self,
-        point: RoutePoint,
-        candidates: list[ContentResult],
-        profile: UserProfile
+        self, point: RoutePoint, candidates: list[ContentResult], profile: UserProfile
     ) -> dict[str, Any]:
         """
         Use LLM to evaluate and rank all 3 candidates with user profile.
@@ -335,11 +323,11 @@ REASONING: [2-3 sentences explaining why this content is best for THIS user]"""
             type_emoji = {
                 ContentType.VIDEO: "🎬",
                 ContentType.MUSIC: "🎵",
-                ContentType.TEXT: "📖"
+                ContentType.TEXT: "📖",
             }.get(c.content_type, "📄")
 
             candidate_descriptions.append(
-                f"{i+1}. {type_emoji} [{c.content_type.value.upper()}] {c.title}\n"
+                f"{i + 1}. {type_emoji} [{c.content_type.value.upper()}] {c.title}\n"
                 f"   Source: {c.source}\n"
                 f"   Description: {c.description[:150] if c.description else 'N/A'}...\n"
                 f"   Initial Score: {c.relevance_score:.1f}/10"
@@ -413,62 +401,57 @@ REASONING: [2-3 sentences explaining why this content is the best choice for THI
 
             best_idx = max(scored, key=lambda x: x[1])[0]
             return {
-                'winner_index': best_idx,
-                'winner_score': candidates[best_idx].relevance_score,
-                'reasoning': f'Selected based on user profile preferences ({profile.age_group.value})',
-                'scores': {c.content_type: c.relevance_score for c in candidates}
+                "winner_index": best_idx,
+                "winner_score": candidates[best_idx].relevance_score,
+                "reasoning": f"Selected based on user profile preferences ({profile.age_group.value})",
+                "scores": {c.content_type: c.relevance_score for c in candidates},
             }
 
     def _parse_evaluation_response(
-        self,
-        response: str,
-        candidates: list[ContentResult]
+        self, response: str, candidates: list[ContentResult]
     ) -> dict[str, Any]:
         """Parse the LLM evaluation response."""
 
-        result = {
-            'scores': {},
-            'winner_index': 0,
-            'winner_score': 5.0,
-            'reasoning': ''
-        }
+        result = {"scores": {}, "winner_index": 0, "winner_score": 5.0, "reasoning": ""}
 
         try:
             # Parse scores
-            video_match = re.search(r'Video:\s*([\d.]+)', response, re.IGNORECASE)
-            music_match = re.search(r'Music:\s*([\d.]+)', response, re.IGNORECASE)
-            text_match = re.search(r'Text:\s*([\d.]+)', response, re.IGNORECASE)
+            video_match = re.search(r"Video:\s*([\d.]+)", response, re.IGNORECASE)
+            music_match = re.search(r"Music:\s*([\d.]+)", response, re.IGNORECASE)
+            text_match = re.search(r"Text:\s*([\d.]+)", response, re.IGNORECASE)
 
             if video_match:
-                result['scores'][ContentType.VIDEO] = float(video_match.group(1))
+                result["scores"][ContentType.VIDEO] = float(video_match.group(1))
             if music_match:
-                result['scores'][ContentType.MUSIC] = float(music_match.group(1))
+                result["scores"][ContentType.MUSIC] = float(music_match.group(1))
             if text_match:
-                result['scores'][ContentType.TEXT] = float(text_match.group(1))
+                result["scores"][ContentType.TEXT] = float(text_match.group(1))
 
             # Parse winner
-            winner_match = re.search(r'WINNER:\s*(\d+)', response)
+            winner_match = re.search(r"WINNER:\s*(\d+)", response)
             if winner_match:
-                result['winner_index'] = int(winner_match.group(1)) - 1
+                result["winner_index"] = int(winner_match.group(1)) - 1
 
             # Parse winner score
-            winner_score_match = re.search(r'WINNER_SCORE:\s*([\d.]+)', response)
+            winner_score_match = re.search(r"WINNER_SCORE:\s*([\d.]+)", response)
             if winner_score_match:
-                result['winner_score'] = float(winner_score_match.group(1))
+                result["winner_score"] = float(winner_score_match.group(1))
 
             # Parse reasoning
-            reasoning_match = re.search(r'REASONING:\s*(.+?)(?=$|\n\n)', response, re.DOTALL)
+            reasoning_match = re.search(
+                r"REASONING:\s*(.+?)(?=$|\n\n)", response, re.DOTALL
+            )
             if reasoning_match:
-                result['reasoning'] = reasoning_match.group(1).strip()
+                result["reasoning"] = reasoning_match.group(1).strip()
             else:
                 # Try to get any text after REASONING
-                parts = response.split('REASONING:')
+                parts = response.split("REASONING:")
                 if len(parts) > 1:
-                    result['reasoning'] = parts[1].strip()[:200]
+                    result["reasoning"] = parts[1].strip()[:200]
 
             # Validate winner index
-            if result['winner_index'] < 0 or result['winner_index'] >= len(candidates):
-                result['winner_index'] = 0
+            if result["winner_index"] < 0 or result["winner_index"] >= len(candidates):
+                result["winner_index"] = 0
 
         except Exception as e:
             logger.warning(f"Error parsing evaluation: {e}")
@@ -479,7 +462,7 @@ REASONING: [2-3 sentences explaining why this content is the best choice for THI
         self,
         point: RoutePoint,
         candidates: list[ContentResult],
-        user_profile: UserProfile | None = None
+        user_profile: UserProfile | None = None,
     ) -> ContentResult:
         """
         Quick evaluation without full LLM analysis.
@@ -518,28 +501,36 @@ REASONING: [2-3 sentences explaining why this content is the best choice for THI
                 score += 2.0
 
             # Boost for historical content at historical sites
-            if c.metadata.get('is_historical') or c.metadata.get('fact_type') == 'historical':
-                if any(word in location for word in ['museum', 'memorial', 'ancient', 'old']):
+            if (
+                c.metadata.get("is_historical")
+                or c.metadata.get("fact_type") == "historical"
+            ):
+                if any(
+                    word in location
+                    for word in ["museum", "memorial", "ancient", "old"]
+                ):
                     score += 1.5
 
             # Slight preference for video at scenic locations
             if c.content_type == ContentType.VIDEO:
-                if any(word in location for word in ['view', 'park', 'beach', 'mountain']):
+                if any(
+                    word in location for word in ["view", "park", "beach", "mountain"]
+                ):
                     score += 1.0
 
             # Slight preference for music at cultural locations
             if c.content_type == ContentType.MUSIC:
-                if any(word in location for word in ['theatre', 'concert', 'festival']):
+                if any(word in location for word in ["theatre", "concert", "festival"]):
                     score += 1.0
 
             # Age-specific boosts
             if profile.age_group == AgeGroup.KID:
                 # Kids love animated/fun content
-                if 'fun' in c.title.lower() or 'kids' in c.title.lower():
+                if "fun" in c.title.lower() or "kids" in c.title.lower():
                     score += 1.5
             elif profile.age_group == AgeGroup.SENIOR:
                 # Seniors appreciate classic/historical content
-                if 'classic' in c.title.lower() or 'history' in c.title.lower():
+                if "classic" in c.title.lower() or "history" in c.title.lower():
                     score += 1.5
 
             scored_candidates.append((c, min(score, 10.0)))
@@ -549,4 +540,3 @@ REASONING: [2-3 sentences explaining why this content is the best choice for THI
         best[0].relevance_score = best[1]
 
         return best[0]
-

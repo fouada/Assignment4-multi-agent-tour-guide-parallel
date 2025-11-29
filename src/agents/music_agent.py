@@ -2,6 +2,7 @@
 Music Agent - Specializes in finding relevant songs for locations.
 Uses YouTube Music search (or Spotify) and LLM for smart recommendations.
 """
+
 import re
 from typing import Any
 
@@ -37,7 +38,7 @@ class MusicAgent(BaseAgent):
 
                 auth_manager = SpotifyClientCredentials(
                     client_id=settings.spotify_client_id,
-                    client_secret=settings.spotify_client_secret
+                    client_secret=settings.spotify_client_secret,
                 )
                 self.spotify_client = spotipy.Spotify(auth_manager=auth_manager)
                 logger.info("Spotify client initialized")
@@ -47,6 +48,7 @@ class MusicAgent(BaseAgent):
         # Try YouTube search for music
         try:
             import importlib.util
+
             if importlib.util.find_spec("youtubesearchpython") is not None:
                 self.youtube_music_available = True
                 logger.info("YouTube music search available")
@@ -89,17 +91,17 @@ class MusicAgent(BaseAgent):
             return ContentResult(
                 point_id=point.id,
                 content_type=ContentType.MUSIC,
-                title=best_song.get('title', 'Unknown Song'),
+                title=best_song.get("title", "Unknown Song"),
                 description=f"by {best_song.get('artist', 'Unknown Artist')}",
-                url=best_song.get('url', ''),
-                source=best_song.get('source', 'Music'),
-                relevance_score=best_song.get('relevance_score', 5.0),
+                url=best_song.get("url", ""),
+                source=best_song.get("source", "Music"),
+                relevance_score=best_song.get("relevance_score", 5.0),
                 metadata={
-                    'artist': best_song.get('artist'),
-                    'album': best_song.get('album'),
-                    'duration': best_song.get('duration'),
-                    'preview_url': best_song.get('preview_url')
-                }
+                    "artist": best_song.get("artist"),
+                    "album": best_song.get("album"),
+                    "duration": best_song.get("duration"),
+                    "preview_url": best_song.get("preview_url"),
+                },
             )
 
         return self._get_mock_result(point)
@@ -125,7 +127,7 @@ Include both Hebrew and English search terms if relevant."""
 
         try:
             response = self._call_llm(prompt)
-            queries = [q.strip() for q in response.strip().split('\n') if q.strip()]
+            queries = [q.strip() for q in response.strip().split("\n") if q.strip()]
             return queries[:3] if queries else [f"{location} song", f"{location} music"]
         except Exception:
             return [f"{location} song", f"{location} Israeli song", f"{location} music"]
@@ -138,24 +140,23 @@ Include both Hebrew and English search terms if relevant."""
 
         try:
             results = self.spotify_client.search(
-                q=query,
-                type='track',
-                limit=limit,
-                market='IL'
+                q=query, type="track", limit=limit, market="IL"
             )
 
             songs = []
-            for track in results.get('tracks', {}).get('items', []):
-                artists = ', '.join([a['name'] for a in track.get('artists', [])])
-                songs.append({
-                    'title': track.get('name', ''),
-                    'artist': artists,
-                    'album': track.get('album', {}).get('name', ''),
-                    'url': track.get('external_urls', {}).get('spotify', ''),
-                    'preview_url': track.get('preview_url'),
-                    'duration': track.get('duration_ms', 0) // 1000,
-                    'source': 'Spotify'
-                })
+            for track in results.get("tracks", {}).get("items", []):
+                artists = ", ".join([a["name"] for a in track.get("artists", [])])
+                songs.append(
+                    {
+                        "title": track.get("name", ""),
+                        "artist": artists,
+                        "album": track.get("album", {}).get("name", ""),
+                        "url": track.get("external_urls", {}).get("spotify", ""),
+                        "preview_url": track.get("preview_url"),
+                        "duration": track.get("duration_ms", 0) // 1000,
+                        "source": "Spotify",
+                    }
+                )
 
             return songs
 
@@ -179,15 +180,19 @@ Include both Hebrew and English search terms if relevant."""
             results = search.result()
 
             songs = []
-            for video in results.get('result', []):
-                songs.append({
-                    'title': video.get('title', ''),
-                    'artist': video.get('channel', {}).get('name', ''),
-                    'url': video.get('link', ''),
-                    'duration': video.get('duration', ''),
-                    'thumbnail': video.get('thumbnails', [{}])[0].get('url') if video.get('thumbnails') else None,
-                    'source': 'YouTube Music'
-                })
+            for video in results.get("result", []):
+                songs.append(
+                    {
+                        "title": video.get("title", ""),
+                        "artist": video.get("channel", {}).get("name", ""),
+                        "url": video.get("link", ""),
+                        "duration": video.get("duration", ""),
+                        "thumbnail": video.get("thumbnails", [{}])[0].get("url")
+                        if video.get("thumbnails")
+                        else None,
+                        "source": "YouTube Music",
+                    }
+                )
 
             return songs
 
@@ -204,10 +209,12 @@ Include both Hebrew and English search terms if relevant."""
         location = point.location_name or point.address
 
         # Create song list for LLM
-        song_list = "\n".join([
-            f"{i+1}. \"{s['title']}\" by {s.get('artist', 'Unknown')}"
-            for i, s in enumerate(songs[:5])
-        ])
+        song_list = "\n".join(
+            [
+                f'{i + 1}. "{s["title"]}" by {s.get("artist", "Unknown")}'
+                for i, s in enumerate(songs[:5])
+            ]
+        )
 
         prompt = f"""Select the BEST song for a traveler passing through this location.
 
@@ -236,23 +243,27 @@ REASON: [one sentence]"""
             response = self._call_llm(prompt)
 
             # Parse response
-            song_match = re.search(r'SONG:\s*(\d+)', response)
-            score_match = re.search(r'SCORE:\s*([\d.]+)', response)
-            reason_match = re.search(r'REASON:\s*(.+)', response)
+            song_match = re.search(r"SONG:\s*(\d+)", response)
+            score_match = re.search(r"SCORE:\s*([\d.]+)", response)
+            reason_match = re.search(r"REASON:\s*(.+)", response)
 
             if song_match:
                 idx = int(song_match.group(1)) - 1
                 if 0 <= idx < len(songs):
                     selected = songs[idx].copy()
-                    selected['relevance_score'] = float(score_match.group(1)) if score_match else 5.0
-                    selected['selection_reason'] = reason_match.group(1) if reason_match else ""
+                    selected["relevance_score"] = (
+                        float(score_match.group(1)) if score_match else 5.0
+                    )
+                    selected["selection_reason"] = (
+                        reason_match.group(1) if reason_match else ""
+                    )
                     return selected
         except Exception as e:
             logger.warning(f"Song selection failed: {e}")
 
         # Fallback: return first song
         if songs:
-            songs[0]['relevance_score'] = 5.0
+            songs[0]["relevance_score"] = 5.0
             return songs[0]
 
         return None
@@ -266,23 +277,23 @@ REASON: [one sentence]"""
             "Ammunition Hill": {
                 "title": "Givat HaTachmoshet (Ammunition Hill)",
                 "artist": "Yehoram Gaon",
-                "url": "https://www.youtube.com/watch?v=ammunition_hill"
+                "url": "https://www.youtube.com/watch?v=ammunition_hill",
             },
             "Tel Aviv": {
                 "title": "Tel Aviv",
                 "artist": "Omer Adam",
-                "url": "https://www.youtube.com/watch?v=telaviv"
+                "url": "https://www.youtube.com/watch?v=telaviv",
             },
             "Jerusalem": {
                 "title": "Jerusalem of Gold (Yerushalayim Shel Zahav)",
                 "artist": "Naomi Shemer",
-                "url": "https://www.youtube.com/watch?v=jerusalem_gold"
+                "url": "https://www.youtube.com/watch?v=jerusalem_gold",
             },
             "Latrun": {
                 "title": "In the Fields of the Land",
                 "artist": "HaGashash HaHiver",
-                "url": "https://www.youtube.com/watch?v=latrun"
-            }
+                "url": "https://www.youtube.com/watch?v=latrun",
+            },
         }
 
         # Find matching mock or create generic one
@@ -296,7 +307,7 @@ REASON: [one sentence]"""
             mock = {
                 "title": f"Song About {location}",
                 "artist": "Israeli Artist",
-                "url": f"https://www.youtube.com/watch?v=mock_{point.id}"
+                "url": f"https://www.youtube.com/watch?v=mock_{point.id}",
             }
 
         return ContentResult(
@@ -307,6 +318,5 @@ REASON: [one sentence]"""
             url=mock["url"],
             source="YouTube Music (Mock)",
             relevance_score=7.0,
-            metadata={'artist': mock['artist'], 'mock': True}
+            metadata={"artist": mock["artist"], "mock": True},
         )
-

@@ -12,7 +12,6 @@ Tests cover:
 MIT Level Testing - 85%+ Coverage Target
 """
 
-
 from src.models.user_profile import (
     AccessibilityNeed,
     AgeGroup,
@@ -142,9 +141,7 @@ class TestUserProfile:
 
     def test_visual_impairment_prefers_audio(self):
         """Visual impairment should prefer audio content."""
-        profile = UserProfile(
-            accessibility_needs=[AccessibilityNeed.VISUAL_IMPAIRMENT]
-        )
+        profile = UserProfile(accessibility_needs=[AccessibilityNeed.VISUAL_IMPAIRMENT])
         weights = profile.get_content_type_preferences()
         assert weights["music"] > weights["video"]
         assert weights["video"] < 1.0
@@ -200,16 +197,12 @@ class TestUserProfile:
 
     def test_profile_with_interests(self):
         """Test profile with topic interests."""
-        profile = UserProfile(
-            interests=["history", "architecture", "nature"]
-        )
+        profile = UserProfile(interests=["history", "architecture", "nature"])
         assert len(profile.interests) == 3
 
     def test_profile_with_music_preferences(self):
         """Test profile with music preferences."""
-        profile = UserProfile(
-            music_genres=[MusicGenre.JAZZ, MusicGenre.CLASSICAL]
-        )
+        profile = UserProfile(music_genres=[MusicGenre.JAZZ, MusicGenre.CLASSICAL])
         assert MusicGenre.JAZZ in profile.music_genres
 
     def test_profile_language_preferences(self):
@@ -307,9 +300,7 @@ class TestAccessibilityFeatures:
 
     def test_cognitive_accessibility(self):
         """Test cognitive accessibility preferences."""
-        profile = UserProfile(
-            accessibility_needs=[AccessibilityNeed.COGNITIVE]
-        )
+        profile = UserProfile(accessibility_needs=[AccessibilityNeed.COGNITIVE])
         weights = profile.get_content_type_preferences()
         # Should have valid weights
         assert all(w >= 0 for w in weights.values())
@@ -348,9 +339,7 @@ class TestEdgeCases:
 
     def test_exclude_topics_filtering(self):
         """Test exclude topics list."""
-        profile = UserProfile(
-            exclude_topics=["violence", "adult_content", "politics"]
-        )
+        profile = UserProfile(exclude_topics=["violence", "adult_content", "politics"])
         assert "violence" in profile.exclude_topics
         assert len(profile.exclude_topics) == 3
 
@@ -376,9 +365,7 @@ class TestProfileContext:
 
     def test_judge_criteria_includes_preferences(self):
         """Test judge criteria includes content preferences."""
-        profile = UserProfile(
-            content_preference=ContentPreference.HISTORICAL
-        )
+        profile = UserProfile(content_preference=ContentPreference.HISTORICAL)
         criteria = profile.to_judge_criteria()
         assert isinstance(criteria, str)
 

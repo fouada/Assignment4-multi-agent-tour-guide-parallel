@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Mock googlemaps before importing the module
-sys.modules['googlemaps'] = MagicMock()
+sys.modules["googlemaps"] = MagicMock()
 
 from src.models.route import Route, RoutePoint  # noqa: E402
 from src.services.google_maps import (  # noqa: E402

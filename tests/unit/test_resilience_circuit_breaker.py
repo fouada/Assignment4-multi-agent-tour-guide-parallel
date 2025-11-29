@@ -10,6 +10,7 @@ Test Coverage:
 - Decorator and context manager usage
 - Statistics tracking
 """
+
 import time
 
 import pytest
@@ -58,11 +59,7 @@ class TestCircuitBreakerStats:
 
     def test_success_rate_calculation(self):
         """Test success rate calculation."""
-        stats = CircuitBreakerStats(
-            total_calls=10,
-            successful_calls=8,
-            failed_calls=2
-        )
+        stats = CircuitBreakerStats(total_calls=10, successful_calls=8, failed_calls=2)
         assert stats.success_rate == 0.8
 
     def test_failure_rate_empty(self):
@@ -72,11 +69,7 @@ class TestCircuitBreakerStats:
 
     def test_failure_rate_calculation(self):
         """Test failure rate calculation."""
-        stats = CircuitBreakerStats(
-            total_calls=10,
-            successful_calls=7,
-            failed_calls=3
-        )
+        stats = CircuitBreakerStats(total_calls=10, successful_calls=7, failed_calls=3)
         assert stats.failure_rate == 0.3
 
 
@@ -92,7 +85,7 @@ class TestCircuitBreaker:
             name="test_breaker",
             failure_threshold=3,
             success_threshold=2,
-            reset_timeout=0.1  # Short timeout for tests
+            reset_timeout=0.1,  # Short timeout for tests
         )
 
     def test_initial_state_closed(self, breaker):
@@ -204,9 +197,7 @@ class TestCircuitBreaker:
         """Test excluded exceptions don't count as failures."""
         CircuitBreaker._registry.clear()
         breaker = CircuitBreaker(
-            name="excluded_test",
-            failure_threshold=3,
-            excluded_exceptions={ValueError}
+            name="excluded_test", failure_threshold=3, excluded_exceptions={ValueError}
         )
 
         for _ in range(5):
@@ -221,7 +212,7 @@ class TestCircuitBreaker:
         breaker = CircuitBreaker(
             name="non_excluded_test",
             failure_threshold=3,
-            excluded_exceptions={ValueError}
+            excluded_exceptions={ValueError},
         )
 
         for _ in range(3):
@@ -238,9 +229,7 @@ class TestCircuitBreakerContextManager:
         """Create a circuit breaker for context manager tests."""
         CircuitBreaker._registry.clear()
         return CircuitBreaker(
-            name="context_test",
-            failure_threshold=3,
-            reset_timeout=0.1
+            name="context_test", failure_threshold=3, reset_timeout=0.1
         )
 
     def test_context_manager_success(self, breaker):
@@ -394,9 +383,7 @@ class TestCircuitBreakerGetStats:
         """Test getting circuit breaker statistics."""
         CircuitBreaker._registry.clear()
         breaker = CircuitBreaker(
-            name="stats_test",
-            failure_threshold=5,
-            reset_timeout=30.0
+            name="stats_test", failure_threshold=5, reset_timeout=30.0
         )
 
         breaker.record_success()
@@ -426,9 +413,7 @@ class TestCircuitBreakerCallback:
             callback_called.append((old_state, new_state))
 
         breaker = CircuitBreaker(
-            name="callback_test",
-            failure_threshold=2,
-            on_state_change=on_change
+            name="callback_test", failure_threshold=2, on_state_change=on_change
         )
 
         breaker.record_failure()
@@ -445,12 +430,9 @@ class TestCircuitBreakerCallback:
             raise RuntimeError("Callback error")
 
         breaker = CircuitBreaker(
-            name="bad_callback_test",
-            failure_threshold=1,
-            on_state_change=bad_callback
+            name="bad_callback_test", failure_threshold=1, on_state_change=bad_callback
         )
 
         # Should not raise even though callback fails
         breaker.record_failure()
         assert breaker.state == CircuitState.OPEN
-

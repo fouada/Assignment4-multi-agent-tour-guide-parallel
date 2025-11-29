@@ -7,6 +7,7 @@ Test Coverage:
 - Default values
 - Agent skills configuration
 """
+
 import os
 from unittest.mock import patch
 
@@ -57,7 +58,7 @@ class TestSettings:
             "LLM_MODEL": "gpt-4",
             "LLM_TEMPERATURE": "0.5",
             "LOG_LEVEL": "DEBUG",
-            "MAX_CONCURRENT_THREADS": "24"
+            "MAX_CONCURRENT_THREADS": "24",
         }
 
         with patch.dict(os.environ, env_vars, clear=True):
@@ -82,7 +83,7 @@ class TestSettings:
             "ANTHROPIC_API_KEY": "test_anthropic_key",
             "YOUTUBE_API_KEY": "test_youtube_key",
             "SPOTIFY_CLIENT_ID": "test_spotify_id",
-            "SPOTIFY_CLIENT_SECRET": "test_spotify_secret"
+            "SPOTIFY_CLIENT_SECRET": "test_spotify_secret",
         }
 
         with patch.dict(os.environ, env_vars, clear=True):
@@ -97,10 +98,7 @@ class TestSettings:
 
     def test_queue_settings(self):
         """Test queue-related settings."""
-        env_vars = {
-            "QUEUE_SOFT_TIMEOUT": "20.0",
-            "QUEUE_HARD_TIMEOUT": "45.0"
-        }
+        env_vars = {"QUEUE_SOFT_TIMEOUT": "20.0", "QUEUE_HARD_TIMEOUT": "45.0"}
 
         with patch.dict(os.environ, env_vars, clear=True):
             test_settings = Settings(_env_file=None)
@@ -146,20 +144,28 @@ class TestAgentSkills:
         """Test text agent skill definition."""
         text = AGENT_SKILLS["text_agent"]
         assert text["name"] == "Historical/Facts Specialist"
-        assert "stories" in text["description"].lower() or "facts" in text["description"].lower()
+        assert (
+            "stories" in text["description"].lower()
+            or "facts" in text["description"].lower()
+        )
         assert isinstance(text["scoring_criteria"], list)
 
     def test_judge_agent_skills(self):
         """Test judge agent skill definition."""
         judge = AGENT_SKILLS["judge_agent"]
         assert judge["name"] == "Content Judge"
-        assert "evaluating" in judge["description"].lower() or "selecting" in judge["description"].lower()
+        assert (
+            "evaluating" in judge["description"].lower()
+            or "selecting" in judge["description"].lower()
+        )
         assert isinstance(judge["scoring_criteria"], list)
 
     def test_scoring_criteria_not_empty(self):
         """Test all agents have non-empty scoring criteria."""
         for agent_name, skills in AGENT_SKILLS.items():
-            assert len(skills["scoring_criteria"]) >= 3, f"{agent_name} should have at least 3 criteria"
+            assert len(skills["scoring_criteria"]) >= 3, (
+                f"{agent_name} should have at least 3 criteria"
+            )
 
 
 class TestSingletonSettings:
@@ -190,9 +196,8 @@ class TestSingletonSettings:
             "llm_temperature",
             "log_level",
             "log_file",
-            "max_concurrent_threads"
+            "max_concurrent_threads",
         ]
 
         for attr in required_attrs:
             assert hasattr(settings, attr), f"Settings missing attribute: {attr}"
-

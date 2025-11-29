@@ -332,4 +332,3 @@ class TestContainerParentLookup:
 
         child_service = child.resolve(Service)
         assert isinstance(child_service, ChildServiceImpl)
-

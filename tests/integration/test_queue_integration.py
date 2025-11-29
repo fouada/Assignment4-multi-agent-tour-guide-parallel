@@ -7,6 +7,7 @@ Test Coverage:
 - End-to-end queue processing
 - Graceful degradation scenarios
 """
+
 import threading
 import time
 
@@ -48,7 +49,7 @@ class TestQueueWithAgents:
                 content_type=ContentType.VIDEO,
                 title="Video Result",
                 source="YouTube",
-                relevance_score=8.0
+                relevance_score=8.0,
             )
             queue.submit_success("video", result)
 
@@ -59,7 +60,7 @@ class TestQueueWithAgents:
                 content_type=ContentType.MUSIC,
                 title="Music Result",
                 source="Spotify",
-                relevance_score=7.5
+                relevance_score=7.5,
             )
             queue.submit_success("music", result)
 
@@ -70,7 +71,7 @@ class TestQueueWithAgents:
                 content_type=ContentType.TEXT,
                 title="Text Result",
                 source="Wikipedia",
-                relevance_score=9.0
+                relevance_score=9.0,
             )
             queue.submit_success("text", result)
 
@@ -109,7 +110,7 @@ class TestQueueWithAgents:
                 point_id="partial_fail_test",
                 content_type=content_type,
                 title=f"{agent_type} Result",
-                source="Test"
+                source="Test",
             )
             queue.submit_success(agent_type, result)
 
@@ -118,8 +119,12 @@ class TestQueueWithAgents:
             queue.submit_failure("text", "API Error")
 
         threads = [
-            threading.Thread(target=successful_agent, args=("video", ContentType.VIDEO, 0.05)),
-            threading.Thread(target=successful_agent, args=("music", ContentType.MUSIC, 0.08)),
+            threading.Thread(
+                target=successful_agent, args=("video", ContentType.VIDEO, 0.05)
+            ),
+            threading.Thread(
+                target=successful_agent, args=("music", ContentType.MUSIC, 0.08)
+            ),
             threading.Thread(target=failing_agent),
         ]
         for t in threads:
@@ -145,7 +150,7 @@ class TestQueueWithAgents:
                 point_id="slow_agent_test",
                 content_type=content_type,
                 title=f"{agent_type} Result",
-                source="Test"
+                source="Test",
             )
             queue.submit_success(agent_type, result)
 
@@ -154,7 +159,9 @@ class TestQueueWithAgents:
             # This won't complete before soft timeout
 
         threads = [
-            threading.Thread(target=fast_agent, args=("video", ContentType.VIDEO, 0.05)),
+            threading.Thread(
+                target=fast_agent, args=("video", ContentType.VIDEO, 0.05)
+            ),
             threading.Thread(target=fast_agent, args=("music", ContentType.MUSIC, 0.1)),
             threading.Thread(target=very_slow_agent, daemon=True),
         ]
@@ -195,7 +202,7 @@ class TestQueueManagerIntegration:
                     point_id=point_id,
                     content_type=ContentType.VIDEO,
                     title=f"{agent_type} for {point_id}",
-                    source="Test"
+                    source="Test",
                 )
                 queue.submit_success(agent_type, result)
 
@@ -233,7 +240,9 @@ class TestQueueManagerIntegration:
         def process_complete():
             queue = manager.get_or_create_queue("complete_queue")
             for agent in ["video", "music", "text"]:
-                result = ContentResult(content_type=ContentType.VIDEO, title="Test", source="Test")
+                result = ContentResult(
+                    content_type=ContentType.VIDEO, title="Test", source="Test"
+                )
                 queue.submit_success(agent, result)
             _, metrics = queue.wait_for_results()
             manager.complete_queue("complete_queue", metrics)
@@ -241,7 +250,9 @@ class TestQueueManagerIntegration:
         def process_degraded():
             queue = manager.get_or_create_queue("degraded_queue")
             for agent in ["video", "music"]:
-                result = ContentResult(content_type=ContentType.VIDEO, title="Test", source="Test")
+                result = ContentResult(
+                    content_type=ContentType.VIDEO, title="Test", source="Test"
+                )
                 queue.submit_success(agent, result)
             queue.submit_failure("text", "Error")
             _, metrics = queue.wait_for_results()
@@ -270,7 +281,7 @@ class TestEndToEndQueueFlow:
             address="Tel Aviv, Israel",
             location_name="Rabin Square",
             latitude=32.0853,
-            longitude=34.7818
+            longitude=34.7818,
         )
 
         queue = SmartAgentQueue(point.id)
@@ -289,13 +300,12 @@ class TestEndToEndQueueFlow:
                 content_type=content_type,
                 title=title,
                 source="Test",
-                relevance_score=score
+                relevance_score=score,
             )
             queue.submit_success(agent_type, result)
 
         threads = [
-            threading.Thread(target=agent_worker, args=args)
-            for args in agent_results
+            threading.Thread(target=agent_worker, args=args) for args in agent_results
         ]
 
         for t in threads:
@@ -317,4 +327,3 @@ class TestEndToEndQueueFlow:
         assert "Tel Aviv City Tour" in titles
         assert "Tel Aviv Song" in titles
         assert "History of Tel Aviv" in titles
-

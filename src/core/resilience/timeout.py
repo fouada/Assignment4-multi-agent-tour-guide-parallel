@@ -97,6 +97,7 @@ def timeout(
         def get_data():
             return fetch_from_slow_service()
     """
+
     def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -125,6 +126,7 @@ def timeout_context(seconds: float):
         with timeout_context(10):
             slow_operation()
     """
+
     def handler(signum, frame):
         raise TimeoutError(f"Operation timed out after {seconds} seconds", seconds)
 
@@ -141,6 +143,7 @@ def timeout_context(seconds: float):
 
 
 # ============== Async Timeout ==============
+
 
 async def async_with_timeout(
     coro,
@@ -177,6 +180,7 @@ def async_timeout(seconds: float) -> Callable:
         async def slow_async_call():
             return await aiohttp.get(slow_url)
     """
+
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -184,6 +188,7 @@ def async_timeout(seconds: float) -> Callable:
                 func(*args, **kwargs),
                 seconds,
             )
-        return wrapper
-    return decorator
 
+        return wrapper
+
+    return decorator

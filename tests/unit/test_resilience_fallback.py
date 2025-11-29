@@ -91,6 +91,7 @@ class TestFallbackClass:
 
     def test_fallback_chain(self):
         """Test fallback chain execution."""
+
         def fallback1():
             raise ValueError("Fallback1 failed")
 
@@ -169,6 +170,7 @@ class TestFallbackClass:
 
     def test_fallback_fn_fails_uses_chain(self):
         """Test if fallback_fn fails, tries chain."""
+
         def failing_fallback():
             raise ValueError("Fallback failed")
 
@@ -188,6 +190,7 @@ class TestFallbackClass:
 
     def test_fallback_fn_fails_uses_default(self):
         """Test if fallback_fn fails, uses default."""
+
         def failing_fallback():
             raise ValueError("Fallback failed")
 
@@ -208,6 +211,7 @@ class TestFallbackDecorator:
 
     def test_decorator_success(self):
         """Test decorator with successful function."""
+
         @fallback(default_value="fallback")
         def my_func():
             return "success"
@@ -216,6 +220,7 @@ class TestFallbackDecorator:
 
     def test_decorator_fallback(self):
         """Test decorator uses fallback on error."""
+
         @fallback(default_value="fallback_value")
         def failing_func():
             raise ValueError("Failed")
@@ -224,6 +229,7 @@ class TestFallbackDecorator:
 
     def test_decorator_with_fallback_fn(self):
         """Test decorator with fallback function."""
+
         def backup():
             return "backup_result"
 
@@ -235,6 +241,7 @@ class TestFallbackDecorator:
 
     def test_decorator_preserves_metadata(self):
         """Test decorator preserves function metadata."""
+
         @fallback(default_value="default")
         def my_func():
             """My docstring."""
@@ -245,6 +252,7 @@ class TestFallbackDecorator:
 
     def test_decorator_exposes_handler(self):
         """Test decorated function exposes fallback handler."""
+
         @fallback(default_value="default")
         def my_func():
             return "result"
@@ -254,6 +262,7 @@ class TestFallbackDecorator:
 
     def test_decorator_with_chain(self):
         """Test decorator with fallback chain."""
+
         def fallback1():
             raise ValueError("Failed1")
 
@@ -348,4 +357,3 @@ class TestCacheFallback:
         # Should not raise
         result = my_func(1)
         assert result == "result_1"
-
