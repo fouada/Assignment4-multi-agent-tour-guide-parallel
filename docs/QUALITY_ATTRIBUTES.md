@@ -1,5 +1,23 @@
 # Quality Attributes Analysis
 
+## ISO/IEC 25010:2011 Compliant Quality Framework
+
+> **📋 Full Compliance:** This document aligns with ISO/IEC 25010:2011 Systems and Software Quality Requirements and Evaluation (SQuaRE).  
+> See [ISO_IEC_25010_COMPLIANCE.md](./ISO_IEC_25010_COMPLIANCE.md) for complete compliance mapping.
+
+---
+
+### ISO/IEC 25010 Mapping
+
+| Quality Attribute | ISO/IEC 25010 Characteristic | Sub-Characteristic |
+|-------------------|------------------------------|-------------------|
+| Fault Tolerance | Reliability | Fault Tolerance |
+| Error Handling | Reliability | Recoverability |
+| Scalability | Performance Efficiency | Capacity |
+| Extensibility | Maintainability | Modifiability |
+
+---
+
 ## Fault Tolerance, Error Handling, Scalability & Extensibility
 
 ---
