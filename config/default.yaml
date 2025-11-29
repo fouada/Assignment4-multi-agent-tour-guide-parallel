@@ -1,0 +1,93 @@
+# Multi-Agent Tour Guide - Default Configuration
+# MIT-Level Project
+
+# =============================================================================
+# System Settings
+# =============================================================================
+system:
+  name: "Multi-Agent Tour Guide"
+  version: "2.0.0"
+  environment: "development"
+
+# =============================================================================
+# Route Settings
+# =============================================================================
+route:
+  default_country: "Israel"
+  travel_mode: "driving"  # driving, walking, bicycling, transit
+  language: "he"
+
+# =============================================================================
+# Agent Settings
+# =============================================================================
+agents:
+  # Core agents (always enabled)
+  core:
+    - type: video
+      enabled: true
+      timeout: 10
+      retries: 3
+      config: src/agents/configs/video_agent.yaml
+      
+    - type: music
+      enabled: true
+      timeout: 10
+      retries: 3
+      config: src/agents/configs/music_agent.yaml
+      
+    - type: text
+      enabled: true
+      timeout: 10
+      retries: 3
+      config: src/agents/configs/text_agent.yaml
+      
+    - type: judge
+      enabled: true
+      timeout: 15
+      config: src/agents/configs/judge_agent.yaml
+  
+  # Plugin agents (optional)
+  plugins:
+    - type: weather
+      enabled: false
+      config: plugins/weather/config.yaml
+      
+    - type: food
+      enabled: false
+      config: plugins/food/config.yaml
+
+# =============================================================================
+# Queue Settings
+# =============================================================================
+queue:
+  expected_agents: 3
+  soft_timeout_seconds: 15.0  # Proceed with 2/3 after this
+  hard_timeout_seconds: 30.0  # Proceed with 1/3 after this
+  min_required_for_soft: 2
+  min_required_for_hard: 1
+
+# =============================================================================
+# LLM Settings
+# =============================================================================
+llm:
+  provider: "openai"
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 1000
+
+# =============================================================================
+# Logging
+# =============================================================================
+logging:
+  level: "INFO"
+  file: "tour_guide.log"
+  format: "%(asctime)s | %(levelname)s | %(message)s"
+
+# =============================================================================
+# Threading
+# =============================================================================
+threading:
+  max_workers_per_point: 3
+  max_parallel_points: 2
+  point_interval_seconds: 5.0
+

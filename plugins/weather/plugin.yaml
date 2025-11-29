@@ -1,0 +1,107 @@
+# Weather Plugin Manifest
+# =======================
+# This file is discovered by the PluginManager during startup.
+# It defines the plugin metadata and configuration schema.
+
+name: weather
+version: 1.0.0
+description: |
+  Weather information plugin for the Tour Guide system.
+  Provides real-time weather data and travel advice for route points.
+
+author: Tour Guide Team
+author_email: team@tourguide.example.com
+license: MIT
+homepage: https://github.com/example/tour-guide-weather-plugin
+
+# Plugin categorization
+category: enrichment
+tags:
+  - weather
+  - real-time
+  - travel-advice
+
+# Capabilities this plugin provides
+capabilities:
+  - CONTENT_PROVIDER
+  - REALTIME_DATA
+  - ENRICHMENT
+
+# Python module and class to load
+module: plugin
+class: WeatherPlugin
+
+# Dependencies on other plugins (loaded first)
+depends_on: []
+
+# Conflicts with other plugins
+conflicts_with: []
+
+# Python version requirement
+python_requires: ">=3.10"
+
+# Plugin priority (lower = higher priority)
+priority: 150
+
+# Whether plugin is enabled by default
+enabled: true
+
+# Whether to auto-start on load
+auto_start: true
+
+# Configuration schema (JSON Schema)
+config_schema:
+  type: object
+  properties:
+    api_provider:
+      type: string
+      description: Weather API provider
+      default: openweathermap
+      enum:
+        - openweathermap
+        - weatherapi
+        - mock
+    api_key:
+      type: string
+      description: API key for weather service
+    cache_ttl_seconds:
+      type: integer
+      description: How long to cache weather data
+      default: 1800
+    temperature_unit:
+      type: string
+      description: Temperature unit (celsius or fahrenheit)
+      default: celsius
+      enum:
+        - celsius
+        - fahrenheit
+    include_forecast:
+      type: boolean
+      description: Include weather forecast
+      default: true
+    forecast_hours:
+      type: integer
+      description: Hours of forecast to include
+      default: 12
+    generate_advice:
+      type: boolean
+      description: Use LLM to generate travel advice
+      default: true
+  required: []
+
+# LLM configuration for this plugin
+llm:
+  enabled: true
+  model: gpt-4o-mini
+  temperature: 0.7
+  system_prompt: |
+    You are a helpful travel weather advisor. Based on the current weather 
+    conditions at a location, provide brief, practical advice for travelers.
+    
+    Consider:
+    - What to wear
+    - Whether outdoor activities are recommended
+    - Any weather warnings or precautions
+    
+    Keep your advice concise (2-3 sentences) and friendly.
+

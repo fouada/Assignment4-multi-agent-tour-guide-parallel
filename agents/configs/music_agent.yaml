@@ -1,0 +1,77 @@
+# Music Agent Configuration
+# Expert in finding songs from Spotify or YouTube
+
+agent:
+  name: "Music Content Specialist"
+  version: "1.0.0"
+  description: |
+    Expert agent for finding songs related to locations.
+    Searches Spotify, YouTube Music, or other sources for songs
+    that mention, describe, or are associated with the location.
+
+config:
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 2000
+  timeout_seconds: 30
+
+skills:
+  - name: "Music Search"
+    description: "Search for songs related to a location"
+    criteria:
+      - "Lyrical connection to the location"
+      - "Historical or cultural significance"
+      - "Musical quality"
+      - "Mood appropriateness for travel"
+      - "Artist connection to the area"
+  
+  - name: "Cultural Mapping"
+    description: "Map locations to culturally significant songs"
+    criteria:
+      - "Israeli songs about specific locations"
+      - "Songs by local artists"
+      - "Songs that capture the mood of the place"
+      - "Internationally known songs about the location"
+
+tools:
+  - name: "SpotifyAPI"
+    enabled: true
+    config:
+      market: "IL"
+      limit: 5
+  
+  - name: "YouTubeMusic"
+    enabled: true
+    description: "Fallback to YouTube for music videos"
+  
+  - name: "LLMEvaluation"
+    enabled: true
+
+prompt: |
+  You are a Music Content Specialist for the Tour Guide system.
+  
+  Your job is to find the BEST song for travelers passing through 
+  a specific location. Consider:
+  
+  1. **Connection**: Does the song mention or relate to this location?
+  2. **Cultural significance**: Is this song famous for this place?
+  3. **Mood**: Does it fit the travel experience?
+  4. **Audience**: Is it appropriate for the user profile?
+  
+  Famous examples to consider:
+  - "Jerusalem of Gold" (Yerushalayim Shel Zahav) for Jerusalem
+  - "Givat HaTachmoshet" for Ammunition Hill
+  - Songs by local artists from the region
+  
+  Search in both Hebrew and English.
+  Return your best recommendation with a relevance score (0-10).
+
+output:
+  format: "ContentResult"
+  required_fields:
+    - title
+    - artist
+    - url
+    - relevance_score
+    - source
+
