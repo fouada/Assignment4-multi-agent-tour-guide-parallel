@@ -2,248 +2,305 @@
 
 ## MIT Level - Academic/Industrial Publishing Quality
 
-This document describes the comprehensive testing strategy for the Multi-Agent Tour Guide System, designed to meet academic publishing standards with **85%+ code coverage**.
+This document provides comprehensive testing specifications for the Multi-Agent Tour Guide System, designed to meet academic publishing standards with **85%+ code coverage** and **100% documented edge cases**.
 
 ---
 
 ## 📊 Test Coverage Summary
 
-| Category | Coverage Target | Description |
-|----------|----------------|-------------|
-| **Unit Tests** | 85%+ | Test individual components in isolation |
-| **Integration Tests** | 75%+ | Test component interactions |
-| **Performance Tests** | N/A | Benchmark critical paths |
-| **Edge Cases** | 100% documented | All edge cases identified and tested |
+| Metric | Value |
+|--------|-------|
+| **Total Tests** | 632+ |
+| **Overall Coverage** | 85%+ |
+| **Test Files** | 27 |
+| **Edge Cases** | 100% documented |
+| **CI/CD Threshold** | 85% enforced |
 
 ---
 
-## 🏗️ Test Structure
+## 📋 Test Catalog with Expected Results
 
-```
-tests/
-├── __init__.py
-├── conftest.py                    # Shared fixtures
-├── unit/                          # Unit tests
-│   ├── __init__.py
-│   ├── test_models_content.py     # Content model tests
-│   ├── test_models_route.py       # Route model tests
-│   ├── test_models_decision.py    # Decision model tests
-│   ├── test_models_output.py      # Output model tests
-│   ├── test_user_profile.py       # User profile tests
-│   ├── test_smart_queue.py        # Smart queue tests
-│   ├── test_config.py             # Configuration tests
-│   ├── test_resilience_circuit_breaker.py
-│   ├── test_resilience_retry.py
-│   ├── test_resilience_timeout.py
-│   └── test_resilience_rate_limiter.py
-├── integration/                   # Integration tests
-│   ├── __init__.py
-│   ├── test_agent_integration.py
-│   └── test_queue_integration.py
-├── performance/                   # Performance tests
-│   ├── __init__.py
-│   └── test_performance.py
-├── e2e/                          # End-to-end tests
-│   └── __init__.py
-└── fixtures/                     # Test data
-```
+### 1. Data Model Tests
 
----
+#### ContentType & AgentStatus (`test_models_content.py`)
 
-## 🧩 Test Categories
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_content_type_values` | Verify enum values | VIDEO="video", MUSIC="music", TEXT="text" |
+| `test_content_type_from_string` | Parse string to enum | "video" → ContentType.VIDEO |
+| `test_invalid_content_type` | Invalid string parsing | Raises ValueError |
+| `test_agent_status_values` | Verify status values | PENDING, RUNNING, COMPLETED, FAILED, TIMEOUT |
+| `test_agent_status_lifecycle` | Status transitions | PENDING → RUNNING → COMPLETED |
 
-### 1. Unit Tests (`tests/unit/`)
+#### ContentResult (`test_models_content.py`)
 
-#### Data Models
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_create_minimal_content_result` | Minimal valid result | ContentResult with required fields |
+| `test_content_result_score_boundaries` | Score validation | 0.0 ≤ relevance_score ≤ 10.0 |
+| `test_content_result_score_too_low` | Score below 0 | Raises ValidationError |
+| `test_content_result_score_too_high` | Score above 10 | Raises ValidationError |
+| `test_content_result_json_serialization` | JSON round-trip | Serialize → Deserialize = Original |
+| `test_empty_title` | Empty title handling | Accepts empty string |
+| `test_unicode_content` | Unicode in content | "東京タワー" stored correctly |
 
-| Test File | Component | Tests | Expected Result |
-|-----------|-----------|-------|-----------------|
-| `test_models_content.py` | ContentType, AgentStatus, ContentResult | 25+ | All content models validate correctly |
-| `test_models_route.py` | RoutePoint, Route | 20+ | Route navigation works correctly |
-| `test_models_decision.py` | JudgeDecision, AgentTask | 20+ | Decision workflow validates |
-| `test_models_output.py` | TourGuideOutput, SystemState | 20+ | Output generation works |
-| `test_user_profile.py` | UserProfile, presets | 10+ | Profile personalization works |
+#### Route Models (`test_models_route.py`)
 
-**Key Tests:**
-- Content result validation with boundary scores (0-10)
-- Route point coordinate handling (all hemispheres)
-- Decision confidence validation (0-1)
-- Unicode and special character handling
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_route_point_id_generation` | Auto ID generation | UUID format ID created |
+| `test_route_point_coordinates` | Coordinate properties | lat/lon accessible |
+| `test_negative_coordinates` | Southern/Western hemisphere | Accepts negative lat/lon |
+| `test_get_point_by_id_found` | Point lookup | Returns correct RoutePoint |
+| `test_get_point_by_id_not_found` | Missing point | Returns None |
+| `test_empty_route` | Route with no points | points=[], point_count=0 |
+| `test_very_long_route` | 1000 points | Handles without error |
+| `test_unicode_addresses` | Unicode addresses | "תל אביב" stored correctly |
 
-#### Core Infrastructure
+#### Decision Models (`test_models_decision.py`)
 
-| Test File | Component | Tests | Expected Result |
-|-----------|-----------|-------|-----------------|
-| `test_smart_queue.py` | SmartAgentQueue, QueueManager | 30+ | Queue synchronization works correctly |
-| `test_config.py` | Settings, AGENT_SKILLS | 15+ | Configuration loads correctly |
-
-**Key Tests:**
-- All 3 agents succeed → COMPLETE status
-- 2/3 agents succeed → SOFT_DEGRADED
-- 1/3 agents succeed → HARD_DEGRADED  
-- 0/3 agents succeed → FAILED with error
-
-#### Resilience Patterns
-
-| Test File | Pattern | Tests | Expected Result |
-|-----------|---------|-------|-----------------|
-| `test_resilience_circuit_breaker.py` | Circuit Breaker | 30+ | State transitions work correctly |
-| `test_resilience_retry.py` | Retry with backoff | 25+ | Retries with exponential backoff |
-| `test_resilience_timeout.py` | Timeout | 15+ | Operations timeout correctly |
-| `test_resilience_rate_limiter.py` | Rate Limiting | 20+ | Request rate controlled |
-
-**Key Tests:**
-- Circuit breaker: CLOSED → OPEN → HALF_OPEN → CLOSED
-- Retry: Exponential backoff with jitter
-- Timeout: Sync and async timeout handling
-- Rate limiter: Token bucket and sliding window
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_judge_decision_confidence` | Confidence boundaries | 0.0 ≤ confidence ≤ 1.0 |
+| `test_agent_task_status_transitions` | Status workflow | PENDING → RUNNING → COMPLETED |
+| `test_agent_task_duration_calculation` | Duration tracking | completed_at - started_at |
 
 ---
 
-### 2. Integration Tests (`tests/integration/`)
+### 2. Smart Queue Tests (`test_smart_queue.py`)
 
-| Test File | Scope | Tests | Expected Result |
-|-----------|-------|-------|-----------------|
-| `test_agent_integration.py` | Agent execution | 15+ | Agents produce valid content |
-| `test_queue_integration.py` | Queue + Agents | 10+ | End-to-end queue processing |
+#### Queue Status Transitions
 
-**Key Scenarios:**
-- Multiple agents processing same point
-- Parallel agent execution
-- Graceful degradation under failures
-- Queue timeout handling
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_all_agents_succeed` | 3/3 agents return | Status: COMPLETE |
+| `test_soft_timeout_with_two_results` | 2/3 agents return | Status: SOFT_DEGRADED |
+| `test_hard_timeout_with_one_result` | 1/3 agents return | Status: HARD_DEGRADED |
+| `test_all_agents_fail` | 0/3 agents return | Status: FAILED |
+| `test_status_values` | All status enums | WAITING, COLLECTING, COMPLETE, etc. |
+
+#### Queue Manager
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_queue_manager_initialization` | Manager creation | 3 agents registered |
+| `test_queue_manager_submit_point` | Point submission | Returns QueueStatus |
+| `test_concurrent_submissions` | Parallel submissions | Thread-safe execution |
 
 ---
 
-### 3. Performance Tests (`tests/performance/`)
+### 3. Resilience Pattern Tests
 
-| Test Area | Metric | Target | Purpose |
-|-----------|--------|--------|---------|
-| Queue throughput | Points/second | >10 | Verify scalability |
-| Memory efficiency | Object growth | <1000 per 100 ops | No memory leaks |
-| Lock contention | Time/increment | <1ms | Thread safety |
-| Circuit breaker overhead | μs/call | <100 | Minimal overhead |
-| Route creation | Time/1000 points | <1s | Model efficiency |
+#### Circuit Breaker (`test_resilience_circuit_breaker.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_initial_state_closed` | Initial state | CircuitState.CLOSED |
+| `test_open_after_failures` | Failure threshold reached | CLOSED → OPEN |
+| `test_half_open_after_timeout` | Reset timeout elapsed | OPEN → HALF_OPEN |
+| `test_close_after_success` | Success in half-open | HALF_OPEN → CLOSED |
+| `test_reopen_after_failure_in_half_open` | Failure in half-open | HALF_OPEN → OPEN |
+| `test_excluded_exceptions` | Non-counted exceptions | State unchanged |
+| `test_decorator_usage` | @circuit_breaker decorator | Function wrapped correctly |
+| `test_manual_reset` | Force reset | State → CLOSED |
+
+#### Retry Pattern (`test_resilience_retry.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_successful_first_attempt` | No retry needed | 1 call, success |
+| `test_retry_on_exception` | Transient failure | Retries up to max_attempts |
+| `test_exponential_backoff` | Delay calculation | 1s, 2s, 4s, 8s pattern |
+| `test_jitter_applied` | Randomized delay | Delay ± 25% jitter |
+| `test_max_attempts_exceeded` | All retries fail | Raises original exception |
+| `test_specific_exceptions` | Exception filtering | Only retries specified types |
+
+#### Timeout Pattern (`test_resilience_timeout.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_fast_function_completes` | Function < timeout | Returns result |
+| `test_slow_function_times_out` | Function > timeout | Raises TimeoutError |
+| `test_async_timeout` | Async function timeout | Raises asyncio.TimeoutError |
+| `test_zero_timeout` | timeout=0 | Immediate timeout |
+
+#### Rate Limiter (`test_resilience_rate_limiter.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_acquire_success` | Tokens available | Returns True, token consumed |
+| `test_acquire_blocked` | No tokens | Returns False |
+| `test_refill_over_time` | Token regeneration | Tokens increase over time |
+| `test_sliding_window` | Window-based limiting | Tracks requests per window |
+
+#### Bulkhead (`test_resilience_bulkhead.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_concurrent_limit_respected` | Max concurrent calls | Excess calls rejected |
+| `test_context_manager` | with bulkhead: | Acquires/releases permit |
+| `test_stats_tracking` | Call statistics | total_calls, rejected_calls tracked |
+
+#### Fallback (`test_resilience_fallback.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_primary_success` | No fallback needed | Returns primary result |
+| `test_fallback_to_default` | Primary fails | Returns default_value |
+| `test_fallback_chain` | Multiple fallbacks | Tries each in order |
+| `test_all_fallbacks_fail` | No fallback works | Raises RuntimeError |
+
+---
+
+### 4. User Profile Tests (`test_user_profile.py`)
+
+#### Profile Preferences
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_default_profile` | Default values | age_group=ADULT, travel_mode=CAR |
+| `test_kid_profile_prefers_video` | Child preferences | video_weight > text_weight |
+| `test_driver_profile_blocks_video` | Safety constraint | video_weight = 0.0 |
+| `test_visual_impairment_prefers_audio` | Accessibility | music_weight > video_weight |
+| `test_hearing_impairment_prefers_visual` | Accessibility | text_weight > music_weight |
+
+#### Context Generation
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_context_kid_profile` | Kid context | Contains "child" or "kid-friendly" |
+| `test_context_driver` | Driver context | Contains "audio" or "no video" |
+| `test_context_business_trip` | Business context | Contains "professional" |
+| `test_context_pilgrimage_trip` | Pilgrimage context | Contains "spiritual" |
+
+---
+
+### 5. Agent Tests (`test_agents.py`, `test_base_agent.py`)
+
+#### Base Agent
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_init_with_anthropic_key` | Claude initialization | llm_type = "anthropic" |
+| `test_init_with_openai_key` | GPT initialization | llm_type = "openai" |
+| `test_init_without_api_keys` | No API key | llm_client = None, uses mock |
+| `test_call_llm_no_client` | Mock response | Returns "Mock response..." |
+| `test_execute_success` | Agent execution | Returns ContentResult |
+
+#### Video Agent
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_get_content_type` | Content type | ContentType.VIDEO |
+| `test_get_mock_result` | Mock result | source = "YouTube (Mock)" |
+| `test_generate_search_queries_fallback` | LLM failure | Returns fallback queries |
+
+#### Judge Agent
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_evaluate_single_content` | Single candidate | Returns that candidate |
+| `test_evaluate_two_candidates` | Two candidates | Selects higher weighted |
+| `test_evaluate_three_candidates` | Three candidates | Selects best via LLM |
+
+---
+
+### 6. Integration Tests (`test_agent_integration.py`, `test_queue_integration.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_agent_produces_content` | End-to-end agent | Valid ContentResult |
+| `test_queue_processes_point` | Queue + agents | Returns QueueStatus |
+| `test_concurrent_point_processing` | Parallel points | All points processed |
+| `test_graceful_degradation` | Agent failures | Partial results returned |
+
+---
+
+### 7. Performance Tests (`test_performance.py`)
+
+| Test | Metric | Target | Expected Result |
+|------|--------|--------|-----------------|
+| `test_queue_throughput` | Points/second | >10 | Meets throughput |
+| `test_memory_efficiency` | Object growth | <1000/100 ops | No memory leak |
+| `test_lock_contention` | Time/increment | <1ms | Minimal contention |
+| `test_circuit_breaker_overhead` | μs/call | <100 | Low overhead |
+| `test_route_creation` | Time/1000 points | <1s | Fast creation |
+
+---
+
+### 8. Observability Tests (`test_observability_health.py`)
+
+| Test | Description | Expected Result |
+|------|-------------|-----------------|
+| `test_register_check` | Health check registration | Check in registry |
+| `test_run_check_success` | Healthy check | Status: HEALTHY |
+| `test_run_check_failure` | Unhealthy check | Status: UNHEALTHY |
+| `test_aggregate_status_healthy` | All checks pass | Aggregate: HEALTHY |
+| `test_liveness_probe` | Liveness endpoint | Returns True |
+| `test_readiness_probe_all_healthy` | Readiness endpoint | Returns True |
 
 ---
 
 ## 🚀 Running Tests
 
-### Quick Commands
-
 ```bash
-# Run all tests
-make test
+# Run all tests with coverage
+uv run pytest tests/ --cov=src --cov-report=term
 
-# Run with coverage
-make test-cov
-
-# Run specific test categories
-uv run pytest tests/unit/ -v
-uv run pytest tests/integration/ -v
-uv run pytest tests/performance/ -v
-
-# Run with coverage threshold enforcement
+# Run with 85% threshold enforcement
 uv run pytest tests/ --cov=src --cov-fail-under=85
 
-# Run specific test file
+# Run specific test category
 uv run pytest tests/unit/test_smart_queue.py -v
+uv run pytest tests/unit/test_resilience_circuit_breaker.py -v
 
-# Run tests matching pattern
-uv run pytest -k "circuit_breaker" -v
-
-# Run with verbose output
-uv run pytest -v --tb=long
-```
-
-### Coverage Report
-
-```bash
-# Generate HTML coverage report
+# Run with HTML coverage report
 uv run pytest tests/ --cov=src --cov-report=html
-
-# View report
 open htmlcov/index.html
 
-# Terminal coverage report
-uv run pytest tests/ --cov=src --cov-report=term-missing
+# Run performance tests only
+uv run pytest tests/performance/ -v
 ```
 
 ---
 
 ## 📋 Edge Cases Documented
 
-### Content Models
-- ✅ Relevance score at boundaries (0.0, 10.0)
-- ✅ Empty titles and descriptions
-- ✅ Unicode characters in all text fields
-- ✅ Very long content (10,000+ chars)
-- ✅ Special characters in URLs
+### Boundary Conditions
 
-### Route Models
-- ✅ Empty route (no points)
-- ✅ Very long routes (1000+ points)
-- ✅ Negative coordinates (Western/Southern hemisphere)
-- ✅ Boundary coordinates (poles, date line)
-- ✅ Duplicate point IDs
+| Edge Case | Test | Expected Behavior |
+|-----------|------|-------------------|
+| Score = 0.0 | `test_content_result_score_boundaries` | Accepts minimum score |
+| Score = 10.0 | `test_content_result_score_boundaries` | Accepts maximum score |
+| Score = -0.1 | `test_content_result_score_too_low` | Raises ValidationError |
+| Score = 10.1 | `test_content_result_score_too_high` | Raises ValidationError |
+| Confidence = 0.0 | `test_judge_decision_confidence` | Accepts minimum confidence |
+| Confidence = 1.0 | `test_judge_decision_confidence` | Accepts maximum confidence |
 
-### Queue System
-- ✅ All agents succeed
-- ✅ Partial agent failure (1, 2 agents fail)
-- ✅ All agents fail
-- ✅ Soft timeout with 2/3 results
-- ✅ Hard timeout with 1/3 results
-- ✅ Concurrent submissions
-- ✅ Race conditions
+### Empty/Null Cases
 
-### Resilience Patterns
-- ✅ Circuit breaker state transitions
-- ✅ Excluded exceptions
-- ✅ Retry exhaustion
-- ✅ Non-retryable exceptions
-- ✅ Zero timeout
-- ✅ Rate limit exceeded
-- ✅ Token refill timing
+| Edge Case | Test | Expected Behavior |
+|-----------|------|-------------------|
+| Empty route | `test_empty_route` | points=[], point_count=0 |
+| Empty title | `test_empty_title` | Accepts empty string |
+| None metadata | `test_content_result_metadata_default` | Defaults to {} |
+| No agents succeed | `test_all_agents_fail` | Status: FAILED |
 
----
+### Unicode/Special Characters
 
-## 🔧 Test Fixtures
+| Edge Case | Test | Expected Behavior |
+|-----------|------|-------------------|
+| Hebrew address | `test_unicode_addresses` | "תל אביב" stored |
+| Japanese content | `test_unicode_content` | "東京タワー" stored |
+| Special URL chars | `test_content_result_url` | Properly encoded |
 
-### Common Fixtures (`conftest.py`)
+### Concurrency/Threading
 
-```python
-@pytest.fixture
-def mock_route_point():
-    """Standard route point for testing."""
-
-@pytest.fixture
-def mock_route():
-    """Complete route with multiple points."""
-
-@pytest.fixture
-def mock_video_result():
-    """Sample video content result."""
-
-@pytest.fixture
-def mock_music_result():
-    """Sample music content result."""
-
-@pytest.fixture
-def mock_text_result():
-    """Sample text content result."""
-
-@pytest.fixture
-def adult_profile():
-    """Adult user profile."""
-
-@pytest.fixture
-def kid_profile():
-    """Kid user profile (age-appropriate content)."""
-
-@pytest.fixture
-def driver_profile():
-    """Driver profile (no video)."""
-```
+| Edge Case | Test | Expected Behavior |
+|-----------|------|-------------------|
+| Race conditions | `test_concurrent_submissions` | Thread-safe |
+| Lock contention | `test_lock_contention` | <1ms per increment |
+| Bulkhead overflow | `test_concurrent_limit_respected` | Excess rejected |
 
 ---
 
@@ -251,161 +308,28 @@ def driver_profile():
 
 ### GitHub Actions Workflow
 
-The CI/CD pipeline runs:
-
-1. **Lint & Format** - Ruff linter and formatter
-2. **Unit Tests** - Python 3.10, 3.11, 3.12 matrix
-3. **Integration Tests** - Component interaction testing
-4. **Performance Tests** - Benchmark validation
-5. **Coverage Report** - 85% threshold enforcement
-6. **Security Scan** - Bandit, pip-audit, Trivy
-
-### Coverage Threshold
-
 ```yaml
 env:
   COVERAGE_THRESHOLD: 85
 
-- name: Check coverage threshold
+- name: Run tests with coverage
   run: |
-    uv run coverage report --fail-under=${{ env.COVERAGE_THRESHOLD }}
+    uv run pytest tests/ \
+      --cov=src \
+      --cov-report=term \
+      --cov-fail-under=${{ env.COVERAGE_THRESHOLD }}
 ```
 
 ### Test Artifacts
 
-The CI generates:
 - `coverage.xml` - Codecov integration
 - `htmlcov/` - HTML coverage report
-- `junit-*.xml` - Test results for reporting
-- `bandit-report.json` - Security scan results
-
----
-
-## 📊 Expected Test Results
-
-### Passing Criteria
-
-| Test Suite | Pass Criteria |
-|------------|---------------|
-| Unit Tests | All tests pass, 85%+ coverage |
-| Integration Tests | All tests pass |
-| Performance Tests | Meet benchmark targets |
-| Security Scan | No CRITICAL vulnerabilities |
-
-### Sample Output
-
-```
-======================== test session starts =========================
-platform darwin -- Python 3.11.0, pytest-7.4.0
-plugins: cov-4.1.0, asyncio-0.23.0
-collected 180 tests
-
-tests/unit/test_models_content.py::TestContentType::test_content_type_values PASSED
-tests/unit/test_models_content.py::TestContentType::test_content_type_from_string PASSED
-tests/unit/test_smart_queue.py::TestSmartAgentQueue::test_all_agents_succeed PASSED
-...
-
------------ coverage: platform darwin, python 3.11.0-final-0 -----------
-Name                                    Stmts   Miss  Cover
------------------------------------------------------------
-src/agents/base_agent.py                   82     12    85%
-src/core/smart_queue.py                   148     20    86%
-src/core/resilience/circuit_breaker.py   142     15    89%
-src/models/content.py                      35      3    91%
-...
------------------------------------------------------------
-TOTAL                                    1250    165    87%
-
-======================== 180 passed in 12.54s =========================
-```
-
----
-
-## 🔍 Debugging Failed Tests
-
-### Common Issues
-
-1. **Import Errors**
-   ```bash
-   # Ensure src is in PYTHONPATH
-   export PYTHONPATH="${PYTHONPATH}:${PWD}"
-   ```
-
-2. **Timeout Issues**
-   ```python
-   # Increase timeouts for slow CI
-   SmartAgentQueue.SOFT_TIMEOUT_SECONDS = 30.0
-   ```
-
-3. **Flaky Tests**
-   ```bash
-   # Run with retries
-   uv run pytest --reruns 3 --reruns-delay 1
-   ```
-
-### Verbose Debugging
-
-```bash
-# Maximum verbosity
-uv run pytest tests/unit/test_smart_queue.py -vvv --tb=long -s
-
-# Stop on first failure
-uv run pytest -x
-
-# Run last failed tests
-uv run pytest --lf
-```
-
----
-
-## 📝 Writing New Tests
-
-### Test Template
-
-```python
-"""
-Unit tests for [Component Name].
-
-Test Coverage:
-- [Feature 1]
-- [Feature 2]
-- Edge cases: [list edge cases]
-"""
-import pytest
-from src.module import Component
-
-
-class TestComponent:
-    """Tests for Component class."""
-
-    @pytest.fixture
-    def component(self):
-        """Create component instance."""
-        return Component()
-
-    def test_feature_basic(self, component):
-        """Test basic feature functionality."""
-        result = component.feature()
-        assert result == expected
-
-    def test_feature_edge_case(self, component):
-        """Test feature with edge case input."""
-        with pytest.raises(ValueError):
-            component.feature(invalid_input)
-```
-
-### Naming Conventions
-
-- Test files: `test_<module>.py`
-- Test classes: `Test<ClassName>`
-- Test methods: `test_<feature>_<scenario>`
+- `junit-*.xml` - Test results for CI reporting
 
 ---
 
 ## 📚 References
 
 - [pytest Documentation](https://docs.pytest.org/)
-- [pytest-cov Plugin](https://pytest-cov.readthedocs.io/)
 - [Coverage.py](https://coverage.readthedocs.io/)
-- [ISO/IEC 25010 Quality Standards](docs/ISO_IEC_25010_COMPLIANCE.md)
-
+- [ISO/IEC 25010 Quality Standards](https://www.iso.org/standard/35733.html)

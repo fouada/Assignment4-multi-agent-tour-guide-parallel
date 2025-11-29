@@ -505,16 +505,42 @@ python scripts/iso25010_compliance_check.py --verbose
 
 ## 🧪 Testing
 
-### MIT Level - Academic Publishing Quality (85%+ Coverage)
+### MIT Level - Academic Publishing Quality
 
-This project implements comprehensive testing meeting academic/industrial publishing standards:
+This project implements comprehensive testing meeting academic/industrial publishing standards.
 
-| Test Category | Coverage | Purpose |
-|--------------|----------|---------|
-| **Unit Tests** | 85%+ | Individual component validation |
-| **Integration Tests** | 75%+ | Component interaction testing |
-| **Performance Tests** | Benchmarked | Throughput and scalability |
-| **Edge Cases** | 100% documented | Boundary conditions |
+> 📚 **Full Documentation**: See [docs/TESTING.md](docs/TESTING.md) for complete test specifications
+
+| Metric | Value |
+|--------|-------|
+| **Total Tests** | 632+ tests |
+| **Overall Coverage** | **85%+** |
+| **Edge Cases** | 100% documented |
+
+### Test Categories & Expected Results
+
+| Test Category | Tests | Expected Result |
+|---------------|-------|-----------------|
+| **Data Models** | 120+ | All Pydantic models validate correctly, handle edge cases |
+| **Smart Queue** | 25+ | Queue synchronization with graceful degradation |
+| **Resilience Patterns** | 100+ | Circuit breaker, retry, timeout, rate limiter work correctly |
+| **Agent Integration** | 50+ | Agents produce valid ContentResult objects |
+| **User Profiles** | 55+ | Profile personalization and content preferences |
+| **Observability** | 30+ | Health checks, metrics collection |
+| **DI Container** | 35+ | Dependency injection and scoping |
+| **Performance** | 12+ | Throughput benchmarks met |
+
+### Key Test Scenarios
+
+| Scenario | Test | Expected Result |
+|----------|------|-----------------|
+| All agents succeed | `test_all_agents_succeed` | Status: COMPLETE, 3/3 results |
+| Partial failure | `test_soft_timeout` | Status: SOFT_DEGRADED, 2/3 results |
+| Critical failure | `test_hard_timeout` | Status: HARD_DEGRADED, 1/3 results |
+| Circuit breaker opens | `test_open_after_failures` | State transitions CLOSED→OPEN |
+| Rate limit exceeded | `test_acquire_blocked` | Request blocked, no token consumed |
+| Kid profile | `test_kid_profile_prefers_video` | Video weight > Text weight |
+| Driver profile | `test_driver_profile_blocks_video` | Video weight = 0.0 |
 
 ### Quick Commands
 

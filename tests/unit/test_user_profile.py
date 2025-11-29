@@ -112,7 +112,7 @@ class TestUserProfile:
             travel_pace=TravelPace.LEISURELY,
             social_context=SocialContext.FAMILY,
             audience_type=AudienceType.FAMILY_WITH_KIDS,
-            content_preferences=[ContentPreference.HISTORICAL],
+            content_preference=ContentPreference.HISTORICAL,
             content_depth=ContentDepth.DETAILED,
             preferred_languages=[LanguagePreference.ENGLISH],
             music_genres=[MusicGenre.CLASSICAL],
@@ -215,9 +215,11 @@ class TestUserProfile:
     def test_profile_language_preferences(self):
         """Test language preferences."""
         profile = UserProfile(
-            preferred_languages=[LanguagePreference.ENGLISH, LanguagePreference.HEBREW]
+            language=LanguagePreference.ENGLISH,
+            secondary_language=LanguagePreference.HEBREW,
         )
-        assert LanguagePreference.ENGLISH in profile.preferred_languages
+        assert profile.language == LanguagePreference.ENGLISH
+        assert profile.secondary_language == LanguagePreference.HEBREW
 
 
 class TestPresetProfiles:
@@ -298,7 +300,7 @@ class TestAccessibilityFeatures:
         profile = UserProfile(
             accessibility_needs=[
                 AccessibilityNeed.VISUAL_IMPAIRMENT,
-                AccessibilityNeed.MOBILITY_IMPAIRMENT,
+                AccessibilityNeed.HEARING_IMPAIRMENT,
             ]
         )
         assert len(profile.accessibility_needs) == 2
@@ -306,7 +308,7 @@ class TestAccessibilityFeatures:
     def test_cognitive_accessibility(self):
         """Test cognitive accessibility preferences."""
         profile = UserProfile(
-            accessibility_needs=[AccessibilityNeed.COGNITIVE_DISABILITY]
+            accessibility_needs=[AccessibilityNeed.COGNITIVE]
         )
         weights = profile.get_content_type_preferences()
         # Should have valid weights
@@ -319,14 +321,13 @@ class TestEdgeCases:
     def test_empty_lists(self):
         """Test profile with empty lists."""
         profile = UserProfile(
-            content_preferences=[],
             music_genres=[],
-            topic_interests=[],
+            interests=[],
             accessibility_needs=[],
             exclude_topics=[],
         )
-        assert profile.content_preferences == []
         assert profile.music_genres == []
+        assert profile.interests == []
 
     def test_profile_json_serialization(self):
         """Test profile can be serialized to JSON."""
@@ -376,7 +377,85 @@ class TestProfileContext:
     def test_judge_criteria_includes_preferences(self):
         """Test judge criteria includes content preferences."""
         profile = UserProfile(
-            content_preferences=[ContentPreference.HISTORICAL]
+            content_preference=ContentPreference.HISTORICAL
         )
         criteria = profile.to_judge_criteria()
         assert isinstance(criteria, str)
+
+    def test_context_with_name(self):
+        """Test context includes user name."""
+        profile = UserProfile(name="John")
+        context = profile.to_agent_context()
+        assert "John" in context
+
+    def test_context_kid_profile(self):
+        """Test context for kid profile."""
+        profile = UserProfile(age_group=AgeGroup.KID)
+        context = profile.to_agent_context()
+        assert "child" in context.lower() or "kid" in context.lower()
+
+    def test_context_teenager_profile(self):
+        """Test context for teenager profile."""
+        profile = UserProfile(age_group=AgeGroup.TEENAGER)
+        context = profile.to_agent_context()
+        assert "teenager" in context.lower()
+
+    def test_context_senior_profile(self):
+        """Test context for senior profile."""
+        profile = UserProfile(age_group=AgeGroup.SENIOR)
+        context = profile.to_agent_context()
+        assert "senior" in context.lower()
+
+    def test_context_business_trip(self):
+        """Test context for business trip."""
+        profile = UserProfile(trip_purpose=TripPurpose.BUSINESS)
+        context = profile.to_agent_context()
+        assert "business" in context.lower()
+
+    def test_context_education_trip(self):
+        """Test context for education trip."""
+        profile = UserProfile(trip_purpose=TripPurpose.EDUCATION)
+        context = profile.to_agent_context()
+        assert "education" in context.lower() or "learning" in context.lower()
+
+    def test_context_pilgrimage_trip(self):
+        """Test context for pilgrimage trip."""
+        profile = UserProfile(trip_purpose=TripPurpose.PILGRIMAGE)
+        context = profile.to_agent_context()
+        assert "pilgrimage" in context.lower() or "spiritual" in context.lower()
+
+    def test_context_leisurely_pace(self):
+        """Test context for leisurely pace."""
+        profile = UserProfile(travel_pace=TravelPace.LEISURELY)
+        context = profile.to_agent_context()
+        assert "time" in context.lower() or "leisurely" in context.lower()
+
+    def test_context_rushed_pace(self):
+        """Test context for rushed pace."""
+        profile = UserProfile(travel_pace=TravelPace.RUSHED)
+        context = profile.to_agent_context()
+        assert "hurry" in context.lower() or "quick" in context.lower()
+
+    def test_context_driver(self):
+        """Test context for driver."""
+        profile = UserProfile(is_driver=True)
+        context = profile.to_agent_context()
+        assert "driving" in context.lower() or "audio" in context.lower()
+
+    def test_context_couple(self):
+        """Test context for couple."""
+        profile = UserProfile(social_context=SocialContext.COUPLE)
+        context = profile.to_agent_context()
+        assert "couple" in context.lower()
+
+    def test_context_family(self):
+        """Test context for family."""
+        profile = UserProfile(social_context=SocialContext.FAMILY)
+        context = profile.to_agent_context()
+        assert "family" in context.lower()
+
+    def test_context_friends(self):
+        """Test context for friends."""
+        profile = UserProfile(social_context=SocialContext.FRIENDS)
+        context = profile.to_agent_context()
+        assert "friends" in context.lower()

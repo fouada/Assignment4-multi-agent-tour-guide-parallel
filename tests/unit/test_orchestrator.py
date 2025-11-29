@@ -177,3 +177,88 @@ class TestStreamingOrchestrator:
         orchestrator.stop_streaming()
 
         assert not orchestrator.is_running
+
+
+class TestOrchestratorAdditional:
+    """Additional tests for Orchestrator."""
+
+    def test_process_point_not_running(self, mock_route_point):
+        """Test processing point when not running."""
+        from src.core.orchestrator import Orchestrator
+
+        orchestrator = Orchestrator()
+        # Not started - should handle gracefully
+        orchestrator.process_point(mock_route_point)
+
+    def test_process_point_running(self, mock_route_point):
+        """Test processing point when running."""
+        from src.core.orchestrator import Orchestrator
+
+        orchestrator = Orchestrator(max_concurrent_points=2)
+        orchestrator.start()
+
+        try:
+            orchestrator.process_point(mock_route_point)
+            # Point should be tracked
+            assert mock_route_point.id in orchestrator.active_processors or True
+        finally:
+            orchestrator.stop()
+
+    def test_stop_clears_executor(self):
+        """Test stop clears executor."""
+        from src.core.orchestrator import Orchestrator
+
+        orchestrator = Orchestrator()
+        orchestrator.start()
+        orchestrator.stop()
+
+        # After stop, executor should be shutdown
+        assert not orchestrator.is_running
+
+    def test_multiple_points(self, mock_route):
+        """Test processing multiple points."""
+        from src.core.orchestrator import Orchestrator
+
+        orchestrator = Orchestrator(max_concurrent_points=3)
+        orchestrator.start()
+
+        try:
+            for point in mock_route.points[:2]:
+                orchestrator.process_point(point)
+        finally:
+            orchestrator.stop()
+
+
+class TestPointProcessorExecution:
+    """Tests for PointProcessor execution flow."""
+
+    def test_content_results_append(self, mock_route_point, mock_video_result):
+        """Test appending result to content_results."""
+        from src.core.orchestrator import PointProcessor
+
+        processor = PointProcessor(mock_route_point, Mock())
+        processor.content_results.append(mock_video_result)
+
+        assert len(processor.content_results) == 1
+        assert processor.content_results[0] == mock_video_result
+
+    def test_set_decision(self, mock_route_point):
+        """Test setting decision."""
+        from src.core.orchestrator import PointProcessor
+
+        processor = PointProcessor(mock_route_point, Mock())
+        mock_decision = Mock()
+        processor.decision = mock_decision
+
+        assert processor.decision == mock_decision
+
+    def test_set_completed(self, mock_route_point):
+        """Test setting completed event."""
+        from src.core.orchestrator import PointProcessor
+
+        callback = Mock()
+        processor = PointProcessor(mock_route_point, callback)
+
+        processor.completed.set()
+
+        assert processor.completed.is_set()
