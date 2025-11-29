@@ -34,9 +34,9 @@ class Settings(BaseSettings):
     queue_soft_timeout: float = Field(default=15.0, alias="QUEUE_SOFT_TIMEOUT")
     queue_hard_timeout: float = Field(default=30.0, alias="QUEUE_HARD_TIMEOUT")
     
-    # LLM Settings
-    llm_provider: str = Field(default="openai", alias="LLM_PROVIDER")
-    llm_model: str = Field(default="gpt-4o-mini", alias="LLM_MODEL")
+    # LLM Settings (Default: Claude/Anthropic)
+    llm_provider: str = Field(default="anthropic", alias="LLM_PROVIDER")
+    llm_model: str = Field(default="claude-sonnet-4", alias="LLM_MODEL")
     llm_temperature: float = Field(default=0.7, alias="LLM_TEMPERATURE")
     
     # Logging

@@ -275,6 +275,170 @@ uv run python main.py --demo --mode queue
     └────────────────────────────────────────────────────────────────────┘
 ```
 
+### 🎬 Live Execution Timeline
+
+```
+═══════════════════════════════════════════════════════════════════════════════
+                           PIPELINE EXECUTION TIMELINE
+═══════════════════════════════════════════════════════════════════════════════
+
+TIME(s)  0        5        10       15       20       25       30
+         │        │        │        │        │        │        │
+         ▼        ▼        ▼        ▼        ▼        ▼        ▼
+         
+POINT 1: ══════════════════════════════════════
+         │
+         ├─🎬 Video ████████████░░░░░░░░░░░░░░░ Done (8s)
+         │                    ↓ submit()
+         ├─🎵 Music ████░░░░░░░░░░░░░░░░░░░░░░░ Done (3s)  
+         │          ↓ submit()
+         ├─📖 Text  ██████░░░░░░░░░░░░░░░░░░░░░ Done (5s)
+         │              ↓ submit()
+         │
+         ├─📬 Queue [1/3]──[2/3]──[3/3 READY!]
+         │                         ↓
+         └─⚖️ Judge ░░░░░░░░░░░░░██████ Evaluates (12-15s)
+                                       ↓
+                               🏆 WINNER: TEXT
+                               
+POINT 2: ══════════════════════════════════════ (Starts in parallel!)
+         │
+         ├─🎬 Video ██████████░░░░░░░░░░░░░░░░░ 
+         ├─🎵 Music ██░░░░░░░░░░░░░░░░░░░░░░░░░ 
+         ├─📖 Text  ████████░░░░░░░░░░░░░░░░░░░ 
+         │
+         └─📬 Queue → ⚖️ Judge → 🏆 WINNER: VIDEO
+
+═══════════════════════════════════════════════════════════════════════════════
+LEGEND:  ████ = Processing    ░░░░ = Waiting    ↓ = Submit to Queue
+═══════════════════════════════════════════════════════════════════════════════
+```
+
+### 🧩 Component Relationship Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              COMPONENT MAP                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │  📁 src/                                                             │   │
+│   │  │                                                                   │   │
+│   │  ├── 🤖 agents/           ←─────────────────────────────────────┐   │   │
+│   │  │   ├── base_agent.py    "All agents inherit from BaseAgent"   │   │   │
+│   │  │   ├── video_agent.py   ──→ YouTube API                       │   │   │
+│   │  │   ├── music_agent.py   ──→ Spotify API                       │   │   │
+│   │  │   ├── text_agent.py    ──→ Web Search                        │   │   │
+│   │  │   └── judge_agent.py   ──→ LLM (GPT/Claude)                  │   │   │
+│   │  │                                                               │   │   │
+│   │  ├── ⚙️ core/                                                    │   │   │
+│   │  │   ├── orchestrator.py  "Manages parallel execution"          │   │   │
+│   │  │   ├── smart_queue.py   "Sync point: Wait 3, Fallback 2→1"    │   │   │
+│   │  │   ├── collector.py     "Aggregates final results"            │   │   │
+│   │  │   │                                                           │   │   │
+│   │  │   ├── 🔌 plugins/      "Extensibility layer"                 │   │   │
+│   │  │   │   ├── registry.py  ──→ Auto-discovers plugins            │   │   │
+│   │  │   │   ├── hooks.py     ──→ @before, @after, @around          │   │   │
+│   │  │   │   └── events.py    ──→ Pub/Sub event bus                 │   │   │
+│   │  │   │                                                           │   │   │
+│   │  │   ├── 🛡️ resilience/   "Fault tolerance"                     │   │   │
+│   │  │   │   ├── circuit_breaker.py                                  │   │   │
+│   │  │   │   ├── retry.py     ──→ Exponential backoff               │   │   │
+│   │  │   │   └── timeout.py   ──→ 30s default                       │   │   │
+│   │  │   │                                                           │   │   │
+│   │  │   ├── 📊 observability/                                       │   │   │
+│   │  │   │   ├── metrics.py   ──→ Counter, Gauge, Histogram         │   │   │
+│   │  │   │   ├── tracing.py   ──→ Distributed tracing               │   │   │
+│   │  │   │   └── health.py    ──→ /health, /ready endpoints         │   │   │
+│   │  │   │                                                           │   │   │
+│   │  │   └── 💉 di/           "Dependency Injection"                │   │   │
+│   │  │       └── container.py ──→ IoC container                     │   │   │
+│   │  │                                                               │   │   │
+│   │  ├── 📦 models/           "Pydantic data models"                │   │   │
+│   │  │   ├── route.py         Route, RoutePoint                     │   │   │
+│   │  │   ├── content.py       ContentResult, ContentType            │   │   │
+│   │  │   ├── decision.py      JudgeDecision                         │   │   │
+│   │  │   └── user_profile.py  UserProfile, preferences              │   │   │
+│   │  │                                                               │   │   │
+│   │  └── 🌐 services/         "External API clients"                │   │   │
+│   │      └── google_maps.py   ──→ Google Maps Directions            │   │   │
+│   │                                                                  │   │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│   ┌─────────────────────────────────────────────────────────────────────┐   │
+│   │  📁 plugins/              "Drop-in agent extensions"             │   │
+│   │  │                                                                   │   │
+│   │  ├── weather/             WeatherAgent (OpenWeatherMap)          │   │
+│   │  │   ├── plugin.yaml      Manifest: name, version, config       │   │
+│   │  │   ├── plugin.py        Plugin lifecycle class                 │   │
+│   │  │   └── agent.py         Actual agent implementation            │   │
+│   │  │                                                                   │   │
+│   │  └── food/                FoodAgent (coming soon)                │   │
+│   │                                                                      │   │
+│   └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📊 Data Flow Diagram
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│              │     │              │     │              │
+│  User Input  │────▶│ Google Maps  │────▶│  Route       │
+│              │     │    API       │     │  (4 points)  │
+└──────────────┘     └──────────────┘     └──────┬───────┘
+                                                  │
+                     ┌────────────────────────────┼────────────────────────────┐
+                     │                            ▼                            │
+                     │  ┌─────────────────────────────────────────────────┐   │
+                     │  │              FOR EACH POINT                      │   │
+                     │  │                                                  │   │
+                     │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐          │   │
+                     │  │  │ Video   │  │  Music  │  │  Text   │  ◀── Parallel
+                     │  │  │ Agent   │  │  Agent  │  │  Agent  │          │   │
+                     │  │  └────┬────┘  └────┬────┘  └────┬────┘          │   │
+                     │  │       │            │            │                │   │
+                     │  │       └────────────┼────────────┘                │   │
+                     │  │                    ▼                             │   │
+                     │  │           ┌────────────────┐                     │   │
+                     │  │           │  Smart Queue   │  ◀── Sync Point     │   │
+                     │  │           │  (wait for 3)  │                     │   │
+                     │  │           └───────┬────────┘                     │   │
+                     │  │                   ▼                              │   │
+                     │  │           ┌────────────────┐                     │   │
+                     │  │           │  Judge Agent   │  ◀── Evaluates all  │   │
+                     │  │           │  + User Profile│                     │   │
+                     │  │           └───────┬────────┘                     │   │
+                     │  │                   │                              │   │
+                     │  │                   ▼                              │   │
+                     │  │           ┌────────────────┐                     │   │
+                     │  │           │   Decision     │  ◀── Winner chosen  │   │
+                     │  │           │   (1 of 3)     │                     │   │
+                     │  │           └────────────────┘                     │   │
+                     │  │                                                  │   │
+                     │  └──────────────────────────────────────────────────┘   │
+                     │                            │                            │
+                     └────────────────────────────┼────────────────────────────┘
+                                                  │
+                                                  ▼
+                     ┌─────────────────────────────────────────────────────────┐
+                     │                      COLLECTOR                          │
+                     │                                                         │
+                     │  Point 1: TEXT  - "Historical facts..."                │
+                     │  Point 2: VIDEO - "Documentary..."                     │
+                     │  Point 3: MUSIC - "Jerusalem of Gold"                  │
+                     │  Point 4: TEXT  - "Ancient stories..."                 │
+                     │                                                         │
+                     └─────────────────────────────────────────────────────────┘
+                                                  │
+                                                  ▼
+                     ┌─────────────────────────────────────────────────────────┐
+                     │                   FINAL PLAYLIST                        │
+                     │                    (JSON Output)                        │
+                     └─────────────────────────────────────────────────────────┘
+```
+
 ---
 
 ## 📦 Installation
@@ -313,25 +477,93 @@ uv sync              # Install production dependencies
 uv sync --extra dev  # Include dev tools
 ```
 
-### Step 3: Configure Environment
+### Step 3: Configure API Keys
 
-Create a `.env` file:
+Create a `.env` file in the project root:
 
 ```bash
-# Required for LLM-powered agents
-OPENAI_API_KEY=sk-your-key-here
+cp env.example .env
+# Then edit .env with your API keys
+```
 
-# Optional: Use Anthropic instead
-ANTHROPIC_API_KEY=your-key-here
+#### 🔑 Required vs Optional API Keys
 
-# Optional: Real API integrations
-GOOGLE_MAPS_API_KEY=your-key
-YOUTUBE_API_KEY=your-key
-SPOTIFY_CLIENT_ID=your-id
-SPOTIFY_CLIENT_SECRET=your-secret
+| API Key | Required? | Purpose | Get It From |
+|---------|-----------|---------|-------------|
+| `ANTHROPIC_API_KEY` | ✅ **Preferred*** | Powers all AI agents with Claude | [Anthropic Console](https://console.anthropic.com/) |
+| `OPENAI_API_KEY` | ⭕ Alternative | Use GPT instead of Claude | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| `GOOGLE_MAPS_API_KEY` | ⭕ Optional | Real route generation | [Google Cloud Console](https://console.cloud.google.com/) |
+| `YOUTUBE_API_KEY` | ⭕ Optional | Real YouTube video search | [Google Cloud Console](https://console.cloud.google.com/) |
+| `SPOTIFY_CLIENT_ID` | ⭕ Optional | Real Spotify music search | [Spotify Developer](https://developer.spotify.com/) |
+| `SPOTIFY_CLIENT_SECRET` | ⭕ Optional | Real Spotify music search | [Spotify Developer](https://developer.spotify.com/) |
+| `OPENWEATHERMAP_API_KEY` | ⭕ Optional | Weather plugin | [OpenWeatherMap](https://openweathermap.org/api) |
 
-# Optional: Weather plugin
-OPENWEATHERMAP_API_KEY=your-key
+> **\*** Without any LLM key, agents use mock responses (demo mode still works!)
+
+#### 📝 Complete `.env` Example
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# MULTI-AGENT TOUR GUIDE - ENVIRONMENT CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────
+# 🤖 LLM PROVIDER (Required - choose ONE)
+# ─────────────────────────────────────────────────────────────────
+# Option 1: Anthropic Claude (PREFERRED) ⭐
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Option 2: OpenAI GPT (Alternative)
+# OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ─────────────────────────────────────────────────────────────────
+# 🗺️ GOOGLE MAPS (Optional - for real routes)
+# ─────────────────────────────────────────────────────────────────
+# Without this, uses mock route: Tel Aviv → Jerusalem
+# GOOGLE_MAPS_API_KEY=AIzaxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ─────────────────────────────────────────────────────────────────
+# 🎬 YOUTUBE DATA API (Optional - for real video search)
+# ─────────────────────────────────────────────────────────────────
+# Without this, Video Agent uses LLM-based recommendations
+# YOUTUBE_API_KEY=AIzaxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ─────────────────────────────────────────────────────────────────
+# 🎵 SPOTIFY (Optional - for real music search)
+# ─────────────────────────────────────────────────────────────────
+# Without this, Music Agent uses LLM-based recommendations
+# SPOTIFY_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# SPOTIFY_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ─────────────────────────────────────────────────────────────────
+# 🌤️ WEATHER PLUGIN (Optional)
+# ─────────────────────────────────────────────────────────────────
+# OPENWEATHERMAP_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# ─────────────────────────────────────────────────────────────────
+# ⚙️ SYSTEM CONFIGURATION
+# ─────────────────────────────────────────────────────────────────
+LOG_LEVEL=INFO                    # DEBUG, INFO, WARNING, ERROR
+LLM_MODEL=claude-sonnet-4        # or gpt-4o-mini
+LLM_TEMPERATURE=0.7              # Creativity level (0.0-1.0)
+AGENT_TIMEOUT_SECONDS=30         # Max time per agent
+```
+
+#### 🚀 Minimum Setup (Just LLM)
+
+For the **simplest working setup**, you only need ONE key:
+
+```bash
+# .env (minimum) - Using Claude (Preferred)
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+
+# OR using OpenAI
+# OPENAI_API_KEY=sk-proj-your-key-here
+```
+
+Then run:
+```bash
+python main.py --demo --mode queue
 ```
 
 ### Verify Installation

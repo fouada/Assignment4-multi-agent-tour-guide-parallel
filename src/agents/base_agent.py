@@ -52,17 +52,22 @@ class BaseAgent(ABC):
         self.thread_name: Optional[str] = None
     
     def _init_llm_client(self):
-        """Initialize the appropriate LLM client."""
-        if settings.llm_provider == "anthropic" and settings.anthropic_api_key:
+        """Initialize the appropriate LLM client. Prioritizes Claude/Anthropic."""
+        # Priority 1: Anthropic/Claude (preferred)
+        if settings.anthropic_api_key:
             self.llm_client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
             self.llm_type = "anthropic"
+            logger.info(f"{self.name}: Using Claude (Anthropic)")
+        # Priority 2: OpenAI (fallback)
         elif settings.openai_api_key:
             self.llm_client = OpenAI(api_key=settings.openai_api_key)
             self.llm_type = "openai"
+            logger.info(f"{self.name}: Using GPT (OpenAI)")
+        # Priority 3: No API key - use mock responses
         else:
             self.llm_client = None
             self.llm_type = None
-            logger.warning(f"{self.name}: No LLM API key configured")
+            logger.warning(f"{self.name}: No LLM API key configured - using mock responses")
     
     def _call_llm(self, prompt: str, system_prompt: Optional[str] = None) -> str:
         """
