@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder
 # -----------------------------------------------------------------------------
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Install UV for fast dependency resolution
 RUN pip install --no-cache-dir uv
@@ -19,7 +19,11 @@ RUN pip install --no-cache-dir uv
 WORKDIR /app
 
 # Copy dependency files first (Docker layer caching)
-COPY pyproject.toml uv.lock ./
+# Include README.md as it's referenced in pyproject.toml
+COPY pyproject.toml uv.lock README.md ./
+
+# Copy source code needed for package build
+COPY src/ ./src/
 
 # Install dependencies into a virtual environment
 RUN uv venv /app/.venv && \
@@ -29,7 +33,7 @@ RUN uv venv /app/.venv && \
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime
 # -----------------------------------------------------------------------------
-FROM python:3.11-slim as runtime
+FROM python:3.11-slim AS runtime
 
 # Security: Create non-root user
 RUN groupadd --gid 1000 tourguide && \
