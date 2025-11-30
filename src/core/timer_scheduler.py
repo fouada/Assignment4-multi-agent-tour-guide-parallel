@@ -221,7 +221,7 @@ class ScheduledPointEmitter:
         self.route = route
         self.on_point_arrival = on_point_arrival
         self._emitted_indices: set[int] = set()
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()  # Use RLock to allow reentrant calls (emit_next -> emit_point)
 
     def emit_point(self, index: int) -> RoutePoint | None:
         """
