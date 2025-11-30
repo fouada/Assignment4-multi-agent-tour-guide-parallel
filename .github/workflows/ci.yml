@@ -323,7 +323,8 @@ jobs:
     name: 🐳 Build Docker
     runs-on: ubuntu-latest
     needs: test-summary
-    if: github.event_name != 'pull_request'
+    # Only run Docker build when credentials are available and not a PR
+    if: github.event_name != 'pull_request' && vars.DOCKER_ENABLED == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -332,12 +333,10 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-        continue-on-error: true
 
       - name: Extract metadata
         id: meta
@@ -355,7 +354,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' && secrets.DOCKER_USERNAME != '' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -367,8 +366,8 @@ jobs:
   release:
     name: 📦 Release
     runs-on: ubuntu-latest
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [test-summary, build]
+    if: always() && startsWith(github.ref, 'refs/tags/v') && needs.test-summary.result == 'success'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
