@@ -229,6 +229,7 @@ omit = [
     "src/agents/video_agent.py",     # YouTube API dependent
     "src/agents/music_agent.py",     # Spotify/YouTube API dependent
     "src/agents/text_agent.py",      # Wikipedia API dependent
+    "src/models/metrics.py",         # Duplicate of smart_queue.QueueMetrics
 ]
 
 [tool.coverage.report]
