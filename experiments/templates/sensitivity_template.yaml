@@ -1,0 +1,117 @@
+# Sensitivity Analysis Experiment Template
+# Copy and modify for new sensitivity studies
+
+experiment:
+  id: "YYYYMMDD_parameter_sensitivity"  # Replace with actual date
+  name: "Parameter Sensitivity Study"
+  description: "One-at-a-time sensitivity analysis for queue parameters"
+  hypothesis: "State your hypothesis here"
+  author: "Your Name"
+  date: "YYYY-MM-DD"
+  version: "1.0.0"
+
+design:
+  type: "one_at_a_time"
+  
+  # Parameter to vary
+  independent_variable:
+    name: "soft_timeout"
+    type: "continuous"
+    values: [5, 8, 10, 12, 15, 18, 20, 25, 30]
+    unit: "seconds"
+  
+  # Metrics to measure
+  dependent_variables:
+    - name: "latency_mean"
+      type: "continuous"
+      unit: "seconds"
+    - name: "latency_p95"
+      type: "continuous"
+      unit: "seconds"
+    - name: "quality_mean"
+      type: "continuous"
+      unit: "score"
+    - name: "success_rate"
+      type: "proportion"
+      unit: "fraction"
+    - name: "complete_rate"
+      type: "proportion"
+      unit: "fraction"
+
+# Fixed parameters (control variables)
+control:
+  queue_config:
+    hard_timeout: 30.0
+    min_for_soft: 2
+    min_for_hard: 1
+    expected_agents: 3
+  
+  agent_config:
+    video:
+      mu: 1.0
+      sigma: 0.5
+      shift: 0.5
+      reliability: 0.92
+    music:
+      mu: 0.8
+      sigma: 0.4
+      shift: 0.3
+      reliability: 0.95
+    text:
+      mu: 0.6
+      sigma: 0.3
+      shift: 0.2
+      reliability: 0.98
+
+# Replication settings
+replication:
+  seed: 42
+  iterations_per_value: 5000
+  warmup_iterations: 100
+  parallel_workers: 4
+
+# Statistical analysis
+analysis:
+  tests:
+    - type: "welch_t_test"
+      comparison: "pairwise"
+      correction: "bonferroni"
+    - type: "mann_whitney_u"
+      alternative: "two-sided"
+    - type: "bootstrap_ci"
+      n_bootstrap: 5000
+      confidence: 0.95
+  
+  effect_size:
+    type: "cohens_d"
+    interpretation:
+      negligible: 0.2
+      small: 0.5
+      medium: 0.8
+  
+  significance_level: 0.05
+
+# Output configuration
+output:
+  results_format: "json"
+  figures:
+    format: "png"
+    dpi: 300
+    style: "seaborn-whitegrid"
+  report:
+    format: "markdown"
+    include_tables: true
+    include_figures: true
+
+# Metadata
+metadata:
+  tags:
+    - "sensitivity"
+    - "timeout"
+    - "one-at-a-time"
+  references:
+    - "Saltelli et al. (2008). Global Sensitivity Analysis"
+  notes: |
+    Additional notes about the experiment design,
+    assumptions, or limitations.
+

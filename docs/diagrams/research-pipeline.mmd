@@ -1,0 +1,70 @@
+%% Research Analysis Pipeline
+%% Render at: https://mermaid.live
+
+flowchart TB
+    subgraph INPUT["📥 Input"]
+        QC[Queue Configuration<br/>soft_timeout, hard_timeout]
+        AC[Agent Configuration<br/>μ, σ, reliability]
+    end
+    
+    subgraph SIM["🎲 Simulation"]
+        MC[Monte Carlo<br/>N=10,000 runs]
+        SQS[SmartQueueSimulator<br/>High-fidelity model]
+    end
+    
+    subgraph ANALYSIS["📊 Analysis"]
+        direction TB
+        LSA[Local Sensitivity<br/>One-at-a-Time]
+        GSA[Global Sensitivity<br/>Sobol Indices]
+        HYP[Hypothesis Testing<br/>t-test, Mann-Whitney]
+        BS[Bootstrap<br/>Confidence Intervals]
+    end
+    
+    subgraph METRICS["📈 Metrics"]
+        LAT[Latency Distribution]
+        QUAL[Quality Scores]
+        STATUS[Status Distribution]
+        EFF[Effect Sizes]
+    end
+    
+    subgraph OUTPUT["📤 Output"]
+        FIG[Publication Figures<br/>300 DPI PNG]
+        REP[Statistical Reports<br/>JSON/Markdown]
+        REC[Recommendations<br/>Optimal Configs]
+    end
+    
+    QC --> SQS
+    AC --> SQS
+    SQS --> MC
+    
+    MC --> LSA
+    MC --> GSA
+    MC --> HYP
+    MC --> BS
+    
+    LSA --> LAT
+    LSA --> QUAL
+    GSA --> STATUS
+    HYP --> EFF
+    BS --> EFF
+    
+    LAT --> FIG
+    QUAL --> FIG
+    STATUS --> FIG
+    EFF --> REP
+    
+    FIG --> REC
+    REP --> REC
+    
+    classDef input fill:#e1f5fe,stroke:#01579b
+    classDef sim fill:#fff3e0,stroke:#e65100
+    classDef analysis fill:#f3e5f5,stroke:#7b1fa2
+    classDef metrics fill:#e8f5e9,stroke:#2e7d32
+    classDef output fill:#fce4ec,stroke:#c2185b
+    
+    class QC,AC input
+    class MC,SQS sim
+    class LSA,GSA,HYP,BS analysis
+    class LAT,QUAL,STATUS,EFF metrics
+    class FIG,REP,REC output
+

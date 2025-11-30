@@ -1,0 +1,57 @@
+# High Quality Benchmark Configuration
+# Conservative timeouts for maximum quality
+
+name: high_quality
+description: Conservative configuration (soft=25s, hard=45s) optimized for quality
+
+parameters:
+  soft_timeout: 25.0
+  hard_timeout: 45.0
+  min_for_soft: 2
+  min_for_hard: 1
+  expected_agents: 3
+
+simulation:
+  seed: 42
+  iterations: 10000
+  warmup_iterations: 100
+
+agents:
+  video:
+    name: video
+    mu: 1.0
+    sigma: 0.5
+    shift: 0.5
+    reliability: 0.92
+    quality_mean: 7.5
+    quality_std: 1.5
+    
+  music:
+    name: music
+    mu: 0.8
+    sigma: 0.4
+    shift: 0.3
+    reliability: 0.95
+    quality_mean: 7.0
+    quality_std: 1.2
+    
+  text:
+    name: text
+    mu: 0.6
+    sigma: 0.3
+    shift: 0.2
+    reliability: 0.98
+    quality_mean: 6.5
+    quality_std: 1.0
+
+thresholds:
+  max_mean_latency: 10.0
+  max_p99_latency: 45.0
+  min_success_rate: 0.999
+  min_quality_mean: 6.5
+
+output:
+  format: json
+  include_raw_data: false
+  figures: true
+

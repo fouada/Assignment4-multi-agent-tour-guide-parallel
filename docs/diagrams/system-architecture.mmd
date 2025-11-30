@@ -1,0 +1,82 @@
+%% Multi-Agent Tour Guide System - C4 Context Diagram
+%% Render at: https://mermaid.live
+
+graph TB
+    subgraph "Multi-Agent Tour Guide System"
+        direction TB
+        
+        subgraph "Presentation Layer"
+            CLI[🖥️ CLI<br/>Typer]
+            API[🌐 REST API<br/>FastAPI]
+        end
+        
+        subgraph "Orchestration Layer"
+            ORC[🎯 Orchestrator<br/>ThreadPoolExecutor]
+            SQ[📬 Smart Queue<br/>Tiered Timeouts]
+        end
+        
+        subgraph "Agent Layer"
+            VA[🎬 Video Agent]
+            MA[🎵 Music Agent]
+            TA[📖 Text Agent]
+            JA[⚖️ Judge Agent]
+        end
+        
+        subgraph "Infrastructure Layer"
+            CB[🛡️ Circuit Breaker]
+            RT[🔄 Retry]
+            OBS[📊 Observability]
+            PLG[🔌 Plugins]
+        end
+        
+        subgraph "Research Layer"
+            EXP[🧪 Experiments]
+            STAT[📈 Statistics]
+            VIZ[📊 Visualization]
+        end
+    end
+    
+    %% External Systems
+    USER[👤 User]
+    YT[📺 YouTube API]
+    SP[🎧 Spotify API]
+    WK[📚 Wikipedia]
+    LLM[🤖 LLM Provider<br/>Claude/GPT]
+    PROM[📊 Prometheus]
+    
+    %% Connections
+    USER --> CLI
+    USER --> API
+    
+    CLI --> ORC
+    API --> ORC
+    
+    ORC --> VA
+    ORC --> MA
+    ORC --> TA
+    
+    VA --> SQ
+    MA --> SQ
+    TA --> SQ
+    
+    SQ --> JA
+    
+    VA -.-> CB
+    MA -.-> CB
+    TA -.-> CB
+    
+    CB --> YT
+    CB --> SP
+    CB --> WK
+    JA --> LLM
+    
+    OBS --> PROM
+    
+    classDef external fill:#f9f,stroke:#333,stroke-width:2px
+    classDef core fill:#bbf,stroke:#333,stroke-width:2px
+    classDef research fill:#bfb,stroke:#333,stroke-width:2px
+    
+    class YT,SP,WK,LLM,PROM external
+    class ORC,SQ,VA,MA,TA,JA core
+    class EXP,STAT,VIZ research
+

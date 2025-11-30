@@ -1,0 +1,55 @@
+%% Agent Interaction Sequence Diagram
+%% Render at: https://mermaid.live
+
+sequenceDiagram
+    autonumber
+    participant U as 👤 User
+    participant O as 🎯 Orchestrator
+    participant TPE as 🔄 ThreadPoolExecutor
+    participant VA as 🎬 Video Agent
+    participant MA as 🎵 Music Agent
+    participant TA as 📖 Text Agent
+    participant SQ as 📬 Smart Queue
+    participant JA as ⚖️ Judge Agent
+    participant LLM as 🤖 LLM
+
+    U->>O: Process Route (origin, destination)
+    
+    loop For Each Route Point
+        O->>SQ: Create Queue(point_id)
+        O->>TPE: Submit 3 Agent Tasks
+        
+        par Parallel Agent Execution
+            TPE->>VA: search(point)
+            VA-->>VA: Call YouTube API
+            VA->>SQ: submit_success(video, result)
+        and
+            TPE->>MA: search(point)
+            MA-->>MA: Call Spotify API
+            MA->>SQ: submit_success(music, result)
+        and
+            TPE->>TA: search(point)
+            TA-->>TA: Call Wikipedia API
+            TA->>SQ: submit_success(text, result)
+        end
+        
+        O->>SQ: wait_for_results()
+        
+        alt All 3 Agents Respond
+            SQ-->>O: [3 results], COMPLETE
+        else 2/3 by Soft Timeout (15s)
+            SQ-->>O: [2 results], SOFT_DEGRADED
+        else 1/3 by Hard Timeout (30s)
+            SQ-->>O: [1 result], HARD_DEGRADED
+        else 0/3 by Hard Timeout
+            SQ-->>O: NoResultsError
+        end
+        
+        O->>JA: evaluate(point, results, user_profile)
+        JA->>LLM: Select best content
+        LLM-->>JA: Selected: {type, reasoning}
+        JA-->>O: JudgeDecision
+    end
+    
+    O-->>U: Final Playlist
+

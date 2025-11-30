@@ -10,11 +10,14 @@ This document provides comprehensive testing specifications for the Multi-Agent 
 
 | Metric | Value |
 |--------|-------|
-| **Total Tests** | 632+ |
+| **Total Tests** | 683+ |
 | **Overall Coverage** | 85%+ |
-| **Test Files** | 27 |
+| **Test Files** | 30 |
 | **Edge Cases** | 100% documented |
 | **CI/CD Threshold** | 85% enforced |
+
+> **Last Verified**: November 2025  
+> **Command**: `uv run pytest tests/ --cov=src --cov-fail-under=85`
 
 ---
 

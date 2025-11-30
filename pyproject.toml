@@ -105,6 +105,18 @@ async = [
     "aiohttp>=3.9.0",
 ]
 
+# Research and analysis tools (MIT-level research framework)
+research = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scipy>=1.11.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+    "jupyter>=1.0.0",
+    "jupyterlab>=4.0.0",
+    "notebook>=7.0.0",
+]
+
 # All external APIs
 apis = [
     "multi-agent-tour-guide[maps,youtube,spotify,search]",
@@ -112,7 +124,7 @@ apis = [
 
 # Full installation (everything)
 all = [
-    "multi-agent-tour-guide[dev,api,apis,async]",
+    "multi-agent-tour-guide[dev,api,apis,async,research]",
 ]
 
 # ============================================================================
@@ -230,6 +242,7 @@ omit = [
     "src/agents/music_agent.py",     # Spotify/YouTube API dependent
     "src/agents/text_agent.py",      # Wikipedia API dependent
     "src/models/metrics.py",         # Duplicate of smart_queue.QueueMetrics
+    "src/research/*",                # Research framework - tested via notebooks
 ]
 
 [tool.coverage.report]

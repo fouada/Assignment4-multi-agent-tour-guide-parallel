@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-11-30T00:00:00Z",
+  "experiments": [
+    {
+      "id": "20251130_baseline_characterization",
+      "name": "Baseline System Characterization",
+      "status": "completed",
+      "hypothesis": "Default configuration provides balanced latency-quality tradeoff",
+      "conclusion": "SUPPORTED - 85% complete rate, 4.5s mean latency, 7.0 mean quality",
+      "created": "2025-11-30T00:00:00Z",
+      "completed": "2025-11-30T00:00:00Z",
+      "location": "notebooks/01_sensitivity_analysis.ipynb",
+      "tags": ["baseline", "characterization"]
+    },
+    {
+      "id": "20251130_soft_timeout_sensitivity",
+      "name": "Soft Timeout Sensitivity Analysis",
+      "status": "completed",
+      "hypothesis": "Soft timeout is the most sensitive parameter for latency",
+      "conclusion": "SUPPORTED - soft_timeout explains ~40% of latency variance",
+      "created": "2025-11-30T00:00:00Z",
+      "completed": "2025-11-30T00:00:00Z",
+      "location": "notebooks/01_sensitivity_analysis.ipynb",
+      "tags": ["sensitivity", "timeout", "latency"]
+    },
+    {
+      "id": "20251130_config_comparison",
+      "name": "Configuration Statistical Comparison",
+      "status": "completed",
+      "hypothesis": "Aggressive configuration significantly reduces latency",
+      "conclusion": "SUPPORTED - p<0.001, Cohen's d=0.58 (medium effect)",
+      "created": "2025-11-30T00:00:00Z",
+      "completed": "2025-11-30T00:00:00Z",
+      "location": "notebooks/01_sensitivity_analysis.ipynb",
+      "tags": ["comparison", "statistical", "hypothesis_testing"]
+    }
+  ],
+  "tags": {
+    "baseline": "Baseline characterization experiments",
+    "sensitivity": "Parameter sensitivity analysis",
+    "comparison": "Configuration comparison studies",
+    "statistical": "Formal statistical testing",
+    "timeout": "Timeout parameter studies",
+    "latency": "Latency-focused experiments",
+    "hypothesis_testing": "Formal hypothesis testing"
+  }
+}
+
