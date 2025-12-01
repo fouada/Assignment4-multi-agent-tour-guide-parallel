@@ -90,11 +90,25 @@ class SmartAgentQueue:
         self._condition = threading.Condition()
 
         # Instance-level configuration (allows per-queue customization)
-        self.EXPECTED_AGENTS = expected_agents if expected_agents is not None else self.DEFAULT_EXPECTED_AGENTS
-        self.SOFT_TIMEOUT_SECONDS = soft_timeout if soft_timeout is not None else self.DEFAULT_SOFT_TIMEOUT_SECONDS
-        self.HARD_TIMEOUT_SECONDS = hard_timeout if hard_timeout is not None else self.DEFAULT_HARD_TIMEOUT_SECONDS
+        self.EXPECTED_AGENTS = (
+            expected_agents
+            if expected_agents is not None
+            else self.DEFAULT_EXPECTED_AGENTS
+        )
+        self.SOFT_TIMEOUT_SECONDS = (
+            soft_timeout
+            if soft_timeout is not None
+            else self.DEFAULT_SOFT_TIMEOUT_SECONDS
+        )
+        self.HARD_TIMEOUT_SECONDS = (
+            hard_timeout
+            if hard_timeout is not None
+            else self.DEFAULT_HARD_TIMEOUT_SECONDS
+        )
 
-        self._metrics = QueueMetrics(point_id=point_id, agents_expected=self.EXPECTED_AGENTS)
+        self._metrics = QueueMetrics(
+            point_id=point_id, agents_expected=self.EXPECTED_AGENTS
+        )
 
         logger.info(
             f"[{point_id}] Smart Queue initialized (expecting {self.EXPECTED_AGENTS} agents, "

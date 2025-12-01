@@ -110,7 +110,7 @@ class JudgeAgent(BaseAgent):
                 selected_content=None,  # No safe content available
                 all_candidates=candidates,
                 reasoning=f"⚠️ No safe content available. All content types ({', '.join(excluded_types)}) "
-                          f"were excluded due to user profile constraints (e.g., driver safety).",
+                f"were excluded due to user profile constraints (e.g., driver safety).",
                 scores={c.content_type: 0.0 for c in candidates},
                 confidence=0.0,  # Low confidence due to no suitable content
             )

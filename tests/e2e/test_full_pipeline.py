@@ -204,7 +204,9 @@ class TestFullTourPipeline:
             assert result.num_candidates == 3
 
     @pytest.mark.e2e
-    def test_tour_flow_with_orchestrator(self, sample_route_points, family_profile, mock_content_results):
+    def test_tour_flow_with_orchestrator(
+        self, sample_route_points, family_profile, mock_content_results
+    ):
         """Test complete flow using the Orchestrator component."""
         # Use a simplified test that validates orchestrator initialization and basic behavior
         orchestrator = Orchestrator(max_concurrent_points=2)

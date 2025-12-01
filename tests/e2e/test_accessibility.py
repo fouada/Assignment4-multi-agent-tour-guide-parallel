@@ -356,7 +356,10 @@ class TestAccessibilityEdgeCases:
             name="Edge Case User",
             gender=Gender.NOT_SPECIFIED,
             age_group=AgeGroup.ADULT,
-            accessibility_needs=[AccessibilityNeed.VISUAL_IMPAIRMENT, AccessibilityNeed.HEARING_IMPAIRMENT],
+            accessibility_needs=[
+                AccessibilityNeed.VISUAL_IMPAIRMENT,
+                AccessibilityNeed.HEARING_IMPAIRMENT,
+            ],
         )
 
         test_point = RoutePoint(

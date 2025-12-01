@@ -126,7 +126,7 @@ class TestAPIEndpoints:
         response = api_client.post("/api/v1/tours", json=valid_tour_request)
 
         assert response.status_code == 201
-        data = response.json()
+            data = response.json()
         # Verify structure matches TourResponse model
         assert "tour_id" in data
         assert "status" in data
@@ -248,6 +248,6 @@ class TestAPIPagination:
         response = api_client.get("/api/v1/profiles/presets")
 
         assert response.status_code == 200
-        data = response.json()
+            data = response.json()
         assert "presets" in data
         assert len(data["presets"]) > 0

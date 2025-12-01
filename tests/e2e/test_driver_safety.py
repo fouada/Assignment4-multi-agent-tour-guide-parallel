@@ -203,7 +203,9 @@ class TestDriverSafetyConstraints:
     @pytest.mark.e2e
     def test_driver_only_video_available_fallback(self, driver_profile, test_point):
         """Test behavior when ONLY video is available for a driver."""
-        queue = SmartAgentQueue(point_id=test_point.id, soft_timeout=0.5, hard_timeout=1.0)
+        queue = SmartAgentQueue(
+            point_id=test_point.id, soft_timeout=0.5, hard_timeout=1.0
+        )
 
         # Only video available
         queue.submit_result(
