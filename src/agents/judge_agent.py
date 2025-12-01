@@ -22,12 +22,10 @@ from src.models.content import ContentResult, ContentType
 from src.models.decision import JudgeDecision
 from src.models.route import RoutePoint
 from src.models.user_profile import AgeGroup, UserProfile
+from src.utils import AGENT_SKILLS
 from src.utils.logger import get_logger, log_judge_decision
 
 logger = get_logger(__name__)
-
-# Agent skills (can be loaded from YAML)
-AGENT_SKILLS: dict[str, Any] = {}
 
 
 class JudgeAgent(BaseAgent):
@@ -85,10 +83,46 @@ class JudgeAgent(BaseAgent):
         # Use provided profile or fall back to instance profile
         profile = user_profile or self.user_profile
 
+        # Get content type preferences/weights from user profile
+        type_preferences = profile.get_content_type_preferences()
+
+        # CRITICAL: Filter out content types with 0 weight (e.g., video for drivers)
+        # This enforces safety constraints like no video for drivers
+        filtered_candidates = []
+        excluded_types = []
+        for candidate in candidates:
+            type_key = candidate.content_type.value.lower()
+            weight = type_preferences.get(type_key, 1.0)
+            if weight > 0:
+                filtered_candidates.append(candidate)
+            else:
+                excluded_types.append(candidate.content_type.value)
+
+        # If all candidates were filtered out, return decision with no selected content
+        if not filtered_candidates:
+            # Return a decision with no content selected (safety first)
+            logger.warning(
+                f"[Judge] All candidates filtered out due to safety constraints "
+                f"(excluded types: {excluded_types})"
+            )
+            return JudgeDecision(
+                point_id=point.id,
+                selected_content=None,  # No safe content available
+                all_candidates=candidates,
+                reasoning=f"⚠️ No safe content available. All content types ({', '.join(excluded_types)}) "
+                          f"were excluded due to user profile constraints (e.g., driver safety).",
+                scores={c.content_type: 0.0 for c in candidates},
+                confidence=0.0,  # Low confidence due to no suitable content
+            )
+
+        # Use filtered candidates for evaluation
+        candidates = filtered_candidates
         num_candidates = len(candidates)
+
         logger.info(
             f"[Judge] Evaluating {num_candidates} candidate(s) for {point.location_name or point.address} "
             f"(User: {profile.age_group.value}, {profile.gender.value})"
+            + (f" [Excluded: {', '.join(excluded_types)}]" if excluded_types else "")
         )
 
         # ═══════════════════════════════════════════════════════════════════

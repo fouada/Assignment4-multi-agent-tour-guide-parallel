@@ -47,22 +47,22 @@ from src.core.observability.metrics import (
     counted,
     timed,
 )
+from src.core.observability.nps_metrics import (
+    EngagementMetrics,
+    FeedbackEntry,
+    NPSCategory,
+    NPSReport,
+    UserSatisfactionCollector,
+    collect_nps_score,
+    get_nps_score,
+    get_satisfaction_collector,
+)
 from src.core.observability.tracing import (
     Span,
     SpanContext,
     Tracer,
     get_tracer,
     trace,
-)
-from src.core.observability.nps_metrics import (
-    UserSatisfactionCollector,
-    FeedbackEntry,
-    NPSReport,
-    NPSCategory,
-    EngagementMetrics,
-    get_satisfaction_collector,
-    collect_nps_score,
-    get_nps_score,
 )
 
 __all__ = [

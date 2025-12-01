@@ -12,7 +12,7 @@ class RoutePoint(BaseModel):
     """A single point/waypoint in the route."""
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
-    index: int
+    index: int = Field(default=0)
     address: str
     location_name: str | None = None
     latitude: float

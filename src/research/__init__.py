@@ -41,198 +41,185 @@ Academic References:
     - Sutton & Barto (2018). Reinforcement Learning: An Introduction.
 """
 
+# === MIT-LEVEL INNOVATIONS ===
+from .adaptive_learning import (
+    UCB,
+    AdaptiveAgentSelector,
+    # Data structures
+    AgentType,
+    BanditExperiment,
+    BanditStatistics,
+    Context,
+    ContextualThompsonSampling,
+    Reward,
+    # Multi-Armed Bandits
+    ThompsonSampling,
+)
+from .agent_negotiation import (
+    # Auction Components
+    AgentBid,
+    AuctionResult,
+    # Consensus
+    ConsensusProtocol,
+    # Cooperative Game Theory
+    CooperativeContentGame,
+    # Main Interface
+    MultiAgentNegotiationSystem,
+    # Nash Equilibrium
+    NashEquilibriumAnalyzer,
+    # Strategic Agents
+    StrategicAgent,
+    # VCG Mechanism
+    VCGAuction,
+)
+from .bayesian_optimization import (
+    # Optimization
+    BayesianOptimizer,
+    # Configuration Space
+    ConfigurationSpace,
+    # Acquisition Functions
+    ExpectedImprovement,
+    # Gaussian Process
+    GaussianProcess,
+    MaternKernel,
+    MultiObjectiveBO,
+    OptimizationHistory,
+    OptimizationResult,
+    Parameter,
+    ParameterType,
+    ProbabilityOfImprovement,
+    SquaredExponentialKernel,
+    ThompsonSamplingAcquisition,
+    UCBAcquisition,
+)
+from .causal_inference import (
+    # Analysis
+    AgentPerformanceAnalyzer,
+    CausalDiscovery,
+    CausalEdge,
+    # Estimators
+    CausalEffectEstimator,
+    CausalObservation,
+    CausalVariable,
+    # Structural Causal Models
+    StructuralCausalModel,
+    StructuralEquation,
+)
 from .experimental_framework import (
     ExperimentConfig,
     ExperimentResult,
     ExperimentRunner,
     ReproducibleExperiment,
 )
-
-from .statistical_analysis import (
-    StatisticalComparison,
-    EffectSizeAnalysis,
-    HypothesisTest,
-    BootstrapAnalysis,
-)
-
-from .visualization import (
-    ResearchVisualizer,
-    create_publication_figure,
-)
-
-# === MIT-LEVEL INNOVATIONS ===
-
-from .adaptive_learning import (
-    # Multi-Armed Bandits
-    ThompsonSampling,
-    UCB,
-    ContextualThompsonSampling,
-    AdaptiveAgentSelector,
-    BanditExperiment,
-    # Data structures
-    AgentType,
-    Context,
-    Reward,
-    BanditStatistics,
-)
-
-from .causal_inference import (
-    # Structural Causal Models
-    StructuralCausalModel,
-    StructuralEquation,
-    CausalVariable,
-    CausalEdge,
-    CausalObservation,
-    # Estimators
-    CausalEffectEstimator,
-    CausalDiscovery,
-    # Analysis
-    AgentPerformanceAnalyzer,
-)
-
-from .bayesian_optimization import (
-    # Configuration Space
-    ConfigurationSpace,
-    Parameter,
-    ParameterType,
-    # Gaussian Process
-    GaussianProcess,
-    SquaredExponentialKernel,
-    MaternKernel,
-    # Acquisition Functions
-    ExpectedImprovement,
-    UCBAcquisition,
-    ProbabilityOfImprovement,
-    ThompsonSamplingAcquisition,
-    # Optimization
-    BayesianOptimizer,
-    MultiObjectiveBO,
-    OptimizationHistory,
-    OptimizationResult,
-)
-
 from .explainability import (
-    # SHAP
-    SHAPExplainer,
-    # LIME
-    LIMEExplainer,
     # Counterfactuals
     CounterfactualExplainer,
     CounterfactualExplanation,
-    # Natural Language
-    NaturalLanguageExplainer,
+    Decision,
     # Integrated Engine
     ExplainabilityEngine,
+    ExplanationType,
     # Data structures
     Feature,
     FeatureValue,
-    Decision,
-    ExplanationType,
+    # LIME
+    LIMEExplainer,
+    # Natural Language
+    NaturalLanguageExplainer,
+    # SHAP
+    SHAPExplainer,
 )
-
-from .information_theory import (
-    # Entropy
-    EntropyCalculator,
-    MutualInformationCalculator,
-    KLDivergence,
-    # Regret Bounds
-    InformationTheoreticRegretBounds,
-    RegretBoundResult,
-    # Channel Theory
-    AgentUserChannel,
-    # Rate-Distortion
-    RateDistortionAnalyzer,
-    # Diversity
-    DiversityMetrics,
-    # Complete Analysis
-    InformationTheoreticAnalyzer,
-    InformationTheoreticAnalysis,
-)
-
-# === NEW GROUNDBREAKING INNOVATIONS ===
-
-from .sequential_optimization import (
-    # MDP Components
-    TourState,
-    TourAction,
-    EmotionalState,
-    # Reward Shaping
-    EmotionalArcReward,
-    # Policy
-    SoftmaxPolicy,
-    # Main Interface
-    SequentialContentOptimizer,
-    DiversityConstrainedOptimizer,
-)
-
-from .agent_negotiation import (
-    # Auction Components
-    AgentBid,
-    AuctionResult,
-    # VCG Mechanism
-    VCGAuction,
-    # Nash Equilibrium
-    NashEquilibriumAnalyzer,
-    # Consensus
-    ConsensusProtocol,
-    # Strategic Agents
-    StrategicAgent,
-    # Cooperative Game Theory
-    CooperativeContentGame,
-    # Main Interface
-    MultiAgentNegotiationSystem,
-)
-
-from .meta_learning import (
-    # Data Structures
-    UserInteraction,
-    Task,
-    # Preference Model
-    PreferenceModel,
-    # Meta-Learning Algorithms
-    MAML,
-    Reptile,
-    # Prototypical Networks
-    PrototypicalNetworks,
-    # Main Interface
-    ColdStartHandler,
-    # Task Generator
-    create_synthetic_task_generator,
-)
-
 from .graph_neural_content import (
+    GraphAttentionLayer,
+    # GNN Layers
+    GraphConvLayer,
     # Graph Components
     LocationNode,
     LocationType,
-    RouteEdge,
-    RouteGraph,
-    # GNN Layers
-    GraphConvLayer,
-    GraphAttentionLayer,
-    # GNN Model
-    RouteGNN,
     # Positional Encoding
     PositionalEncoding,
     # Main Interface
     RouteAwareContentSelector,
+    RouteEdge,
+    # GNN Model
+    RouteGNN,
+    RouteGraph,
+)
+from .information_theory import (
+    # Channel Theory
+    AgentUserChannel,
+    # Diversity
+    DiversityMetrics,
+    # Entropy
+    EntropyCalculator,
+    InformationTheoreticAnalysis,
+    # Complete Analysis
+    InformationTheoreticAnalyzer,
+    # Regret Bounds
+    InformationTheoreticRegretBounds,
+    KLDivergence,
+    MutualInformationCalculator,
+    # Rate-Distortion
+    RateDistortionAnalyzer,
+    RegretBoundResult,
+)
+from .meta_learning import (
+    # Meta-Learning Algorithms
+    MAML,
+    # Main Interface
+    ColdStartHandler,
+    # Preference Model
+    PreferenceModel,
+    # Prototypical Networks
+    PrototypicalNetworks,
+    Reptile,
+    Task,
+    # Data Structures
+    UserInteraction,
+    # Task Generator
+    create_synthetic_task_generator,
 )
 
+# === NEW GROUNDBREAKING INNOVATIONS ===
+from .sequential_optimization import (
+    DiversityConstrainedOptimizer,
+    # Reward Shaping
+    EmotionalArcReward,
+    EmotionalState,
+    # Main Interface
+    SequentialContentOptimizer,
+    # Policy
+    SoftmaxPolicy,
+    TourAction,
+    # MDP Components
+    TourState,
+)
+from .statistical_analysis import (
+    BootstrapAnalysis,
+    EffectSizeAnalysis,
+    HypothesisTest,
+    StatisticalComparison,
+)
 from .uncertainty_quantification import (
-    # Prediction Set
-    PredictionSet,
-    CalibrationResult,
-    # Conformity Scores
-    ConformityScore,
-    SimpleProbabilityScore,
+    AdaptiveConformalPredictor,
     AdaptiveProbabilityScore,
-    RAPSScore,
+    CalibrationResult,
     # Conformal Predictors
     ConformalPredictor,
-    AdaptiveConformalPredictor,
+    # Conformity Scores
+    ConformityScore,
+    # Prediction Set
+    PredictionSet,
+    RAPSScore,
     # Selective Prediction
     SelectivePredictor,
+    SimpleProbabilityScore,
     # Main Interface
     UncertaintyAwareContentSelector,
+)
+from .visualization import (
+    ResearchVisualizer,
+    create_publication_figure,
 )
 
 __all__ = [
@@ -250,9 +237,7 @@ __all__ = [
     # Visualization
     "ResearchVisualizer",
     "create_publication_figure",
-    
     # === MIT-LEVEL INNOVATIONS ===
-    
     # Adaptive Learning (Multi-Armed Bandits)
     "ThompsonSampling",
     "UCB",
@@ -263,7 +248,6 @@ __all__ = [
     "Context",
     "Reward",
     "BanditStatistics",
-    
     # Causal Inference
     "StructuralCausalModel",
     "StructuralEquation",
@@ -273,7 +257,6 @@ __all__ = [
     "CausalEffectEstimator",
     "CausalDiscovery",
     "AgentPerformanceAnalyzer",
-    
     # Bayesian Optimization
     "ConfigurationSpace",
     "Parameter",
@@ -289,7 +272,6 @@ __all__ = [
     "MultiObjectiveBO",
     "OptimizationHistory",
     "OptimizationResult",
-    
     # Explainable AI
     "SHAPExplainer",
     "LIMEExplainer",
@@ -301,7 +283,6 @@ __all__ = [
     "FeatureValue",
     "Decision",
     "ExplanationType",
-    
     # Information Theory
     "EntropyCalculator",
     "MutualInformationCalculator",
@@ -313,9 +294,7 @@ __all__ = [
     "DiversityMetrics",
     "InformationTheoreticAnalyzer",
     "InformationTheoreticAnalysis",
-    
     # === NEW GROUNDBREAKING INNOVATIONS ===
-    
     # Sequential Optimization (Reinforcement Learning)
     "TourState",
     "TourAction",
@@ -324,7 +303,6 @@ __all__ = [
     "SoftmaxPolicy",
     "SequentialContentOptimizer",
     "DiversityConstrainedOptimizer",
-    
     # Agent Negotiation (Game Theory)
     "AgentBid",
     "AuctionResult",
@@ -334,7 +312,6 @@ __all__ = [
     "StrategicAgent",
     "CooperativeContentGame",
     "MultiAgentNegotiationSystem",
-    
     # Meta-Learning (Cold Start)
     "UserInteraction",
     "Task",
@@ -344,7 +321,6 @@ __all__ = [
     "PrototypicalNetworks",
     "ColdStartHandler",
     "create_synthetic_task_generator",
-    
     # Graph Neural Networks
     "LocationNode",
     "LocationType",
@@ -355,7 +331,6 @@ __all__ = [
     "RouteGNN",
     "PositionalEncoding",
     "RouteAwareContentSelector",
-    
     # Uncertainty Quantification (Conformal Prediction)
     "PredictionSet",
     "CalibrationResult",
@@ -368,4 +343,3 @@ __all__ = [
     "SelectivePredictor",
     "UncertaintyAwareContentSelector",
 ]
-

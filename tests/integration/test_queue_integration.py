@@ -142,7 +142,7 @@ class TestQueueWithAgents:
 
     def test_slow_agent_soft_timeout(self):
         """Test queue proceeds at soft timeout with 2 results."""
-        queue = SmartAgentQueue("slow_agent_test")
+        queue = SmartAgentQueue("slow_agent_test", soft_timeout=1.0, hard_timeout=2.0)
 
         def fast_agent(agent_type, content_type, delay):
             time.sleep(delay)

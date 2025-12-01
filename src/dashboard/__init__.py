@@ -20,7 +20,7 @@ Date: November 2025
 Usage:
     # From command line
     python run_dashboard.py
-    
+
     # Or programmatically
     from src.dashboard import run_dashboard
     run_dashboard()
@@ -28,28 +28,32 @@ Usage:
 
 __version__ = "1.0.0"
 
+
 # Lazy imports to avoid import errors when dependencies not installed
 def __getattr__(name):
     """Lazy import of dashboard components."""
     if name in ("create_app", "run_dashboard"):
         from .app import create_app, run_dashboard
+
         return {"create_app": create_app, "run_dashboard": run_dashboard}[name]
-    
+
     elif name == "DashboardDataManager":
         from .data_manager import DashboardDataManager
+
         return DashboardDataManager
-    
+
     elif name in (
         "AgentPerformancePanel",
-        "MonteCarloPanel", 
+        "MonteCarloPanel",
         "ParetoFrontierPanel",
         "SensitivityPanel",
         "StatisticalComparisonPanel",
         "SystemMonitorPanel",
     ):
         from . import components
+
         return getattr(components, name)
-    
+
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -64,4 +68,3 @@ __all__ = [
     "MonteCarloPanel",
     "AgentPerformancePanel",
 ]
-

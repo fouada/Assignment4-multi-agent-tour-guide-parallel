@@ -14,7 +14,7 @@ class JudgeDecision(BaseModel):
     """Decision made by the judge agent."""
 
     point_id: str
-    selected_content: ContentResult
+    selected_content: ContentResult | None  # None when no safe content is available
     all_candidates: list[ContentResult]
     reasoning: str
     scores: dict[ContentType, float] = Field(default_factory=dict)

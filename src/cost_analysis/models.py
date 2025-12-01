@@ -18,28 +18,28 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class CostCategory(Enum):
     """Categories of costs in the system."""
-    
+
     # LLM Costs
     LLM_INPUT_TOKENS = "llm_input_tokens"
     LLM_OUTPUT_TOKENS = "llm_output_tokens"
     LLM_EMBEDDING = "llm_embedding"
-    
+
     # API Costs
     API_GOOGLE_MAPS = "api_google_maps"
     API_YOUTUBE = "api_youtube"
     API_SPOTIFY = "api_spotify"
     API_WEB_SEARCH = "api_web_search"
-    
+
     # Compute Costs
     COMPUTE_CPU = "compute_cpu"
     COMPUTE_MEMORY = "compute_memory"
     COMPUTE_NETWORK = "compute_network"
-    
+
     # Operational Costs
     RETRY_OVERHEAD = "retry_overhead"
     CIRCUIT_BREAKER_SAVINGS = "circuit_breaker_savings"
@@ -49,7 +49,7 @@ class CostCategory(Enum):
 @dataclass
 class LLMPricing:
     """Pricing structure for LLM providers."""
-    
+
     # OpenAI Pricing (per 1M tokens as of Nov 2024)
     OPENAI_GPT4O_INPUT = 2.50  # $/1M tokens
     OPENAI_GPT4O_OUTPUT = 10.00
@@ -57,7 +57,7 @@ class LLMPricing:
     OPENAI_GPT4O_MINI_OUTPUT = 0.60
     OPENAI_GPT35_INPUT = 0.50
     OPENAI_GPT35_OUTPUT = 1.50
-    
+
     # Anthropic Pricing (per 1M tokens as of Nov 2024)
     ANTHROPIC_CLAUDE_SONNET_INPUT = 3.00
     ANTHROPIC_CLAUDE_SONNET_OUTPUT = 15.00
@@ -70,20 +70,20 @@ class LLMPricing:
 @dataclass
 class APIPricing:
     """Pricing structure for external APIs."""
-    
+
     # Google Maps API (per 1000 requests)
     GOOGLE_MAPS_DIRECTIONS = 5.00
     GOOGLE_MAPS_GEOCODING = 5.00
     GOOGLE_MAPS_PLACES = 17.00
-    
+
     # YouTube Data API (quota-based, estimated cost)
     YOUTUBE_SEARCH = 0.001  # Estimated cost per search
     YOUTUBE_VIDEO_DETAILS = 0.0005
-    
+
     # Spotify API (free tier, but consider rate limits)
     SPOTIFY_SEARCH = 0.0  # Free but rate-limited
     SPOTIFY_TRACK_DETAILS = 0.0
-    
+
     # Web Search API (estimated)
     WEB_SEARCH_QUERY = 0.005
 
@@ -91,12 +91,12 @@ class APIPricing:
 @dataclass
 class ComputePricing:
     """Pricing for compute resources (based on cloud pricing)."""
-    
+
     # AWS Lambda-equivalent pricing
     CPU_SECOND = 0.0000166667  # $/second for 1 vCPU
     MEMORY_GB_SECOND = 0.0000166667  # $/GB-second
     NETWORK_GB = 0.09  # $/GB outbound
-    
+
     # Concurrent execution overhead
     THREAD_OVERHEAD_SECOND = 0.000001
 
@@ -104,16 +104,16 @@ class ComputePricing:
 @dataclass
 class CostEvent:
     """A single cost event in the system."""
-    
+
     timestamp: datetime
     category: CostCategory
     amount_usd: float
-    agent_type: Optional[str] = None
-    point_id: Optional[str] = None
-    tour_id: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    
-    def to_dict(self) -> Dict[str, Any]:
+    agent_type: str | None = None
+    point_id: str | None = None
+    tour_id: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
             "timestamp": self.timestamp.isoformat(),
@@ -130,13 +130,13 @@ class CostEvent:
 class LLMCostModel:
     """
     Cost model for LLM API usage.
-    
+
     Calculates costs based on token usage and model selection.
     """
-    
+
     provider: str = "openai"  # openai or anthropic
     model: str = "gpt-4o-mini"
-    
+
     def calculate_cost(
         self,
         input_tokens: int,
@@ -144,16 +144,16 @@ class LLMCostModel:
     ) -> float:
         """
         Calculate cost for an LLM API call.
-        
+
         Args:
             input_tokens: Number of input tokens
             output_tokens: Number of output tokens
-            
+
         Returns:
             Cost in USD
         """
         pricing = LLMPricing()
-        
+
         # Get pricing based on provider and model
         if self.provider == "openai":
             if "gpt-4o-mini" in self.model:
@@ -175,13 +175,13 @@ class LLMCostModel:
             else:  # sonnet
                 input_rate = pricing.ANTHROPIC_CLAUDE_SONNET_INPUT
                 output_rate = pricing.ANTHROPIC_CLAUDE_SONNET_OUTPUT
-        
+
         # Calculate cost (rates are per 1M tokens)
         input_cost = (input_tokens / 1_000_000) * input_rate
         output_cost = (output_tokens / 1_000_000) * output_rate
-        
+
         return input_cost + output_cost
-    
+
     def estimate_tokens(self, text: str) -> int:
         """Estimate token count from text (rough approximation)."""
         # Rough estimation: ~4 characters per token for English
@@ -191,7 +191,7 @@ class LLMCostModel:
 @dataclass
 class APICostModel:
     """Cost model for external API usage."""
-    
+
     def calculate_google_maps_cost(
         self,
         directions_calls: int = 0,
@@ -201,11 +201,11 @@ class APICostModel:
         """Calculate Google Maps API cost."""
         pricing = APIPricing()
         return (
-            (directions_calls / 1000) * pricing.GOOGLE_MAPS_DIRECTIONS +
-            (geocoding_calls / 1000) * pricing.GOOGLE_MAPS_GEOCODING +
-            (places_calls / 1000) * pricing.GOOGLE_MAPS_PLACES
+            (directions_calls / 1000) * pricing.GOOGLE_MAPS_DIRECTIONS
+            + (geocoding_calls / 1000) * pricing.GOOGLE_MAPS_GEOCODING
+            + (places_calls / 1000) * pricing.GOOGLE_MAPS_PLACES
         )
-    
+
     def calculate_youtube_cost(
         self,
         search_calls: int = 0,
@@ -214,10 +214,10 @@ class APICostModel:
         """Calculate YouTube API cost."""
         pricing = APIPricing()
         return (
-            search_calls * pricing.YOUTUBE_SEARCH +
-            details_calls * pricing.YOUTUBE_VIDEO_DETAILS
+            search_calls * pricing.YOUTUBE_SEARCH
+            + details_calls * pricing.YOUTUBE_VIDEO_DETAILS
         )
-    
+
     def calculate_web_search_cost(self, search_calls: int = 0) -> float:
         """Calculate web search API cost."""
         return search_calls * APIPricing.WEB_SEARCH_QUERY
@@ -226,7 +226,7 @@ class APICostModel:
 @dataclass
 class ComputeCostModel:
     """Cost model for compute resources."""
-    
+
     def calculate_execution_cost(
         self,
         cpu_seconds: float,
@@ -235,12 +235,12 @@ class ComputeCostModel:
     ) -> float:
         """Calculate compute execution cost."""
         pricing = ComputePricing()
-        
+
         cpu_cost = cpu_seconds * pricing.CPU_SECOND
         memory_cost = memory_gb * duration_seconds * pricing.MEMORY_GB_SECOND
-        
+
         return cpu_cost + memory_cost
-    
+
     def calculate_parallel_overhead(
         self,
         num_threads: int,
@@ -254,59 +254,61 @@ class ComputeCostModel:
 @dataclass
 class TourCostSummary:
     """Cost summary for a single tour execution."""
-    
+
     tour_id: str
     start_time: datetime
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
     num_points: int = 0
-    
+
     # Cost breakdowns
     llm_costs: float = 0.0
     api_costs: float = 0.0
     compute_costs: float = 0.0
-    
+
     # Token usage
     total_input_tokens: int = 0
     total_output_tokens: int = 0
-    
+
     # API calls
     google_maps_calls: int = 0
     youtube_calls: int = 0
     web_search_calls: int = 0
-    
+
     # Savings
     cache_savings: float = 0.0
     circuit_breaker_savings: float = 0.0
     retry_overhead: float = 0.0
-    
+
     # Agent-level breakdown
-    agent_costs: Dict[str, float] = field(default_factory=dict)
-    
+    agent_costs: dict[str, float] = field(default_factory=dict)
+
     @property
     def total_cost(self) -> float:
         """Calculate total cost."""
-        return self.llm_costs + self.api_costs + self.compute_costs + self.retry_overhead
-    
+        return (
+            self.llm_costs + self.api_costs + self.compute_costs + self.retry_overhead
+        )
+
     @property
     def effective_cost(self) -> float:
         """Calculate effective cost after savings."""
         return self.total_cost - self.cache_savings - self.circuit_breaker_savings
-    
+
     @property
     def cost_per_point(self) -> float:
         """Calculate cost per route point."""
         if self.num_points == 0:
             return 0.0
         return self.effective_cost / self.num_points
-    
+
     @property
     def duration_seconds(self) -> float:
         """Calculate tour duration."""
         if self.end_time is None:
             return 0.0
         return (self.end_time - self.start_time).total_seconds()
-    
-    def to_dict(self) -> Dict[str, Any]:
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "tour_id": self.tour_id,
@@ -346,67 +348,67 @@ class TourCostSummary:
         }
 
 
-@dataclass  
+@dataclass
 class SystemCostReport:
     """Comprehensive system cost report."""
-    
+
     report_period_start: datetime
     report_period_end: datetime
-    
+
     # Tour summaries
-    tour_summaries: List[TourCostSummary] = field(default_factory=list)
-    
+    tour_summaries: list[TourCostSummary] = field(default_factory=list)
+
     # Aggregated metrics
     total_tours: int = 0
     total_points: int = 0
-    
+
     # Cost totals
     total_llm_cost: float = 0.0
     total_api_cost: float = 0.0
     total_compute_cost: float = 0.0
     total_savings: float = 0.0
-    
+
     # Projections
     monthly_projection: float = 0.0
     yearly_projection: float = 0.0
-    
+
     @property
     def total_cost(self) -> float:
         """Total cost for the period."""
         return self.total_llm_cost + self.total_api_cost + self.total_compute_cost
-    
+
     @property
     def average_cost_per_tour(self) -> float:
         """Average cost per tour."""
         if self.total_tours == 0:
             return 0.0
         return self.total_cost / self.total_tours
-    
+
     @property
     def average_cost_per_point(self) -> float:
         """Average cost per route point."""
         if self.total_points == 0:
             return 0.0
         return self.total_cost / self.total_points
-    
+
     @property
     def cost_efficiency_ratio(self) -> float:
         """Ratio of effective cost to gross cost (lower is better)."""
         if self.total_cost == 0:
             return 1.0
         return (self.total_cost - self.total_savings) / self.total_cost
-    
+
     def calculate_projections(self) -> None:
         """Calculate monthly and yearly projections."""
         period_days = (self.report_period_end - self.report_period_start).days
         if period_days <= 0:
             period_days = 1
-        
+
         daily_cost = self.total_cost / period_days
         self.monthly_projection = daily_cost * 30
         self.yearly_projection = daily_cost * 365
-    
-    def to_dict(self) -> Dict[str, Any]:
+
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
             "period": {
@@ -434,4 +436,3 @@ class SystemCostReport:
                 "yearly": self.yearly_projection,
             },
         }
-

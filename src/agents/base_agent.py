@@ -13,13 +13,11 @@ from openai import OpenAI
 
 from src.models.content import ContentResult, ContentType
 from src.models.route import RoutePoint
+from src.utils import AGENT_SKILLS
 from src.utils.config import settings
 from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-# Agent skills loaded from config (can be extended via YAML)
-AGENT_SKILLS: dict[str, Any] = {}
 
 
 class BaseAgent(ABC):

@@ -16,7 +16,6 @@ import time
 import pytest
 
 from src.core.smart_queue import (
-    NoResultsError,
     QueueManager,
     QueueMetrics,
     QueueStatus,
@@ -75,14 +74,13 @@ class TestSmartAgentQueue:
     @pytest.fixture
     def queue(self):
         """Create a queue with short timeouts for testing."""
-        queue = SmartAgentQueue("test_point")
         # Use very short timeouts for fast tests
-        SmartAgentQueue.SOFT_TIMEOUT_SECONDS = 0.3
-        SmartAgentQueue.HARD_TIMEOUT_SECONDS = 0.5
-        SmartAgentQueue.EXPECTED_AGENTS = 3
-        SmartAgentQueue.MIN_REQUIRED_FOR_SOFT = 2
-        SmartAgentQueue.MIN_REQUIRED_FOR_HARD = 1
-        return queue
+        return SmartAgentQueue(
+            "test_point",
+            expected_agents=3,
+            soft_timeout=0.3,
+            hard_timeout=0.5,
+        )
 
     @pytest.fixture
     def sample_result(self):
@@ -174,7 +172,7 @@ class TestSmartAgentQueue:
         assert metrics.status == QueueStatus.HARD_DEGRADED
 
     def test_all_agents_fail(self, queue):
-        """Test when all agents fail."""
+        """Test when all agents fail - returns empty results with FAILED status."""
 
         def submit_results():
             time.sleep(0.05)
@@ -185,8 +183,10 @@ class TestSmartAgentQueue:
         thread = threading.Thread(target=submit_results)
         thread.start()
 
-        with pytest.raises(NoResultsError):
-            queue.wait_for_results()
+        # Graceful degradation: returns empty results instead of raising
+        results, metrics = queue.wait_for_results()
+        assert len(results) == 0
+        assert metrics.status == QueueStatus.FAILED
 
         thread.join()
 
@@ -226,10 +226,11 @@ class TestSmartAgentQueue:
         assert metrics.status == QueueStatus.HARD_DEGRADED
 
     def test_hard_timeout_no_results(self, queue):
-        """Test hard timeout with no results raises error."""
-        # No submissions - should timeout
-        with pytest.raises(NoResultsError):
-            queue.wait_for_results()
+        """Test hard timeout with no results - returns empty with FAILED status."""
+        # No submissions - should timeout and return empty results gracefully
+        results, metrics = queue.wait_for_results()
+        assert len(results) == 0
+        assert metrics.status == QueueStatus.FAILED
 
     def test_get_missing_agents(self, queue, sample_result):
         """Test identifying missing agents."""

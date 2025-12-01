@@ -9,21 +9,23 @@ MIT-Level E2E Test Coverage:
 """
 
 import pytest
-from typing import List
 
+from src.agents.judge_agent import JudgeAgent
+from src.core.smart_queue import SmartAgentQueue
+from src.models.content import ContentResult, ContentType
 from src.models.route import RoutePoint
 from src.models.user_profile import (
-    UserProfile, Gender, AgeGroup, ContentPreference,
-    AccessibilityNeeds
+    AccessibilityNeed,
+    AgeGroup,
+    ContentPreference,
+    Gender,
+    UserProfile,
 )
-from src.models.content import ContentResult, ContentType
-from src.core.smart_queue import SmartQueue
-from src.agents.judge_agent import JudgeAgent
 
 
 class TestVisualImpairmentAccessibility:
     """E2E tests for users with visual impairments."""
-    
+
     @pytest.fixture
     def visually_impaired_profile(self) -> UserProfile:
         """Profile for user with visual impairment."""
@@ -34,11 +36,11 @@ class TestVisualImpairmentAccessibility:
             exact_age=45,
             content_preference=ContentPreference.EDUCATIONAL,
             is_driver=False,
-            accessibility_needs=[AccessibilityNeeds.VISUAL],
+            accessibility_needs=[AccessibilityNeed.VISUAL_IMPAIRMENT],
             prefer_audio_description=True,
             interests=["history", "music"],
         )
-    
+
     @pytest.fixture
     def test_point(self) -> RoutePoint:
         """Test route point."""
@@ -47,16 +49,16 @@ class TestVisualImpairmentAccessibility:
             address="Historic Site",
             latitude=48.8584,
             longitude=2.2945,
-            location_name="Historic Monument"
+            location_name="Historic Monument",
         )
-    
+
     @pytest.mark.e2e
     def test_visual_impairment_prefers_audio(
         self, visually_impaired_profile, test_point
     ):
         """Test that visually impaired users get audio-friendly content."""
-        queue = SmartQueue(point_id=test_point.id)
-        
+        queue = SmartAgentQueue(point_id=test_point.id)
+
         # Submit various content types
         queue.submit_result(
             ContentType.VIDEO,
@@ -68,7 +70,7 @@ class TestVisualImpairmentAccessibility:
                 source="YouTube",
                 relevance_score=9.0,
                 duration_seconds=300,
-            )
+            ),
         )
         queue.submit_result(
             ContentType.MUSIC,
@@ -80,7 +82,7 @@ class TestVisualImpairmentAccessibility:
                 source="Spotify",
                 relevance_score=8.0,
                 duration_seconds=240,
-            )
+            ),
         )
         queue.submit_result(
             ContentType.TEXT,
@@ -92,33 +94,34 @@ class TestVisualImpairmentAccessibility:
                 source="AudioGuide",
                 relevance_score=8.5,
                 duration_seconds=180,
-            )
+            ),
         )
-        
+
         results, _ = queue.wait_for_results()
         judge = JudgeAgent()
-        decision = judge.evaluate(results, visually_impaired_profile, test_point)
-        
+        decision = judge.evaluate(test_point, results, visually_impaired_profile)
+
         # Should prefer audio-friendly content (music or text for TTS)
-        assert decision.selected_content.content_type in [ContentType.MUSIC, ContentType.TEXT]
-    
+        assert decision.selected_content.content_type in [
+            ContentType.MUSIC,
+            ContentType.TEXT,
+        ]
+
     @pytest.mark.e2e
-    def test_visual_impairment_video_weight_reduced(
-        self, visually_impaired_profile
-    ):
+    def test_visual_impairment_video_weight_reduced(self, visually_impaired_profile):
         """Test that video weight is reduced for visually impaired users."""
         weights = visually_impaired_profile.get_content_type_preferences()
-        
+
         video_weight = weights.get("video", weights.get(ContentType.VIDEO, 1.0))
         music_weight = weights.get("music", weights.get(ContentType.MUSIC, 1.0))
-        
+
         # Video should be deprioritized compared to music
         assert video_weight < music_weight
 
 
 class TestHearingImpairmentAccessibility:
     """E2E tests for users with hearing impairments."""
-    
+
     @pytest.fixture
     def hearing_impaired_profile(self) -> UserProfile:
         """Profile for user with hearing impairment."""
@@ -129,11 +132,11 @@ class TestHearingImpairmentAccessibility:
             exact_age=38,
             content_preference=ContentPreference.EDUCATIONAL,
             is_driver=False,
-            accessibility_needs=[AccessibilityNeeds.HEARING],
+            accessibility_needs=[AccessibilityNeed.HEARING_IMPAIRMENT],
             requires_subtitles=True,
             interests=["art", "photography", "history"],
         )
-    
+
     @pytest.fixture
     def test_point(self) -> RoutePoint:
         """Test route point."""
@@ -142,16 +145,16 @@ class TestHearingImpairmentAccessibility:
             address="Art Gallery",
             latitude=48.8606,
             longitude=2.3376,
-            location_name="Art Museum"
+            location_name="Art Museum",
         )
-    
+
     @pytest.mark.e2e
     def test_hearing_impairment_prefers_visual(
         self, hearing_impaired_profile, test_point
     ):
         """Test that hearing impaired users get visual-friendly content."""
-        queue = SmartQueue(point_id=test_point.id)
-        
+        queue = SmartAgentQueue(point_id=test_point.id)
+
         queue.submit_result(
             ContentType.VIDEO,
             ContentResult(
@@ -162,8 +165,8 @@ class TestHearingImpairmentAccessibility:
                 source="YouTube",
                 relevance_score=8.5,
                 duration_seconds=300,
-                metadata={"has_subtitles": True}
-            )
+                metadata={"has_subtitles": True},
+            ),
         )
         queue.submit_result(
             ContentType.MUSIC,
@@ -175,7 +178,7 @@ class TestHearingImpairmentAccessibility:
                 source="Spotify",
                 relevance_score=9.0,  # Higher score but not accessible
                 duration_seconds=240,
-            )
+            ),
         )
         queue.submit_result(
             ContentType.TEXT,
@@ -187,33 +190,34 @@ class TestHearingImpairmentAccessibility:
                 source="ArtGuide",
                 relevance_score=8.0,
                 duration_seconds=180,
-            )
+            ),
         )
-        
+
         results, _ = queue.wait_for_results()
         judge = JudgeAgent()
-        decision = judge.evaluate(results, hearing_impaired_profile, test_point)
-        
+        decision = judge.evaluate(test_point, results, hearing_impaired_profile)
+
         # Should prefer visual content (video with subtitles or text)
-        assert decision.selected_content.content_type in [ContentType.VIDEO, ContentType.TEXT]
-    
+        assert decision.selected_content.content_type in [
+            ContentType.VIDEO,
+            ContentType.TEXT,
+        ]
+
     @pytest.mark.e2e
-    def test_hearing_impairment_music_weight_reduced(
-        self, hearing_impaired_profile
-    ):
+    def test_hearing_impairment_music_weight_reduced(self, hearing_impaired_profile):
         """Test that music weight is reduced for hearing impaired users."""
         weights = hearing_impaired_profile.get_content_type_preferences()
-        
+
         music_weight = weights.get("music", weights.get(ContentType.MUSIC, 1.0))
         text_weight = weights.get("text", weights.get(ContentType.TEXT, 1.0))
-        
+
         # Music should be deprioritized compared to text
         assert music_weight < text_weight
 
 
 class TestCognitiveAccessibility:
     """E2E tests for users with cognitive accessibility needs."""
-    
+
     @pytest.fixture
     def cognitive_needs_profile(self) -> UserProfile:
         """Profile for user with cognitive accessibility needs."""
@@ -222,27 +226,25 @@ class TestCognitiveAccessibility:
             gender=Gender.NOT_SPECIFIED,
             age_group=AgeGroup.ADULT,
             exact_age=30,
-            content_preference=ContentPreference.QUICK_FACTS,  # Simpler content
+            content_preference=ContentPreference.EDUCATIONAL,  # Simpler content
             is_driver=False,
-            accessibility_needs=[AccessibilityNeeds.COGNITIVE],
+            accessibility_needs=[AccessibilityNeed.COGNITIVE],
             interests=["nature", "animals"],
         )
-    
+
     @pytest.mark.e2e
-    def test_cognitive_needs_gets_simple_content(
-        self, cognitive_needs_profile
-    ):
+    def test_cognitive_needs_gets_simple_content(self, cognitive_needs_profile):
         """Test that users with cognitive needs get simpler content."""
         test_point = RoutePoint(
             id="cognitive_test",
             address="Nature Park",
             latitude=48.87,
             longitude=2.35,
-            location_name="City Park"
+            location_name="City Park",
         )
-        
-        queue = SmartQueue(point_id=test_point.id)
-        
+
+        queue = SmartAgentQueue(point_id=test_point.id)
+
         # Simple, short content
         queue.submit_result(
             ContentType.TEXT,
@@ -254,20 +256,20 @@ class TestCognitiveAccessibility:
                 source="SimpleGuide",
                 relevance_score=8.0,
                 duration_seconds=30,  # Short duration
-            )
+            ),
         )
-        
+
         results, _ = queue.wait_for_results()
         judge = JudgeAgent()
-        decision = judge.evaluate(results, cognitive_needs_profile, test_point)
-        
+        decision = judge.evaluate(test_point, results, cognitive_needs_profile)
+
         # Should receive simple, short content
         assert decision.selected_content.duration_seconds <= 180
 
 
-class TestMultipleAccessibilityNeeds:
+class TestMultipleAccessibilityNeed:
     """E2E tests for users with multiple accessibility needs."""
-    
+
     @pytest.fixture
     def multi_accessibility_profile(self) -> UserProfile:
         """Profile with multiple accessibility needs."""
@@ -279,27 +281,25 @@ class TestMultipleAccessibilityNeeds:
             content_preference=ContentPreference.EDUCATIONAL,
             is_driver=False,
             accessibility_needs=[
-                AccessibilityNeeds.VISUAL,
-                AccessibilityNeeds.HEARING,
+                AccessibilityNeed.VISUAL_IMPAIRMENT,
+                AccessibilityNeed.HEARING_IMPAIRMENT,
             ],
             interests=["history"],
         )
-    
+
     @pytest.mark.e2e
-    def test_multiple_needs_finds_best_compromise(
-        self, multi_accessibility_profile
-    ):
+    def test_multiple_needs_finds_best_compromise(self, multi_accessibility_profile):
         """Test that system finds best content for multiple needs."""
         test_point = RoutePoint(
             id="multi_test",
             address="History Museum",
             latitude=48.86,
             longitude=2.33,
-            location_name="History Museum"
+            location_name="History Museum",
         )
-        
-        queue = SmartQueue(point_id=test_point.id)
-        
+
+        queue = SmartAgentQueue(point_id=test_point.id)
+
         # Text is accessible for both visual (TTS) and hearing impaired
         queue.submit_result(
             ContentType.TEXT,
@@ -311,7 +311,7 @@ class TestMultipleAccessibilityNeeds:
                 source="AccessibleGuide",
                 relevance_score=8.0,
                 duration_seconds=120,
-            )
+            ),
         )
         queue.submit_result(
             ContentType.VIDEO,
@@ -323,7 +323,7 @@ class TestMultipleAccessibilityNeeds:
                 source="YouTube",
                 relevance_score=8.5,
                 duration_seconds=300,
-            )
+            ),
         )
         queue.submit_result(
             ContentType.MUSIC,
@@ -335,20 +335,20 @@ class TestMultipleAccessibilityNeeds:
                 source="Spotify",
                 relevance_score=7.5,
                 duration_seconds=240,
-            )
+            ),
         )
-        
+
         results, _ = queue.wait_for_results()
         judge = JudgeAgent()
-        decision = judge.evaluate(results, multi_accessibility_profile, test_point)
-        
+        decision = judge.evaluate(test_point, results, multi_accessibility_profile)
+
         # Text is most accessible for both visual and hearing needs
         assert decision.selected_content.content_type == ContentType.TEXT
 
 
 class TestAccessibilityEdgeCases:
     """E2E tests for accessibility edge cases."""
-    
+
     @pytest.mark.e2e
     def test_no_accessible_content_handling(self):
         """Test handling when no fully accessible content is available."""
@@ -356,19 +356,19 @@ class TestAccessibilityEdgeCases:
             name="Edge Case User",
             gender=Gender.NOT_SPECIFIED,
             age_group=AgeGroup.ADULT,
-            accessibility_needs=[AccessibilityNeeds.VISUAL, AccessibilityNeeds.HEARING],
+            accessibility_needs=[AccessibilityNeed.VISUAL_IMPAIRMENT, AccessibilityNeed.HEARING_IMPAIRMENT],
         )
-        
+
         test_point = RoutePoint(
             id="edge_test",
             address="Edge Location",
             latitude=48.85,
             longitude=2.30,
-            location_name="Test Site"
+            location_name="Test Site",
         )
-        
-        queue = SmartQueue(point_id=test_point.id)
-        
+
+        queue = SmartAgentQueue(point_id=test_point.id)
+
         # Only video available (not ideal for either need)
         queue.submit_result(
             ContentType.VIDEO,
@@ -380,14 +380,13 @@ class TestAccessibilityEdgeCases:
                 source="YouTube",
                 relevance_score=7.0,
                 duration_seconds=180,
-            )
+            ),
         )
-        
+
         results, _ = queue.wait_for_results()
         judge = JudgeAgent()
-        decision = judge.evaluate(results, profile, test_point)
-        
+        decision = judge.evaluate(test_point, results, profile)
+
         # System should still provide something (graceful degradation)
         # The decision reasoning should note accessibility limitations
         assert decision is not None
-

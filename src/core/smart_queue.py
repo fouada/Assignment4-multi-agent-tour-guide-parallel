@@ -69,23 +69,36 @@ class SmartAgentQueue:
     4. Metrics help identify problematic agents
     """
 
-    # Configuration (can be loaded from YAML in production)
-    EXPECTED_AGENTS = 3
-    SOFT_TIMEOUT_SECONDS = 15.0  # Proceed with 2/3 after this
-    HARD_TIMEOUT_SECONDS = 30.0  # Proceed with anything after this
+    # Configuration defaults (can be overridden per-instance or from YAML in production)
+    DEFAULT_EXPECTED_AGENTS = 3
+    DEFAULT_SOFT_TIMEOUT_SECONDS = 15.0  # Proceed with 2/3 after this
+    DEFAULT_HARD_TIMEOUT_SECONDS = 30.0  # Proceed with anything after this
     MIN_REQUIRED_FOR_SOFT = 2  # Minimum for soft timeout
     MIN_REQUIRED_FOR_HARD = 1  # Minimum for hard timeout
 
-    def __init__(self, point_id: str):
+    def __init__(
+        self,
+        point_id: str,
+        expected_agents: int | None = None,
+        soft_timeout: float | None = None,
+        hard_timeout: float | None = None,
+    ):
         self.point_id = point_id
         self._results: dict[str, ContentResult] = {}
         self._failures: dict[str, str] = {}  # agent_type -> error message
         self._start_time = time.time()
         self._condition = threading.Condition()
-        self._metrics = QueueMetrics(point_id=point_id)
+
+        # Instance-level configuration (allows per-queue customization)
+        self.EXPECTED_AGENTS = expected_agents if expected_agents is not None else self.DEFAULT_EXPECTED_AGENTS
+        self.SOFT_TIMEOUT_SECONDS = soft_timeout if soft_timeout is not None else self.DEFAULT_SOFT_TIMEOUT_SECONDS
+        self.HARD_TIMEOUT_SECONDS = hard_timeout if hard_timeout is not None else self.DEFAULT_HARD_TIMEOUT_SECONDS
+
+        self._metrics = QueueMetrics(point_id=point_id, agents_expected=self.EXPECTED_AGENTS)
 
         logger.info(
-            f"[{point_id}] Smart Queue initialized (expecting {self.EXPECTED_AGENTS} agents)"
+            f"[{point_id}] Smart Queue initialized (expecting {self.EXPECTED_AGENTS} agents, "
+            f"soft_timeout={self.SOFT_TIMEOUT_SECONDS}s, hard_timeout={self.HARD_TIMEOUT_SECONDS}s)"
         )
 
     def submit_success(self, agent_type: str, result: ContentResult):
@@ -108,6 +121,18 @@ class SmartAgentQueue:
 
             # Wake up anyone waiting for results
             self._condition.notify_all()
+
+    def submit_result(self, content_type, result: ContentResult):
+        """
+        Alias for submit_success with ContentType enum support.
+        Converts ContentType enum to string agent type.
+        """
+        # Handle both string and ContentType enum
+        if hasattr(content_type, "value"):
+            agent_type = content_type.value  # ContentType enum
+        else:
+            agent_type = str(content_type)
+        self.submit_success(agent_type, result)
 
     def submit_failure(self, agent_type: str, error: str):
         """
@@ -170,9 +195,8 @@ class SmartAgentQueue:
                         status = QueueStatus.FAILED
                         logger.error(f"[{self.point_id}] 💥 All agents failed!")
                         self._metrics.complete(status)
-                        raise NoResultsError(
-                            f"All agents failed for point {self.point_id}"
-                        )
+                        # Return empty results for graceful degradation
+                        return list(self._results.values()), self._metrics
 
                     self._metrics.complete(status)
                     return list(self._results.values()), self._metrics
@@ -201,10 +225,13 @@ class SmartAgentQueue:
                         self._metrics.complete(QueueStatus.HARD_DEGRADED)
                         return list(self._results.values()), self._metrics
                     else:
-                        self._metrics.complete(QueueStatus.FAILED)
-                        raise NoResultsError(
-                            f"No results after {self.HARD_TIMEOUT_SECONDS}s for point {self.point_id}"
+                        # Return empty results for graceful degradation
+                        logger.error(
+                            f"[{self.point_id}] 💥 Hard timeout ({self.HARD_TIMEOUT_SECONDS}s) "
+                            f"with no results - graceful degradation"
                         )
+                        self._metrics.complete(QueueStatus.FAILED)
+                        return list(self._results.values()), self._metrics
 
                 # ===== Calculate wait time =====
                 if result_count >= self.MIN_REQUIRED_FOR_SOFT:

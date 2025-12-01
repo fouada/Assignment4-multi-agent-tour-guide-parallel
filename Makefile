@@ -163,20 +163,27 @@ ipython:
 # ============================================================================
 
 test:
-	@echo "🧪 Running all tests..."
-	uv run pytest tests/ -v
+	@echo "🧪 Running unit tests (excludes e2e tests that require API keys)..."
+	uv run pytest tests/ --ignore=tests/e2e -v
 
 test-unit:
+	@echo "🧪 Running unit tests only..."
+
+test-e2e:
+	@echo "🧪 Running e2e tests (requires API keys)..."
+	uv run pytest tests/e2e -v
+
+test-all:
+	@echo "🧪 Running ALL tests including e2e..."
+	uv run pytest tests/ -v
+
+test-unit-only:
 	@echo "🧪 Running unit tests..."
 	uv run pytest tests/unit/ -v
 
 test-integration:
 	@echo "🧪 Running integration tests..."
 	uv run pytest tests/integration/ -v
-
-test-e2e:
-	@echo "🧪 Running e2e tests..."
-	uv run pytest tests/e2e/ -v
 
 test-cov:
 	@echo "🧪 Running tests with coverage..."

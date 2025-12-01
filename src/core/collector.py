@@ -59,10 +59,16 @@ class ResultCollector:
             # Find the point index for logging
             next((p for p in self.route.points if p.id == decision.point_id), None)
 
-            log_collector_update(
-                decision.point_id,
-                f"{decision.selected_content.content_type.value}: {decision.selected_content.title[:30]}...",
-            )
+            if decision.selected_content is not None:
+                log_collector_update(
+                    decision.point_id,
+                    f"{decision.selected_content.content_type.value}: {decision.selected_content.title[:30]}...",
+                )
+            else:
+                log_collector_update(
+                    decision.point_id,
+                    "No safe content available",
+                )
 
             # Check if all points are collected
             if len(self.decisions) >= len(self.route.points):
@@ -130,11 +136,12 @@ class ResultCollector:
         total_score: float = 0
 
         for decision in ordered_decisions:
-            content_type = decision.selected_content.content_type.value
-            content_type_counts[content_type] = (
-                content_type_counts.get(content_type, 0) + 1
-            )
-            total_score += decision.selected_content.relevance_score
+            if decision.selected_content is not None:
+                content_type = decision.selected_content.content_type.value
+                content_type_counts[content_type] = (
+                    content_type_counts.get(content_type, 0) + 1
+                )
+                total_score += decision.selected_content.relevance_score
 
         avg_score = total_score / len(ordered_decisions) if ordered_decisions else 0
 

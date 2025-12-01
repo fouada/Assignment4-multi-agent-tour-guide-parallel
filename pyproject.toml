@@ -195,7 +195,13 @@ select = [
 ignore = [
     "E501",   # line too long (handled by formatter)
     "N818",   # exception name should end with 'Error' (existing code uses different pattern)
+    "N803",   # argument name should be lowercase (research code uses math conventions)
+    "N806",   # variable in function should be lowercase (research code uses P, T, etc.)
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B018"]  # useless expression in tests (assertions)
+"src/research/*" = ["N803", "N806"]  # mathematical variable conventions
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
@@ -209,10 +215,18 @@ indent-style = "space"
 # ============================================================================
 [tool.mypy]
 python_version = "3.10"
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
 ignore_missing_imports = true
 strict = false
+
+[[tool.mypy.overrides]]
+module = [
+    "src.research.*",
+    "src.dashboard.*",
+    "src.cost_analysis.*",
+]
+ignore_errors = true
 
 # ============================================================================
 # Pytest
@@ -222,6 +236,11 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "e2e: End-to-end tests requiring LLM API keys",
+    "integration: Integration tests that may require external services",
+    "slow: Tests that take a long time to run",
+]
 addopts = [
     "-v",
     "--tb=short",

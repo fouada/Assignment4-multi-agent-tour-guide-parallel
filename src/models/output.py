@@ -25,7 +25,7 @@ class TourGuideOutput(BaseModel):
         playlist = []
         for decision in self.decisions:
             point = self.route.get_point_by_id(decision.point_id)
-            if point:
+            if point and decision.selected_content is not None:
                 playlist.append(
                     {
                         "point_index": point.index,

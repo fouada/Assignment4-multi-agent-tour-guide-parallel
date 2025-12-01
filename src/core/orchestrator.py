@@ -172,9 +172,14 @@ class Orchestrator:
         with self.results_lock:
             self.results[decision.point_id] = decision
         self.results_queue.put(decision)
+        content_info = (
+            f"{decision.selected_content.title[:30]}..."
+            if decision.selected_content is not None
+            else "No content selected"
+        )
         log_orchestrator_event(
             "Point completed",
-            f"point_id={decision.point_id}, content={decision.selected_content.title[:30]}...",
+            f"point_id={decision.point_id}, content={content_info}",
         )
 
     def process_point(self, point: RoutePoint):

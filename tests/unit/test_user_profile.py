@@ -446,19 +446,19 @@ class TestProfileContext:
         profile = UserProfile(social_context=SocialContext.FRIENDS)
         context = profile.to_agent_context()
         assert "friends" in context.lower()
-    
+
     def test_context_romantic_trip(self):
         """Test context for romantic trip."""
         profile = UserProfile(trip_purpose=TripPurpose.ROMANTIC)
         context = profile.to_agent_context()
         assert "romantic" in context.lower()
-    
+
     def test_context_exploratory_pace(self):
         """Test context for exploratory pace."""
         profile = UserProfile(travel_pace=TravelPace.EXPLORATORY)
         context = profile.to_agent_context()
         assert "explore" in context.lower() or "hidden" in context.lower()
-    
+
     def test_context_family_with_kids(self):
         """Test context for family with kids."""
         profile = UserProfile(
@@ -467,141 +467,149 @@ class TestProfileContext:
         )
         context = profile.to_agent_context()
         assert "children" in context.lower() or "family" in context.lower()
-    
+
     def test_context_seniors_group(self):
         """Test context for seniors group."""
         profile = UserProfile(audience_type=AudienceType.SENIORS)
         context = profile.to_agent_context()
         assert "senior" in context.lower()
-    
+
     def test_context_content_preference(self):
         """Test context includes content preference."""
         profile = UserProfile(content_preference=ContentPreference.ENTERTAINMENT)
         context = profile.to_agent_context()
         assert "entertainment" in context.lower() or "prefer" in context.lower()
-    
+
     def test_context_quick_facts(self):
         """Test context for quick facts depth."""
         profile = UserProfile(content_depth=ContentDepth.QUICK_FACTS)
         context = profile.to_agent_context()
         assert "brief" in context.lower() or "30" in context.lower()
-    
+
     def test_context_in_depth(self):
         """Test context for in-depth content."""
         profile = UserProfile(content_depth=ContentDepth.IN_DEPTH)
         context = profile.to_agent_context()
         assert "in-depth" in context.lower() or "5+" in context.lower()
-    
+
     def test_context_hebrew_language(self):
         """Test context for Hebrew language preference."""
         profile = UserProfile(language=LanguagePreference.HEBREW)
         context = profile.to_agent_context()
         assert "hebrew" in context.lower()
-    
+
     def test_context_with_interests(self):
         """Test context includes interests."""
         profile = UserProfile(interests=["history", "art", "architecture"])
         context = profile.to_agent_context()
         assert "interest" in context.lower() or "history" in context.lower()
-    
+
     def test_context_with_music_genres(self):
         """Test context includes music genres."""
         profile = UserProfile(music_genres=[MusicGenre.CLASSICAL, MusicGenre.JAZZ])
         context = profile.to_agent_context()
         assert "music" in context.lower() or "genre" in context.lower()
-    
+
     def test_context_with_favorite_artists(self):
         """Test context includes favorite artists."""
         profile = UserProfile(favorite_artists=["Beatles", "Mozart"])
         context = profile.to_agent_context()
         assert "artist" in context.lower()
-    
+
     def test_context_with_hobbies(self):
         """Test context includes hobbies."""
         profile = UserProfile(hobbies=["photography", "hiking"])
         context = profile.to_agent_context()
         assert "hobb" in context.lower()
-    
+
     def test_context_exclude_topics(self):
         """Test context includes excluded topics."""
         profile = UserProfile(exclude_topics=["violence", "politics"])
         context = profile.to_agent_context()
         assert "avoid" in context.lower()
-    
+
     def test_context_cognitive_accessibility(self):
         """Test context for cognitive accessibility."""
         profile = UserProfile(accessibility_needs=[AccessibilityNeed.COGNITIVE])
         context = profile.to_agent_context()
         assert "simple" in context.lower() or "clear" in context.lower()
-    
+
     def test_context_requires_subtitles(self):
         """Test context for subtitle requirement."""
         profile = UserProfile(requires_subtitles=True)
         context = profile.to_agent_context()
         assert "subtitle" in context.lower()
-    
+
     def test_context_first_time_visitor(self):
         """Test context for first time visitor."""
         from src.models.user_profile import ExperienceLevel
+
         profile = UserProfile(experience_level=ExperienceLevel.FIRST_TIME)
         context = profile.to_agent_context()
         assert "first" in context.lower() or "basic" in context.lower()
-    
+
     def test_context_local_visitor(self):
         """Test context for local visitor."""
         from src.models.user_profile import ExperienceLevel
+
         profile = UserProfile(experience_level=ExperienceLevel.LOCAL)
         context = profile.to_agent_context()
         assert "local" in context.lower() or "skip" in context.lower()
-    
+
     def test_context_expert_visitor(self):
         """Test context for expert visitor."""
         from src.models.user_profile import ExperienceLevel
+
         profile = UserProfile(experience_level=ExperienceLevel.EXPERT)
         context = profile.to_agent_context()
         assert "expert" in context.lower() or "advanced" in context.lower()
-    
+
     def test_context_low_energy(self):
         """Test context for low energy level."""
         from src.models.user_profile import EnergyLevel
+
         profile = UserProfile(energy_level=EnergyLevel.LOW)
         context = profile.to_agent_context()
         assert "tired" in context.lower() or "calm" in context.lower()
-    
+
     def test_context_high_energy(self):
         """Test context for high energy level."""
         from src.models.user_profile import EnergyLevel
+
         profile = UserProfile(energy_level=EnergyLevel.HIGH)
         context = profile.to_agent_context()
         assert "energetic" in context.lower() or "upbeat" in context.lower()
-    
+
     def test_context_morning_time(self):
         """Test context for morning time."""
         from src.models.user_profile import TimeOfDay
+
         profile = UserProfile(time_of_day=TimeOfDay.MORNING)
         context = profile.to_agent_context()
         assert "morning" in context.lower()
-    
+
     def test_context_evening_time(self):
         """Test context for evening time."""
         from src.models.user_profile import TimeOfDay
+
         profile = UserProfile(time_of_day=TimeOfDay.EVENING)
         context = profile.to_agent_context()
         assert "evening" in context.lower()
-    
+
     def test_context_night_time(self):
         """Test context for night time."""
         from src.models.user_profile import TimeOfDay
+
         profile = UserProfile(time_of_day=TimeOfDay.NIGHT)
         context = profile.to_agent_context()
         assert "night" in context.lower()
-    
+
     def test_context_max_duration(self):
         """Test context includes max duration."""
         profile = UserProfile(max_content_duration_seconds=300)
         context = profile.to_agent_context()
         assert "5" in context or "minute" in context.lower()
-    
+
     def test_context_empty_profile(self):
         """Test context for empty profile."""
         profile = UserProfile()
@@ -611,73 +619,73 @@ class TestProfileContext:
 
 class TestJudgeCriteria:
     """Tests for to_judge_criteria method."""
-    
+
     def test_judge_criteria_kid(self):
         """Test judge criteria for kid."""
         profile = UserProfile(age_group=AgeGroup.KID)
         criteria = profile.to_judge_criteria()
         assert "children" in criteria.lower() or "kid" in criteria.lower()
-    
+
     def test_judge_criteria_teenager(self):
         """Test judge criteria for teenager."""
         profile = UserProfile(age_group=AgeGroup.TEENAGER)
         criteria = profile.to_judge_criteria()
         assert "modern" in criteria.lower() or "relatable" in criteria.lower()
-    
+
     def test_judge_criteria_young_adult(self):
         """Test judge criteria for young adult."""
         profile = UserProfile(age_group=AgeGroup.YOUNG_ADULT)
         criteria = profile.to_judge_criteria()
         assert "modern" in criteria.lower() or "trendy" in criteria.lower()
-    
+
     def test_judge_criteria_senior(self):
         """Test judge criteria for senior."""
         profile = UserProfile(age_group=AgeGroup.SENIOR)
         criteria = profile.to_judge_criteria()
         assert "nostalgic" in criteria.lower() or "classical" in criteria.lower()
-    
+
     def test_judge_criteria_education_trip(self):
         """Test judge criteria for education trip."""
         profile = UserProfile(trip_purpose=TripPurpose.EDUCATION)
         criteria = profile.to_judge_criteria()
         assert "educational" in criteria.lower() or "factual" in criteria.lower()
-    
+
     def test_judge_criteria_romantic_trip(self):
         """Test judge criteria for romantic trip."""
         profile = UserProfile(trip_purpose=TripPurpose.ROMANTIC)
         criteria = profile.to_judge_criteria()
         assert "romantic" in criteria.lower() or "beautiful" in criteria.lower()
-    
+
     def test_judge_criteria_business_trip(self):
         """Test judge criteria for business trip."""
         profile = UserProfile(trip_purpose=TripPurpose.BUSINESS)
         criteria = profile.to_judge_criteria()
         assert "professional" in criteria.lower() or "informative" in criteria.lower()
-    
+
     def test_judge_criteria_pilgrimage(self):
         """Test judge criteria for pilgrimage."""
         profile = UserProfile(trip_purpose=TripPurpose.PILGRIMAGE)
         criteria = profile.to_judge_criteria()
         assert "spiritual" in criteria.lower() or "religious" in criteria.lower()
-    
+
     def test_judge_criteria_exclude_topics(self):
         """Test judge criteria with excluded topics."""
         profile = UserProfile(exclude_topics=["violence"])
         criteria = profile.to_judge_criteria()
         assert "avoid" in criteria.lower() or "violence" in criteria.lower()
-    
+
     def test_judge_criteria_driver(self):
         """Test judge criteria for driver."""
         profile = UserProfile(is_driver=True)
         criteria = profile.to_judge_criteria()
         assert "driving" in criteria.lower() or "audio" in criteria.lower()
-    
+
     def test_judge_criteria_rushed_pace(self):
         """Test judge criteria for rushed pace."""
         profile = UserProfile(travel_pace=TravelPace.RUSHED)
         criteria = profile.to_judge_criteria()
         assert "quick" in criteria.lower() or "30" in criteria.lower()
-    
+
     def test_judge_criteria_music_preferences(self):
         """Test judge criteria includes music preferences."""
         profile = UserProfile(music_genres=[MusicGenre.CLASSICAL, MusicGenre.JAZZ])
@@ -687,57 +695,59 @@ class TestJudgeCriteria:
 
 class TestGetMusicSearchContext:
     """Tests for get_music_search_context method."""
-    
+
     def test_music_context_with_genres(self):
         """Test music context with genres."""
         profile = UserProfile(music_genres=[MusicGenre.POP, MusicGenre.ROCK])
         context = profile.get_music_search_context()
         assert "pop" in context.lower() or "rock" in context.lower()
-    
+
     def test_music_context_with_artists(self):
         """Test music context with favorite artists."""
         profile = UserProfile(favorite_artists=["Beatles", "Queen"])
         context = profile.get_music_search_context()
         assert "beatles" in context.lower() or "similar" in context.lower()
-    
+
     def test_music_context_kid(self):
         """Test music context for kid."""
         profile = UserProfile(age_group=AgeGroup.KID)
         context = profile.get_music_search_context()
         assert "kid" in context.lower() or "fun" in context.lower()
-    
+
     def test_music_context_teenager(self):
         """Test music context for teenager."""
         profile = UserProfile(age_group=AgeGroup.TEENAGER)
         context = profile.get_music_search_context()
         assert "modern" in context.lower() or "trending" in context.lower()
-    
+
     def test_music_context_senior(self):
         """Test music context for senior."""
         profile = UserProfile(age_group=AgeGroup.SENIOR)
         context = profile.get_music_search_context()
         assert "classic" in context.lower() or "nostalgic" in context.lower()
-    
+
     def test_music_context_romantic(self):
         """Test music context for romantic trip."""
         profile = UserProfile(trip_purpose=TripPurpose.ROMANTIC)
         context = profile.get_music_search_context()
         assert "romantic" in context.lower() or "love" in context.lower()
-    
+
     def test_music_context_low_energy(self):
         """Test music context for low energy."""
         from src.models.user_profile import EnergyLevel
+
         profile = UserProfile(energy_level=EnergyLevel.LOW)
         context = profile.get_music_search_context()
         assert "calm" in context.lower() or "relax" in context.lower()
-    
+
     def test_music_context_high_energy(self):
         """Test music context for high energy."""
         from src.models.user_profile import EnergyLevel
+
         profile = UserProfile(energy_level=EnergyLevel.HIGH)
         context = profile.get_music_search_context()
         assert "upbeat" in context.lower() or "energetic" in context.lower()
-    
+
     def test_music_context_empty(self):
         """Test music context with no preferences."""
         profile = UserProfile()
@@ -747,43 +757,43 @@ class TestGetMusicSearchContext:
 
 class TestContentTypePreferencesExtended:
     """Extended tests for get_content_type_preferences."""
-    
+
     def test_young_adult_preferences(self):
         """Test young adult content preferences."""
         profile = UserProfile(age_group=AgeGroup.YOUNG_ADULT)
         weights = profile.get_content_type_preferences()
         assert weights["video"] > 1.0
-    
+
     def test_educational_preference(self):
         """Test educational content preference."""
         profile = UserProfile(content_preference=ContentPreference.EDUCATIONAL)
         weights = profile.get_content_type_preferences()
         assert weights["text"] > 1.0
-    
+
     def test_entertainment_preference(self):
         """Test entertainment content preference."""
         profile = UserProfile(content_preference=ContentPreference.ENTERTAINMENT)
         weights = profile.get_content_type_preferences()
         assert weights["video"] > 1.0
-    
+
     def test_historical_preference(self):
         """Test historical content preference."""
         profile = UserProfile(content_preference=ContentPreference.HISTORICAL)
         weights = profile.get_content_type_preferences()
         assert weights["text"] > 1.0
-    
+
     def test_relaxing_preference(self):
         """Test relaxing content preference."""
         profile = UserProfile(content_preference=ContentPreference.RELAXING)
         weights = profile.get_content_type_preferences()
         assert weights["music"] > 1.0
-    
+
     def test_romantic_trip_preference(self):
         """Test romantic trip content preference."""
         profile = UserProfile(trip_purpose=TripPurpose.ROMANTIC)
         weights = profile.get_content_type_preferences()
         assert weights["music"] > 1.0
-    
+
     def test_walking_mode_preference(self):
         """Test walking mode content preference."""
         profile = UserProfile(travel_mode=TravelMode.WALKING)
@@ -793,61 +803,68 @@ class TestContentTypePreferencesExtended:
         assert weights["music"] >= 1.0
 
 
-class TestPresetProfiles:
-    """Tests for preset profile functions."""
-    
+class TestPresetProfilesExtended:
+    """Extended tests for preset profile functions."""
+
     def test_get_teenager_profile(self):
         """Test get_teenager_profile function."""
         from src.models.user_profile import get_teenager_profile
+
         profile = get_teenager_profile(age=16)
         assert profile.age_group == AgeGroup.TEENAGER
         assert profile.exact_age == 16
-    
+
     def test_get_adult_profile(self):
         """Test get_adult_profile function."""
         from src.models.user_profile import get_adult_profile
+
         profile = get_adult_profile()
         assert profile.age_group == AgeGroup.ADULT
-    
+
     def test_get_senior_profile(self):
         """Test get_senior_profile function."""
         from src.models.user_profile import get_senior_profile
+
         profile = get_senior_profile()
         assert profile.age_group == AgeGroup.SENIOR
-    
+
     def test_get_default_profile(self):
         """Test get_default_profile function."""
         from src.models.user_profile import get_default_profile
+
         profile = get_default_profile()
         assert profile is not None
 
 
 class TestTourSetup:
     """Tests for TourSetup model."""
-    
+
     def test_tour_setup_creation(self):
         """Test creating TourSetup."""
         from src.models.user_profile import TourSetup
+
         setup = TourSetup(
             source="Tel Aviv",
             destination="Jerusalem",
         )
         assert setup.source == "Tel Aviv"
         assert setup.destination == "Jerusalem"
-    
+
     def test_tour_setup_with_waypoints(self):
         """Test TourSetup with waypoints."""
         from src.models.user_profile import TourSetup
+
         setup = TourSetup(
             source="Tel Aviv",
             destination="Jerusalem",
             waypoints=["Latrun", "Abu Ghosh"],
         )
         assert len(setup.waypoints) == 2
-    
+
     def test_tour_setup_with_profile(self):
         """Test TourSetup with user profile."""
         from src.models.user_profile import TourSetup
+
         profile = UserProfile(age_group=AgeGroup.ADULT)
         setup = TourSetup(
             source="Tel Aviv",

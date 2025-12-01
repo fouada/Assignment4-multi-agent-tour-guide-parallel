@@ -92,6 +92,7 @@ class ContentPreference(str, Enum):
     RELAXING = "relaxing"
     INSPIRATIONAL = "inspirational"
     HUMOROUS = "humorous"
+    MIXED = "mixed"  # Variety of content types
     NO_PREFERENCE = "no_preference"
 
 
@@ -730,6 +731,7 @@ class UserProfile(BaseModel):
         Returns multipliers for VIDEO, MUSIC, TEXT scoring.
 
         Higher = more preferred (1.0 = neutral, >1.0 = boost, <1.0 = penalty)
+        0.0 = strictly prohibited (e.g., video for drivers)
         """
         weights = {"video": 1.0, "music": 1.0, "text": 1.0}
 
@@ -752,27 +754,6 @@ class UserProfile(BaseModel):
             weights["text"] = 1.3  # May prefer reading/listening
             weights["music"] = 1.2  # Classic music appreciation
             weights["video"] = 0.9  # Fine but not priority
-
-        # ─────────────────────────────────────────────────────────────────
-        # Driver: NO VIDEO allowed
-        # ─────────────────────────────────────────────────────────────────
-        if self.is_driver:
-            weights["video"] = 0.0  # Cannot watch video while driving!
-            weights["music"] = 1.5  # Best for driving
-            weights["text"] = 1.2  # Can be read aloud
-
-        # ─────────────────────────────────────────────────────────────────
-        # Accessibility needs
-        # ─────────────────────────────────────────────────────────────────
-        if AccessibilityNeed.VISUAL_IMPAIRMENT in self.accessibility_needs:
-            weights["video"] = 0.3  # Can't see well
-            weights["music"] = 1.5  # Audio is great
-            weights["text"] = 1.3  # Can be read aloud
-
-        if AccessibilityNeed.HEARING_IMPAIRMENT in self.accessibility_needs:
-            weights["music"] = 0.3  # Can't hear well
-            weights["text"] = 1.5  # Reading is preferred
-            weights["video"] = 1.2  # With subtitles
 
         # ─────────────────────────────────────────────────────────────────
         # Content preference adjustments
@@ -811,6 +792,27 @@ class UserProfile(BaseModel):
             weights["music"] += 0.2  # Relaxing music when tired
         elif self.energy_level == EnergyLevel.HIGH:
             weights["video"] += 0.1  # Engaging content when energetic
+
+        # ═════════════════════════════════════════════════════════════════
+        # CRITICAL SAFETY CONSTRAINTS (applied LAST to override all others)
+        # ═════════════════════════════════════════════════════════════════
+
+        # Driver: NO VIDEO allowed - SAFETY CRITICAL
+        if self.is_driver:
+            weights["video"] = 0.0  # Cannot watch video while driving!
+            weights["music"] = max(weights["music"], 1.5)  # Boost music for driving
+            weights["text"] = max(weights["text"], 1.2)  # Can be read aloud
+
+        # Accessibility needs - applied after all other adjustments
+        if AccessibilityNeed.VISUAL_IMPAIRMENT in self.accessibility_needs:
+            weights["video"] = 0.0  # Can't see well - exclude video
+            weights["music"] = max(weights["music"], 1.5)  # Audio is great
+            weights["text"] = max(weights["text"], 1.3)  # Can be read aloud
+
+        if AccessibilityNeed.HEARING_IMPAIRMENT in self.accessibility_needs:
+            weights["music"] = 0.0  # Can't hear well - exclude music
+            weights["text"] = max(weights["text"], 1.5)  # Reading is preferred
+            # Video with subtitles is okay
 
         return weights
 
