@@ -54,6 +54,16 @@ from src.core.observability.tracing import (
     get_tracer,
     trace,
 )
+from src.core.observability.nps_metrics import (
+    UserSatisfactionCollector,
+    FeedbackEntry,
+    NPSReport,
+    NPSCategory,
+    EngagementMetrics,
+    get_satisfaction_collector,
+    collect_nps_score,
+    get_nps_score,
+)
 
 __all__ = [
     # Metrics
@@ -76,4 +86,13 @@ __all__ = [
     "HealthRegistry",
     "health_check",
     "get_health_status",
+    # NPS & User Satisfaction
+    "UserSatisfactionCollector",
+    "FeedbackEntry",
+    "NPSReport",
+    "NPSCategory",
+    "EngagementMetrics",
+    "get_satisfaction_collector",
+    "collect_nps_score",
+    "get_nps_score",
 ]

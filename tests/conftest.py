@@ -264,3 +264,143 @@ def queue_test_results():
             relevance_score=9.0,
         ),
     }
+
+
+# =============================================================================
+# Research Framework Fixtures (MIT-Level Innovations)
+# =============================================================================
+
+
+@pytest.fixture
+def sample_tour_route():
+    """Create a sample tour route for research tests."""
+    return [
+        {"name": "Colosseum", "type": "historical", "lat": 41.8902, "lng": 12.4922, "significance": 0.95},
+        {"name": "Roman Forum", "type": "historical", "lat": 41.8925, "lng": 12.4853, "significance": 0.9},
+        {"name": "Trevi Fountain", "type": "scenic", "lat": 41.9009, "lng": 12.4833, "significance": 0.85},
+        {"name": "Pantheon", "type": "religious", "lat": 41.8986, "lng": 12.4769, "significance": 0.92},
+        {"name": "Vatican City", "type": "religious", "lat": 41.9022, "lng": 12.4533, "significance": 0.98},
+    ]
+
+
+@pytest.fixture
+def sample_agent_valuations():
+    """Create sample agent valuations for negotiation tests."""
+    from src.research.agent_negotiation import AgentType
+    
+    return {
+        AgentType.VIDEO: 0.85,
+        AgentType.MUSIC: 0.72,
+        AgentType.TEXT: 0.78,
+    }
+
+
+@pytest.fixture
+def sample_user_features():
+    """Create sample user features for meta-learning tests."""
+    import numpy as np
+    return np.array([
+        0.5,   # age_normalized (middle-aged)
+        0.8,   # history_interest
+        0.6,   # art_interest
+        0.4,   # music_interest
+        0.7,   # education_interest
+        0.3,   # adventure_level
+        0.5,   # attention_span
+        0.6,   # visual_preference
+        0.4,   # audio_preference
+        0.7,   # text_preference
+    ], dtype=np.float32)
+
+
+@pytest.fixture
+def sample_calibration_data():
+    """Create sample calibration data for conformal prediction tests."""
+    import numpy as np
+    np.random.seed(42)
+    
+    n_samples = 100
+    features = np.random.randn(n_samples, 10).astype(np.float32)
+    predictions = np.random.rand(n_samples).astype(np.float32)
+    true_values = predictions + np.random.randn(n_samples).astype(np.float32) * 0.1
+    
+    return list(zip(features, range(3) * (n_samples // 3 + 1)[:n_samples], true_values))
+
+
+@pytest.fixture
+def random_seed():
+    """Provide a fixed random seed for reproducible tests."""
+    return 42
+
+
+@pytest.fixture
+def small_neural_network_config():
+    """Configuration for small neural networks in tests."""
+    return {
+        "input_dim": 10,
+        "hidden_dim": 16,
+        "output_dim": 3,
+        "learning_rate": 0.01,
+    }
+
+
+@pytest.fixture
+def mock_route_graph_data():
+    """Create mock data for graph neural network tests."""
+    import numpy as np
+    
+    n_nodes = 5
+    feature_dim = 16
+    
+    # Node features
+    node_features = np.random.randn(n_nodes, feature_dim).astype(np.float32)
+    
+    # Adjacency matrix (linear path)
+    adj_matrix = np.zeros((n_nodes, n_nodes), dtype=np.float32)
+    for i in range(n_nodes - 1):
+        adj_matrix[i, i + 1] = 1.0
+    
+    # Labels (agent selection for each node)
+    labels = np.array([0, 1, 2, 0, 1])  # Rotating agent selection
+    
+    return {
+        "node_features": node_features,
+        "adjacency": adj_matrix,
+        "labels": labels,
+        "n_nodes": n_nodes,
+        "feature_dim": feature_dim,
+    }
+
+
+# =============================================================================
+# Performance Testing Fixtures
+# =============================================================================
+
+
+@pytest.fixture
+def large_route():
+    """Create a large route for performance testing."""
+    import numpy as np
+    np.random.seed(42)
+    
+    n_points = 50
+    points = []
+    
+    base_lat, base_lng = 41.9, 12.5  # Rome area
+    
+    for i in range(n_points):
+        points.append({
+            "name": f"Point_{i}",
+            "type": ["historical", "cultural", "scenic", "religious", "entertainment"][i % 5],
+            "lat": base_lat + np.random.randn() * 0.1,
+            "lng": base_lng + np.random.randn() * 0.1,
+            "significance": np.random.rand(),
+        })
+    
+    return points
+
+
+@pytest.fixture
+def benchmark_iterations():
+    """Number of iterations for benchmark tests."""
+    return 100

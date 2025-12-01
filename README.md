@@ -30,6 +30,55 @@
 
 ---
 
+## 🗺️ Quick Navigation
+
+<table>
+<tr>
+<td width="20%" align="center">
+
+### 🚀 Getting Started
+[Quick Start](#-quick-start)<br/>
+[Installation](#-installation)<br/>
+[Usage](#-usage)
+
+</td>
+<td width="20%" align="center">
+
+### 📚 Documentation
+[Prompt Book](docs/PROMPT_BOOK.md)<br/>
+[Architecture](docs/ARCHITECTURE.md)<br/>
+[API Reference](docs/API_REFERENCE.md)
+
+</td>
+<td width="20%" align="center">
+
+### 🔧 Troubleshooting
+[Quick Fix Guide](docs/QUICKFIX.md)<br/>
+[Testing Guide](docs/TESTING.md)<br/>
+[FAQ](#common-issues)
+
+</td>
+<td width="20%" align="center">
+
+### ✅ Quality
+[MIT Checklist](docs/PROJECT_CHECKLIST.md)<br/>
+[ISO Compliance](docs/ISO_IEC_25010_COMPLIANCE.md)<br/>
+[Research](docs/research/README.md)
+
+</td>
+<td width="20%" align="center">
+
+### 🤝 Community
+[Contributing](CONTRIBUTING.md)<br/>
+[Code of Conduct](CODE_OF_CONDUCT.md)<br/>
+[Support](SUPPORT.md)
+
+</td>
+</tr>
+</table>
+
+---
+
 ## 🎯 What is This?
 
 The **Multi-Agent Tour Guide System** is a production-grade AI platform that creates **personalized tour guide experiences**. Given a route (e.g., "Tel Aviv to Jerusalem"), the system:
@@ -490,17 +539,41 @@ multi-agent-tour-guide/
 
 ## 📚 Documentation
 
+### Core Documentation
 | Document | Description |
 |----------|-------------|
 | **[PRD.md](docs/PRD.md)** | Product Requirements Document |
 | **[ARCHITECTURE_DETAILED.md](docs/ARCHITECTURE_DETAILED.md)** | Complete technical architecture |
 | **[API_REFERENCE.md](docs/API_REFERENCE.md)** | Full API documentation |
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines |
+
+### 📖 Prompt Book & Development Guides
+| Document | Description |
+|----------|-------------|
+| **[PROMPT_BOOK.md](docs/PROMPT_BOOK.md)** | 📖 Complete prompt library for AI-assisted development |
+| **[DEVELOPMENT_PROMPTS.md](docs/DEVELOPMENT_PROMPTS.md)** | Copy-paste prompts for building components |
+| **[MIT_PROJECT_SPECIFICATION.md](docs/MIT_PROJECT_SPECIFICATION.md)** | Full project specification |
+
+### 🔧 Troubleshooting & Quick Fixes
+| Document | Description |
+|----------|-------------|
+| **[QUICKFIX.md](docs/QUICKFIX.md)** | 🔧 Rapid problem resolution guide |
+| **[PROJECT_CHECKLIST.md](docs/PROJECT_CHECKLIST.md)** | ✅ MIT-level compliance verification |
+| **[TESTING.md](docs/TESTING.md)** | Test specifications and guides |
+
+### 🏆 Quality & Research
+| Document | Description |
+|----------|-------------|
 | **[ISO_IEC_25010_COMPLIANCE.md](docs/ISO_IEC_25010_COMPLIANCE.md)** | 🏆 Full ISO/IEC 25010 Quality Compliance |
 | **[QUALITY_ATTRIBUTES.md](docs/QUALITY_ATTRIBUTES.md)** | Quality attributes analysis |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Contribution guidelines |
-| **[STARTUP_DESIGN.md](docs/STARTUP_DESIGN.md)** | Production deployment design |
-| **[research/MATHEMATICAL_ANALYSIS.md](docs/research/MATHEMATICAL_ANALYSIS.md)** | 🔬 Mathematical proofs & formal analysis |
 | **[research/README.md](docs/research/README.md)** | 📊 MIT-level research framework |
+| **[research/MATHEMATICAL_ANALYSIS.md](docs/research/MATHEMATICAL_ANALYSIS.md)** | 🔬 Mathematical proofs & formal analysis |
+
+### 🏢 Deployment & Production
+| Document | Description |
+|----------|-------------|
+| **[STARTUP_DESIGN.md](docs/STARTUP_DESIGN.md)** | Production deployment design |
+| **[STARTUP_VISION.md](docs/STARTUP_VISION.md)** | Product vision and roadmap |
 
 ### 🏆 ISO/IEC 25010:2011 Full Compliance
 
@@ -806,6 +879,72 @@ viz = ResearchVisualizer(output_dir='./figures')
 
 ---
 
+## 🔧 Common Issues & Quick Fixes {#common-issues}
+
+<details>
+<summary><b>🔴 API Key Not Working</b></summary>
+
+```bash
+# Check if key is set
+echo $ANTHROPIC_API_KEY
+
+# Set properly in .env
+echo "ANTHROPIC_API_KEY=sk-ant-your-key" > .env
+
+# Verify
+make run --demo
+```
+</details>
+
+<details>
+<summary><b>🔴 Import Errors</b></summary>
+
+```bash
+# Reinstall dependencies
+make clean-all
+make setup
+
+# Or manually
+rm -rf .venv
+uv venv
+uv sync --extra dev
+```
+</details>
+
+<details>
+<summary><b>🔴 Tests Failing</b></summary>
+
+```bash
+# Run with verbose
+uv run pytest tests/ -v
+
+# Check coverage
+make test-cov
+open htmlcov/index.html
+```
+</details>
+
+<details>
+<summary><b>🔴 Queue Always Timing Out</b></summary>
+
+```yaml
+# In config/default.yaml, increase timeouts:
+queue:
+  soft_timeout_seconds: 25.0  # Up from 15
+  hard_timeout_seconds: 45.0  # Up from 30
+```
+</details>
+
+<details>
+<summary><b>🟡 Need More Help?</b></summary>
+
+- 📖 **[Full Troubleshooting Guide](docs/QUICKFIX.md)** - Comprehensive problem solutions
+- 🧪 **[Testing Guide](docs/TESTING.md)** - Test specifications
+- 📝 **[Open an Issue](https://github.com/yourusername/multi-agent-tour-guide/issues)** - Get help from the community
+</details>
+
+---
+
 ## 🎓 Academic References
 
 This project implements patterns from:
@@ -824,9 +963,15 @@ This project implements patterns from:
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contributing & Community
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+<table>
+<tr>
+<td width="50%">
+
+### 💻 Start Contributing
+
+We welcome contributions from everyone!
 
 ```bash
 # Fork, clone, and create branch
@@ -838,11 +983,137 @@ make check
 # Submit PR
 ```
 
+📖 **[Full Contributing Guide](CONTRIBUTING.md)**
+
+</td>
+<td width="50%">
+
+### 🌟 Community Resources
+
+| Resource | Description |
+|----------|-------------|
+| [📖 Contributing Guide](CONTRIBUTING.md) | How to contribute |
+| [🤝 Code of Conduct](CODE_OF_CONDUCT.md) | Community standards |
+| [🆘 Getting Help](SUPPORT.md) | Support channels |
+| [🏛️ Governance](GOVERNANCE.md) | Decision making |
+| [👥 Authors](AUTHORS.md) | Contributors |
+
+</td>
+</tr>
+</table>
+
+### 📚 Open Source Documentation - Reusable Templates
+
+**🎁 Free to use in your own projects!** All templates are MIT-licensed.
+
+| Category | Templates | Use Case |
+|----------|-----------|----------|
+| **🤝 Community** | [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md), [CONTRIBUTING](CONTRIBUTING.md), [GOVERNANCE](GOVERNANCE.md) | Open-source community setup |
+| **📝 GitHub** | [Issue Templates](.github/ISSUE_TEMPLATE/), [PR Template](.github/PULL_REQUEST_TEMPLATE.md) | Repository automation |
+| **🔧 Development** | [PROMPT_BOOK](docs/PROMPT_BOOK.md), [QUICKFIX](docs/QUICKFIX.md) | AI-assisted development |
+| **🏆 Quality** | [ISO 25010](docs/ISO_IEC_25010_COMPLIANCE.md), [ADR Templates](docs/adr/) | Enterprise standards |
+| **🔬 Research** | [Mathematical Analysis](docs/research/MATHEMATICAL_ANALYSIS.md) | Academic documentation |
+
+📖 **[Full Template Catalog →](docs/REUSABLE_TEMPLATES.md)** - Copy, customize, and use!
+
+### 📑 Cite This Project
+
+If you use this project in research, please cite:
+
+```bibtex
+@software{multi_agent_tour_guide_2025,
+  title = {Multi-Agent Tour Guide System},
+  author = {LLMs and Multi-Agent Orchestration Course},
+  year = {2025},
+  version = {2.0.0},
+  url = {https://github.com/yourusername/multi-agent-tour-guide}
+}
+```
+
+📄 See [CITATION.cff](CITATION.cff) for full citation format.
+
 ---
 
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file.
+
+**Free to use, modify, and distribute.** Attribution appreciated but not required.
+
+---
+
+---
+
+## 📊 Project Health
+
+<table>
+<tr>
+<td width="33%" align="center">
+
+### 📁 Repository
+
+| Metric | Status |
+|--------|--------|
+| License | MIT |
+| Language | Python 3.10+ |
+| Package Manager | UV |
+
+</td>
+<td width="33%" align="center">
+
+### 🧪 Quality
+
+| Metric | Status |
+|--------|--------|
+| Test Coverage | 85%+ |
+| ISO 25010 | ✅ Compliant |
+| Linting | Ruff |
+
+</td>
+<td width="33%" align="center">
+
+### 🤝 Community
+
+| Resource | Link |
+|----------|------|
+| Contributing | [Guide](CONTRIBUTING.md) |
+| Code of Conduct | [Standards](CODE_OF_CONDUCT.md) |
+| Support | [Help](SUPPORT.md) |
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📋 Quick Reference
+
+### Essential Files
+
+| File | Purpose |
+|------|---------|
+| [README.md](README.md) | Project overview |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guide |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [LICENSE](LICENSE) | MIT License |
+| [SECURITY.md](SECURITY.md) | Security policy |
+| [SUPPORT.md](SUPPORT.md) | Getting help |
+| [GOVERNANCE.md](GOVERNANCE.md) | Project governance |
+| [AUTHORS.md](AUTHORS.md) | Contributors |
+| [CITATION.cff](CITATION.cff) | Academic citation |
+
+### Essential Directories
+
+| Directory | Purpose |
+|-----------|---------|
+| [`src/`](src/) | Source code |
+| [`tests/`](tests/) | Test suite |
+| [`docs/`](docs/) | Documentation |
+| [`config/`](config/) | Configuration |
+| [`plugins/`](plugins/) | Plugin system |
+| [`notebooks/`](notebooks/) | Jupyter notebooks |
+| [`.github/`](.github/) | GitHub templates |
 
 ---
 
@@ -855,7 +1126,12 @@ MIT License - See [LICENSE](LICENSE) file.
 </p>
 
 <p align="center">
-  <a href="https://github.com/yourusername/multi-agent-tour-guide/issues">Report Bug</a> •
-  <a href="https://github.com/yourusername/multi-agent-tour-guide/discussions">Request Feature</a> •
-  <a href="docs/">Documentation</a>
+  <a href="https://github.com/yourusername/multi-agent-tour-guide/issues">🐛 Report Bug</a> •
+  <a href="https://github.com/yourusername/multi-agent-tour-guide/discussions">💡 Request Feature</a> •
+  <a href="docs/">📚 Documentation</a> •
+  <a href="CONTRIBUTING.md">🤝 Contribute</a>
+</p>
+
+<p align="center">
+  <sub>Made with ❤️ by the Multi-Agent Tour Guide Community</sub>
 </p>

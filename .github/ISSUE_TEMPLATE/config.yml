@@ -1,0 +1,26 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 General Questions
+    url: https://github.com/yourusername/multi-agent-tour-guide/discussions/categories/q-a
+    about: Ask questions and get help from the community
+  
+  - name: 💡 Ideas & Feature Discussion
+    url: https://github.com/yourusername/multi-agent-tour-guide/discussions/categories/ideas
+    about: Discuss ideas before creating a feature request
+  
+  - name: 📚 Documentation
+    url: https://github.com/yourusername/multi-agent-tour-guide/tree/main/docs
+    about: Read our comprehensive documentation
+  
+  - name: 🔧 Quick Fix Guide
+    url: https://github.com/yourusername/multi-agent-tour-guide/blob/main/docs/QUICKFIX.md
+    about: Check common issues and solutions
+  
+  - name: 🔒 Security Vulnerabilities
+    url: https://github.com/yourusername/multi-agent-tour-guide/blob/main/SECURITY.md
+    about: Report security issues privately (DO NOT create a public issue)
+  
+  - name: 🎓 Academic Inquiries
+    url: mailto:research@example.com
+    about: For academic collaboration and research questions
+

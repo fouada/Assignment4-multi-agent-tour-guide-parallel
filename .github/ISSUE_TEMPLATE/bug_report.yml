@@ -1,0 +1,169 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG]: "
+labels: ["bug", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! 🙏
+        
+        Please provide as much detail as possible to help us reproduce and fix the issue.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm before submitting
+      options:
+        - label: I have searched [existing issues](https://github.com/yourusername/multi-agent-tour-guide/issues) to see if this bug has already been reported
+          required: true
+        - label: I have read the [documentation](https://github.com/yourusername/multi-agent-tour-guide#readme)
+          required: true
+        - label: I have checked the [troubleshooting guide](docs/QUICKFIX.md)
+          required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected?
+      options:
+        - Agent System (Video/Music/Text/Judge)
+        - Smart Queue
+        - Orchestrator
+        - Resilience Patterns (Circuit Breaker/Retry/etc)
+        - Plugin System
+        - CLI
+        - API
+        - Configuration
+        - Documentation
+        - Tests
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run command '...'
+        2. With configuration '...'
+        3. See error '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should have happened?
+      placeholder: I expected...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Instead, this happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Please paste any relevant error logs (use LOG_LEVEL=DEBUG for verbose output)
+      render: shell
+      placeholder: |
+        Paste logs here...
+        
+        To get verbose logs:
+        LOG_LEVEL=DEBUG uv run python main.py --demo
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version are you using?
+      placeholder: "2.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: What Python version are you using?
+      placeholder: "3.11.5"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Linux (Ubuntu/Debian)
+        - Linux (CentOS/RHEL)
+        - Linux (Other)
+        - Windows
+        - Windows WSL
+        - Docker
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Any additional environment information
+      placeholder: |
+        - UV version: 0.x.x
+        - LLM Provider: Anthropic/OpenAI
+        - Running in: Docker/Local/Cloud
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Relevant configuration (remove sensitive data like API keys!)
+      render: yaml
+      placeholder: |
+        # From config/default.yaml
+        queue:
+          soft_timeout_seconds: 15
+          hard_timeout_seconds: 30
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or information
+      placeholder: Add any other context about the problem here...
+
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: Contribution
+      description: Would you be willing to submit a fix?
+      options:
+        - label: I would be willing to submit a PR to fix this issue
+

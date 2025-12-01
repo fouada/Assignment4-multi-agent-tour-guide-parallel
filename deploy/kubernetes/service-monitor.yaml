@@ -1,0 +1,114 @@
+# =============================================================================
+# Multi-Agent Tour Guide - Prometheus ServiceMonitor
+# =============================================================================
+# Observability: Configure Prometheus scraping for metrics
+# =============================================================================
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tour-guide
+  namespace: tour-guide
+  labels:
+    app.kubernetes.io/name: tour-guide
+    app.kubernetes.io/component: monitoring
+    release: prometheus  # Required for prometheus-operator discovery
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tour-guide
+      app.kubernetes.io/component: service
+  namespaceSelector:
+    matchNames:
+      - tour-guide
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      metricRelabelings:
+        # Keep only relevant metrics
+        - sourceLabels: [__name__]
+          regex: 'tour_guide_.*'
+          action: keep
+        # Add environment label
+        - targetLabel: environment
+          replacement: production
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tour-guide-alerts
+  namespace: tour-guide
+  labels:
+    app.kubernetes.io/name: tour-guide
+    app.kubernetes.io/component: alerts
+    release: prometheus
+spec:
+  groups:
+    - name: tour-guide.rules
+      rules:
+        # High error rate alert
+        - alert: TourGuideHighErrorRate
+          expr: |
+            sum(rate(tour_guide_requests_total{status=~"5.."}[5m])) 
+            / sum(rate(tour_guide_requests_total[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: High error rate detected
+            description: Error rate is {{ $value | humanizePercentage }} (threshold: 5%)
+
+        # High latency alert
+        - alert: TourGuideHighLatency
+          expr: |
+            histogram_quantile(0.95, 
+              sum(rate(tour_guide_request_duration_seconds_bucket[5m])) by (le)
+            ) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: High latency detected
+            description: P95 latency is {{ $value | humanizeDuration }}
+
+        # Pod availability alert
+        - alert: TourGuidePodUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{
+              namespace="tour-guide", 
+              deployment="tour-guide"
+            } < 2
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Insufficient tour-guide pods
+            description: Only {{ $value }} pods available (minimum: 2)
+
+        # Queue degradation alert
+        - alert: TourGuideQueueDegradation
+          expr: |
+            sum(rate(tour_guide_queue_status_total{status="degraded"}[5m])) 
+            / sum(rate(tour_guide_queue_status_total[5m])) > 0.10
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: High queue degradation rate
+            description: {{ $value | humanizePercentage }} of queues are degraded
+
+        # NPS score alert (user satisfaction)
+        - alert: TourGuideLowNPS
+          expr: tour_guide_nps_score < 30
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: Low NPS score
+            description: NPS score is {{ $value }} (target: > 50)
+

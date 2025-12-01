@@ -1,0 +1,33 @@
+# These are supported funding platforms
+# For more information, see: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+
+# GitHub Sponsors username
+github: # yourusername
+
+# Patreon username
+patreon: # username
+
+# Open Collective username
+open_collective: # username
+
+# Ko-fi username
+ko_fi: # username
+
+# Buy Me a Coffee username
+buy_me_a_coffee: # username
+
+# Liberapay username
+liberapay: # username
+
+# IssueHunt username
+issuehunt: # username
+
+# Otechie username
+otechie: # username
+
+# LFX Crowdfunding project-name
+lfx_crowdfunding: # project-name
+
+# Custom funding URLs (max 4)
+custom: # ['https://www.example.com/donate']
+

@@ -1,0 +1,43 @@
+# CODEOWNERS file
+# These owners will be requested for review when someone opens a pull request.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners (review all changes)
+* @yourusername
+
+# Core system
+/src/core/ @yourusername
+/src/agents/ @yourusername
+
+# Research framework
+/src/research/ @yourusername
+/notebooks/ @yourusername
+/docs/research/ @yourusername
+
+# Documentation
+/docs/ @yourusername
+*.md @yourusername
+
+# Tests
+/tests/ @yourusername
+
+# Configuration
+/config/ @yourusername
+*.yaml @yourusername
+*.yml @yourusername
+
+# DevOps/Infrastructure
+/deploy/ @yourusername
+/Dockerfile @yourusername
+/docker-compose.yml @yourusername
+
+# Plugins
+/plugins/ @yourusername
+
+# Dependencies
+pyproject.toml @yourusername
+uv.lock @yourusername
+
+# CI/CD
+/.github/ @yourusername
+

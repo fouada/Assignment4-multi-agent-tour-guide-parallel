@@ -117,6 +117,15 @@ research = [
     "notebook>=7.0.0",
 ]
 
+# Interactive dashboard (MIT-level visualization)
+dashboard = [
+    "dash>=2.14.0",
+    "plotly>=5.18.0",
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.11.0",
+]
+
 # All external APIs
 apis = [
     "multi-agent-tour-guide[maps,youtube,spotify,search]",
@@ -124,7 +133,7 @@ apis = [
 
 # Full installation (everything)
 all = [
-    "multi-agent-tour-guide[dev,api,apis,async,research]",
+    "multi-agent-tour-guide[dev,api,apis,async,research,dashboard]",
 ]
 
 # ============================================================================
@@ -132,6 +141,7 @@ all = [
 # ============================================================================
 [project.scripts]
 tour-guide = "src.cli.main:app"
+tour-dashboard = "src.dashboard.app:run_dashboard"
 
 [project.urls]
 Homepage = "https://github.com/yourusername/multi-agent-tour-guide"
@@ -242,7 +252,8 @@ omit = [
     "src/agents/music_agent.py",     # Spotify/YouTube API dependent
     "src/agents/text_agent.py",      # Wikipedia API dependent
     "src/models/metrics.py",         # Duplicate of smart_queue.QueueMetrics
-    "src/research/*",                # Research framework - tested via notebooks
+    "src/dashboard/app.py",          # Dash UI layer - requires server runtime
+    "src/dashboard/__init__.py",     # Lazy imports module
 ]
 
 [tool.coverage.report]

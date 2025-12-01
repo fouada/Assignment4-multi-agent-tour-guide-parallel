@@ -1,0 +1,90 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://citation-file-format.github.io/ for more information.
+
+cff-version: 1.2.0
+title: Multi-Agent Tour Guide System
+message: >-
+  If you use this software in your research, please cite it
+  using the metadata from this file.
+type: software
+authors:
+  - name: LLMs and Multi-Agent Orchestration Course
+    affiliation: Dr. Yoram Segal
+    email: research@example.com
+identifiers:
+  - type: url
+    value: 'https://github.com/yourusername/multi-agent-tour-guide'
+    description: GitHub Repository
+repository-code: 'https://github.com/yourusername/multi-agent-tour-guide'
+url: 'https://github.com/yourusername/multi-agent-tour-guide'
+abstract: >-
+  An enterprise-grade AI orchestration platform for
+  personalized travel experiences. Implements multi-agent
+  architecture with parallel execution, smart queue
+  synchronization with graceful degradation, and
+  comprehensive resilience patterns. Designed for MIT-level
+  research with formal mathematical analysis, statistical
+  frameworks, and reproducible experiments.
+keywords:
+  - multi-agent-systems
+  - artificial-intelligence
+  - llm-orchestration
+  - travel-guide
+  - parallel-processing
+  - resilience-patterns
+  - circuit-breaker
+  - graceful-degradation
+  - python
+  - research-framework
+  - statistical-analysis
+  - sensitivity-analysis
+license: MIT
+version: 2.0.0
+date-released: '2025-11-30'
+
+# Preferred citation format
+preferred-citation:
+  type: software
+  title: Multi-Agent Tour Guide System
+  authors:
+    - name: LLMs and Multi-Agent Orchestration Course
+  year: 2025
+  version: 2.0.0
+  url: 'https://github.com/yourusername/multi-agent-tour-guide'
+  license: MIT
+
+# Related references
+references:
+  - type: article
+    title: "Design Patterns: Elements of Reusable Object-Oriented Software"
+    authors:
+      - family-names: Gamma
+        given-names: Erich
+      - family-names: Helm
+        given-names: Richard
+      - family-names: Johnson
+        given-names: Ralph
+      - family-names: Vlissides
+        given-names: John
+    year: 1994
+    publisher:
+      name: Addison-Wesley
+
+  - type: book
+    title: "Release It! Design and Deploy Production-Ready Software"
+    authors:
+      - family-names: Nygard
+        given-names: Michael T.
+    year: 2018
+    publisher:
+      name: Pragmatic Bookshelf
+
+  - type: book
+    title: "Global Sensitivity Analysis: The Primer"
+    authors:
+      - family-names: Saltelli
+        given-names: Andrea
+    year: 2008
+    publisher:
+      name: Wiley
+

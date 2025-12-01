@@ -1,0 +1,160 @@
+name: 💡 Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE]: "
+labels: ["enhancement", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! 💡
+        
+        We welcome all ideas to improve the Multi-Agent Tour Guide System.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm before submitting
+      options:
+        - label: I have searched [existing issues](https://github.com/yourusername/multi-agent-tour-guide/issues) to ensure this isn't a duplicate
+          required: true
+        - label: I have checked [GitHub Discussions](https://github.com/yourusername/multi-agent-tour-guide/discussions) for related ideas
+          required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What type of feature is this?
+      options:
+        - New Agent Type
+        - Queue/Synchronization
+        - User Profiles/Personalization
+        - Plugin System
+        - CLI Enhancement
+        - API Enhancement
+        - Performance Improvement
+        - Research/Analysis Tools
+        - Documentation
+        - Developer Experience
+        - Testing
+        - Deployment/DevOps
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical - Blocking my use case
+        - High - Would significantly improve my workflow
+        - Medium - Nice to have
+        - Low - Minor improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: |
+        Currently, I cannot...
+        
+        This causes problems because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like to solve this problem?
+      placeholder: |
+        I would like to be able to...
+        
+        This could work by...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What alternatives have you considered?
+      placeholder: |
+        Alternative 1: ...
+        Alternative 2: ...
+        
+        I prefer my proposal because...
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Who would benefit and how?
+      placeholder: |
+        Use Case 1: As a researcher, I want to...
+        Use Case 2: As a developer, I want to...
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples
+      description: Provide examples of how this feature would be used
+      render: python
+      placeholder: |
+        # Example usage
+        from src.agents import MyNewAgent
+        
+        agent = MyNewAgent(config)
+        result = agent.execute("query")
+
+  - type: textarea
+    id: api-design
+    attributes:
+      label: API Design (Optional)
+      description: If applicable, suggest an API design
+      render: python
+      placeholder: |
+        # Suggested interface
+        class NewFeature:
+            def method(self, param: str) -> Result:
+                """Description of method."""
+                pass
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: What's the potential impact of this feature?
+      placeholder: |
+        - Breaking changes: None / Minor / Major
+        - Performance impact: Positive / Neutral / Negative
+        - Documentation needs: None / Minor / Significant
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, mockups, or references
+      placeholder: |
+        - Related issues: #123
+        - Similar features in other projects: ...
+        - Research papers: ...
+
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: Contribution
+      description: Would you be willing to help implement this?
+      options:
+        - label: I would be willing to submit a PR to implement this feature
+        - label: I would be willing to help test this feature
+        - label: I would be willing to help document this feature
+
