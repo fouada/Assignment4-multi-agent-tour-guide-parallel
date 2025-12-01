@@ -99,14 +99,14 @@ jobs:
 
       - name: Upload unit test coverage
         if: matrix.python-version == '3.11'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: unit-coverage-report
           path: htmlcov-unit/
 
       - name: Upload unit test results
         if: always() && matrix.python-version == '3.11'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: unit-test-results
           path: junit-unit.xml
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload integration test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: integration-test-results
           path: junit-integration.xml
@@ -183,7 +183,7 @@ jobs:
 
       - name: Upload performance test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: performance-test-results
           path: |
@@ -232,7 +232,7 @@ jobs:
           flags: unittests
 
       - name: Upload combined coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: combined-coverage-report
           path: htmlcov/
@@ -279,7 +279,7 @@ jobs:
           exit-code: '0'
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: security-reports
           path: |
