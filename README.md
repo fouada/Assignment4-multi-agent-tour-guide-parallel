@@ -109,10 +109,12 @@ Mathematical Result:      τ* = (1/λ)ln(n/k) for exponential response times
 </p>
 
 **Architecture Highlights:**
+- **Google Maps Integration:** Real route fetching with waypoints via `GoogleMapsClient` 
+- **Scheduler/Simulator:** `TravelSimulator` triggers point arrivals with configurable intervals
 - **Parallel Agent Execution:** Video, Text, and Music agents run concurrently via `ThreadPoolExecutor`
 - **Smart Queue:** Graceful degradation from 3/3 → 2/3 (15s) → 1/3 (30s) ensures system never blocks
 - **Judge Agent:** Adaptive selection using Thompson Sampling, SHAP explainability, and user profile matching
-- **Final Playlist:** Personalized content selection for each route point
+- **Collector:** `ResultCollector` aggregates decisions into final `TourGuideOutput` playlist
 
 ### 📊 Sequence Diagram
 
@@ -125,15 +127,24 @@ Mathematical Result:      τ* = (1/λ)ln(n/k) for exponential response times
 </p>
 
 **Sequence Flow Highlights:**
-1. **User Request:** Origin, destination, and user profile provided
-2. **Orchestrator:** Spawns 3 content agents (Video, Music, Text) in parallel
-3. **Parallel Execution:** All agents fetch content concurrently from YouTube, Spotify, Wikipedia
-4. **Smart Queue Synchronization:** 
-   - ✅ **3/3 Complete:** All agents respond → highest quality
-   - ⚠️ **2/3 Soft Degradation (15s):** Proceed with available content
-   - ⚡ **1/3 Hard Degradation (30s):** Emergency fallback
-5. **Judge Decision:** Best content selected based on user profile
-6. **Collector:** Aggregates final `TourGuideOutput` playlist
+
+| Step | Component | File | Description |
+|------|-----------|------|-------------|
+| 1️⃣ | **User Request** | `main.py` | Origin, destination, and user profile provided |
+| 2️⃣ | **Google Maps API** | `src/services/google_maps.py` | Fetches route with waypoints (`GoogleMapsClient`) |
+| 3️⃣ | **Scheduler** | `src/core/timer_scheduler.py` | `TravelSimulator` triggers `on_point_arrival()` for each route point |
+| 4️⃣ | **Orchestrator** | `src/core/orchestrator.py` | `PointProcessor` spawns 3 agents in parallel via `ThreadPoolExecutor` |
+| 5️⃣ | **Parallel Agents** | `src/agents/` | 🎬 Video, 🎵 Music, 📖 Text fetch content concurrently |
+| 6️⃣ | **Smart Queue** | `src/core/smart_queue.py` | Collects results with graceful degradation (3→2→1) |
+| 7️⃣ | **Judge Agent** | `src/agents/judge_agent.py` | Selects best content using Thompson Sampling + SHAP |
+| 8️⃣ | **Collector** | `src/core/collector.py` | `ResultCollector` aggregates final `TourGuideOutput` |
+
+**Smart Queue Degradation Timeline:**
+- ✅ **3/3 Complete:** All agents respond → highest quality
+- ⚠️ **2/3 Soft Degradation (15s):** Proceed with available content
+- ⚡ **1/3 Hard Degradation (30s):** Emergency fallback
+
+> 📖 **Full Execution Guide:** See [`docs/OPERATIONS_GUIDE.md`](docs/OPERATIONS_GUIDE.md#4-complete-end-to-end-flow-execution) for step-by-step execution with code examples
 
 ---
 
