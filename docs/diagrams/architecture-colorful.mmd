@@ -1,0 +1,91 @@
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#E3F2FD',
+    'primaryTextColor': '#1565C0',
+    'primaryBorderColor': '#1976D2',
+    'lineColor': '#424242',
+    'secondaryColor': '#F3E5F5',
+    'tertiaryColor': '#E8F5E9',
+    'background': '#FAFAFA',
+    'mainBkg': '#FFFFFF',
+    'nodeBorder': '#424242',
+    'clusterBkg': '#F5F5F5',
+    'clusterBorder': '#BDBDBD',
+    'titleColor': '#212121',
+    'edgeLabelBackground': '#FFFFFF'
+  }
+}}%%
+
+flowchart TB
+    subgraph INPUT["🎯 USER INPUT"]
+        direction LR
+        ROUTE["📍 Route: Tel Aviv → Jerusalem"]
+        PROFILE["👤 Profile: age=25, interests=[history]"]
+    end
+
+    subgraph ORCH["🎭 ORCHESTRATOR LAYER"]
+        direction TB
+        
+        subgraph AGENTS["⚡ PARALLEL AGENT EXECUTION"]
+            direction LR
+            VIDEO["🎬 VIDEO AGENT<br/>YouTube<br/>━━━━━━━━━━"]
+            MUSIC["🎵 MUSIC AGENT<br/>Spotify<br/>━━━━━━━━━━"]
+            TEXT["📖 TEXT AGENT<br/>Wikipedia<br/>━━━━━━━━━━"]
+        end
+
+        subgraph QUEUE["📬 SMART QUEUE - Graceful Degradation"]
+            direction LR
+            Q1["✅ 3/3<br/>COMPLETE"]
+            Q2["⚠️ 2/3<br/>SOFT DEG"]
+            Q3["⚡ 1/3<br/>HARD DEG"]
+            Q1 -->|"15s"| Q2
+            Q2 -->|"30s"| Q3
+        end
+
+        subgraph JUDGE["⚖️ JUDGE AGENT"]
+            direction LR
+            J1["🎰 Thompson<br/>Sampling"]
+            J2["🔍 SHAP<br/>Explainability"]
+            J3["👤 Profile<br/>Matching"]
+        end
+    end
+
+    subgraph OUTPUT["🎉 FINAL PLAYLIST"]
+        direction LR
+        P1["📍 Point 1<br/>📖 TEXT<br/>Silent Monks..."]
+        P2["📍 Point 2<br/>🎬 VIDEO<br/>Latrun Doc"]
+        P3["📍 Point 3<br/>🎵 MUSIC<br/>Jerusalem Song"]
+    end
+
+    INPUT --> ORCH
+    VIDEO --> QUEUE
+    MUSIC --> QUEUE
+    TEXT --> QUEUE
+    QUEUE --> JUDGE
+    JUDGE --> OUTPUT
+
+    %% Styling
+    style INPUT fill:#E3F2FD,stroke:#1976D2,stroke-width:3px,color:#0D47A1
+    style ORCH fill:#FAFAFA,stroke:#616161,stroke-width:2px
+    style AGENTS fill:#E8F5E9,stroke:#388E3C,stroke-width:2px
+    style QUEUE fill:#FFF3E0,stroke:#F57C00,stroke-width:2px
+    style JUDGE fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    style OUTPUT fill:#E8F5E9,stroke:#388E3C,stroke-width:3px,color:#1B5E20
+
+    style VIDEO fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px,color:#B71C1C
+    style MUSIC fill:#C8E6C9,stroke:#388E3C,stroke-width:2px,color:#1B5E20
+    style TEXT fill:#BBDEFB,stroke:#1976D2,stroke-width:2px,color:#0D47A1
+
+    style Q1 fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+    style Q2 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style Q3 fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px
+
+    style J1 fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+    style J2 fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+    style J3 fill:#E1BEE7,stroke:#7B1FA2,stroke-width:2px
+
+    style P1 fill:#BBDEFB,stroke:#1976D2,stroke-width:2px
+    style P2 fill:#FFCDD2,stroke:#D32F2F,stroke-width:2px
+    style P3 fill:#C8E6C9,stroke:#388E3C,stroke-width:2px
+
