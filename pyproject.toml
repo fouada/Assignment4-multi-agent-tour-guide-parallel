@@ -288,8 +288,10 @@ omit = [
     "src/agents/music_agent.py",     # Spotify/YouTube API dependent
     "src/agents/text_agent.py",      # Wikipedia API dependent
     "src/models/metrics.py",         # Duplicate of smart_queue.QueueMetrics
-    "src/dashboard/app.py",          # Dash UI layer - requires server runtime
-    "src/dashboard/__init__.py",     # Lazy imports module
+    # Research/Dashboard/Cost modules require numpy/scipy (optional deps)
+    "src/dashboard/**",
+    "src/research/**",
+    "src/cost_analysis/**",
 ]
 
 [tool.coverage.report]
