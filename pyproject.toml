@@ -202,6 +202,23 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B018"]  # useless expression in tests (assertions)
 "src/research/*" = ["N803", "N806"]  # mathematical variable conventions
+# E402: Module level import not at top of file - required for pytest.importorskip()
+"tests/unit/test_adaptive_learning.py" = ["E402"]
+"tests/unit/test_agent_negotiation.py" = ["E402"]
+"tests/unit/test_bayesian_optimization.py" = ["E402"]
+"tests/unit/test_causal_inference.py" = ["E402"]
+"tests/unit/test_cost_analysis.py" = ["E402"]
+"tests/unit/test_dashboard_components.py" = ["E402"]
+"tests/unit/test_dashboard_data_manager.py" = ["E402"]
+"tests/unit/test_experimental_framework.py" = ["E402"]
+"tests/unit/test_explainability.py" = ["E402"]
+"tests/unit/test_graph_neural_content.py" = ["E402"]
+"tests/unit/test_information_theory.py" = ["E402"]
+"tests/unit/test_meta_learning.py" = ["E402"]
+"tests/unit/test_research_visualization.py" = ["E402"]
+"tests/unit/test_sequential_optimization.py" = ["E402"]
+"tests/unit/test_statistical_analysis.py" = ["E402"]
+"tests/unit/test_uncertainty_quantification.py" = ["E402"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]

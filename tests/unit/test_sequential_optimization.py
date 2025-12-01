@@ -16,8 +16,9 @@ Edge Cases Documented:
 - Policy convergence verification
 """
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.sequential_optimization import (
     ContentType,

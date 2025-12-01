@@ -17,8 +17,9 @@ Edge Cases Documented:
 - Extreme preference values
 """
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.meta_learning import (
     MAML,

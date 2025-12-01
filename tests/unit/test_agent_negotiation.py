@@ -19,7 +19,9 @@ Edge Cases Documented:
 - All agents fail
 """
 
-import numpy as np
+import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.agent_negotiation import (
     AgentBid,

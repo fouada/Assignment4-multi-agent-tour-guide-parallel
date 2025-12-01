@@ -16,8 +16,9 @@ Coverage Target: 85%+
 Author: Multi-Agent Tour Guide Research Team
 """
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.statistical_analysis import (
     BootstrapAnalysis,

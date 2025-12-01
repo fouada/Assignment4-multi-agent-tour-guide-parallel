@@ -21,8 +21,9 @@ Edge Cases Documented:
 - Extreme alpha values
 """
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.uncertainty_quantification import (
     AdaptiveConformalPredictor,

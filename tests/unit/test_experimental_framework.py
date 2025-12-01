@@ -17,10 +17,11 @@ Coverage Target: 85%+
 Author: Multi-Agent Tour Guide Research Team
 """
 
-from typing import Any
-
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
+
+from typing import Any
 
 from src.research.experimental_framework import (
     ExperimentConfig,

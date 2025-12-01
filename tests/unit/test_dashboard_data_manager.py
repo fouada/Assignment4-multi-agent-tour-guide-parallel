@@ -17,11 +17,12 @@ Coverage Target: 85%+
 Author: Multi-Agent Tour Guide Research Team
 """
 
-import json
-
-import numpy as np
-import pandas as pd
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for dashboard tests")
+pd = pytest.importorskip("pandas", reason="pandas required for dashboard tests")
+
+import json
 
 from src.dashboard.data_manager import (
     AgentConfig,

@@ -9,10 +9,11 @@ MIT-Level Test Coverage for:
 - Counterfactual Reasoning
 """
 
-from datetime import datetime
-
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
+
+from datetime import datetime
 
 from src.research.causal_inference import (
     AgentPerformanceAnalyzer,

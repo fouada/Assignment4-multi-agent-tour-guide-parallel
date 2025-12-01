@@ -22,10 +22,12 @@ to avoid display issues during testing.
 Author: Multi-Agent Tour Guide Research Team
 """
 
-# Set matplotlib backend before any imports
-import matplotlib
-import numpy as np
 import pytest
+
+matplotlib = pytest.importorskip(
+    "matplotlib", reason="matplotlib required for visualization tests"
+)
+np = pytest.importorskip("numpy", reason="numpy required for visualization tests")
 
 matplotlib.use("Agg")
 

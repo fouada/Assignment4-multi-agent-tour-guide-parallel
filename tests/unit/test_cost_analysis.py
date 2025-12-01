@@ -11,11 +11,13 @@ MIT-Level Test Coverage for:
 Coverage Target: 85%+
 """
 
+import pytest
+
+pytest.importorskip("numpy", reason="numpy required for cost analysis tests")
+
 import json
 import threading
 from datetime import datetime, timedelta
-
-import pytest
 
 from src.cost_analysis.models import (
     APICostModel,

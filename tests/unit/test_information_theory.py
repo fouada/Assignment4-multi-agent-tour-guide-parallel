@@ -9,8 +9,9 @@ MIT-Level Test Coverage for:
 - Diversity Metrics
 """
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.information_theory import (
     AgentUserChannel,

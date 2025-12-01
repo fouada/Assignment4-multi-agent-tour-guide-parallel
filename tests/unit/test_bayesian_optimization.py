@@ -9,8 +9,9 @@ MIT-Level Test Coverage for:
 - Multi-Objective Optimization
 """
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.bayesian_optimization import (
     BayesianOptimizer,

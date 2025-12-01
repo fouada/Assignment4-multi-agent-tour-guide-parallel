@@ -19,7 +19,9 @@ Edge Cases Documented:
 - Empty graphs
 """
 
-import numpy as np
+import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.graph_neural_content import (
     ContentType,

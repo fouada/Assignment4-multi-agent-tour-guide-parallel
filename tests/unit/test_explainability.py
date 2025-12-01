@@ -10,8 +10,9 @@ MIT-Level Test Coverage for:
 - ExplainabilityEngine Integration
 """
 
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy", reason="numpy required for research tests")
 
 from src.research.explainability import (
     CounterfactualExplainer,
