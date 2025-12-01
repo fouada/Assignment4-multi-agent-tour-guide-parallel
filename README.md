@@ -114,6 +114,27 @@ Mathematical Result:      τ* = (1/λ)ln(n/k) for exponential response times
 - **Judge Agent:** Adaptive selection using Thompson Sampling, SHAP explainability, and user profile matching
 - **Final Playlist:** Personalized content selection for each route point
 
+### 📊 Sequence Diagram
+
+<p align="center">
+  <img src="assets/images/Sequence-Diagram.png" alt="Multi-Agent Tour Guide Sequence Diagram" width="950"/>
+</p>
+
+<p align="center">
+  <em>Figure 2: Agent Orchestration Sequence - Parallel Execution with Smart Queue Graceful Degradation Flow</em>
+</p>
+
+**Sequence Flow Highlights:**
+1. **User Request:** Origin, destination, and user profile provided
+2. **Orchestrator:** Spawns 3 content agents (Video, Music, Text) in parallel
+3. **Parallel Execution:** All agents fetch content concurrently from YouTube, Spotify, Wikipedia
+4. **Smart Queue Synchronization:** 
+   - ✅ **3/3 Complete:** All agents respond → highest quality
+   - ⚠️ **2/3 Soft Degradation (15s):** Proceed with available content
+   - ⚡ **1/3 Hard Degradation (30s):** Emergency fallback
+5. **Judge Decision:** Best content selected based on user profile
+6. **Collector:** Aggregates final `TourGuideOutput` playlist
+
 ---
 
 ## 🎓 Five Groundbreaking Innovations
