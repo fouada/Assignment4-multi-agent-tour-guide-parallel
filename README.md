@@ -5,7 +5,7 @@
 <h1 align="center">Multi-Agent Tour Guide System</h1>
 
 <p align="center">
-  <strong>Enterprise-Grade AI Orchestration for Personalized Travel Experiences</strong>
+  <strong>Enterprise-Grade AI Orchestration for Personalized Travel Experiences.</strong>
 </p>
 
 <p align="center">
