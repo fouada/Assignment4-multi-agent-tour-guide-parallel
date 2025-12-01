@@ -10,7 +10,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Builder
 # -----------------------------------------------------------------------------
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 # Install UV for fast dependency resolution
 RUN pip install --no-cache-dir uv
@@ -33,7 +33,7 @@ RUN uv venv /app/.venv && \
 # -----------------------------------------------------------------------------
 # Stage 2: Runtime
 # -----------------------------------------------------------------------------
-FROM python:3.11-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 # Security: Create non-root user
 RUN groupadd --gid 1000 tourguide && \
