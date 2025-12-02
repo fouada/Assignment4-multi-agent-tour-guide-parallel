@@ -1,0 +1,113 @@
+%%{init: {
+  'theme': 'dark',
+  'themeVariables': {
+    'primaryColor': '#6366f1',
+    'primaryTextColor': '#ffffff',
+    'primaryBorderColor': '#818cf8',
+    'lineColor': '#94a3b8',
+    'background': '#0f172a',
+    'mainBkg': '#1e293b',
+    'nodeBorder': '#475569',
+    'clusterBkg': '#1e293b',
+    'clusterBorder': '#475569',
+    'titleColor': '#f1f5f9',
+    'edgeLabelBackground': '#1e293b',
+    'fontFamily': 'SF Pro Display, Inter, system-ui'
+  }
+}}%%
+
+flowchart LR
+    %% ═══════════════════════════════════════════════════════════════
+    %% MIT MULTI-AGENT TOUR GUIDE - SYSTEM ARCHITECTURE
+    %% ═══════════════════════════════════════════════════════════════
+
+    subgraph PHASE1["<b>📥 PHASE 1: INPUT</b>"]
+        direction TB
+        U["👤 <b>USER</b><br/><br/>origin<br/>destination<br/>profile"]
+    end
+
+    subgraph PHASE2["<b>🗺️ PHASE 2: ROUTE</b>"]
+        direction TB
+        G["🗺️ <b>GOOGLE MAPS</b><br/><i>google_maps.py</i><br/><br/>GoogleMapsClient<br/>get_route()"]
+    end
+
+    subgraph PHASE3["<b>⏱️ PHASE 3: SCHEDULER</b>"]
+        direction TB
+        S["⏱️ <b>TRAVEL SIMULATOR</b><br/><i>timer_scheduler.py</i><br/><br/>for point in route:<br/>  on_point_arrival()"]
+    end
+
+    subgraph PHASE4["<b>🎭 PHASE 4: ORCHESTRATOR</b>"]
+        direction TB
+        O["🎭 <b>POINT PROCESSOR</b><br/><i>orchestrator.py</i><br/><br/>ThreadPoolExecutor<br/>max_workers=3"]
+    end
+
+    subgraph PHASE5["<b>⚡ PHASE 5: PARALLEL AGENTS</b>"]
+        direction TB
+        A1["🎬 <b>VIDEO</b><br/>YouTube"]
+        A2["🎵 <b>MUSIC</b><br/>Spotify"]
+        A3["📖 <b>TEXT</b><br/>Wikipedia"]
+    end
+
+    subgraph PHASE6["<b>🚦 PHASE 6: SMART QUEUE</b>"]
+        direction TB
+        SQ["🚦 <b>SMART QUEUE</b><br/><i>smart_queue.py</i>"]
+        STATES["✅ 3/3 COMPLETE<br/>⚠️ 2/3 SOFT (15s)<br/>⚡ 1/3 HARD (30s)"]
+    end
+
+    subgraph PHASE7["<b>⚖️ PHASE 7: JUDGE</b>"]
+        direction TB
+        J["⚖️ <b>JUDGE AGENT</b><br/><i>judge_agent.py</i><br/><br/>Thompson Sampling<br/>SHAP Explainability"]
+    end
+
+    subgraph PHASE8["<b>📥 PHASE 8: OUTPUT</b>"]
+        direction TB
+        C["📥 <b>COLLECTOR</b><br/><i>collector.py</i>"]
+        OUT["🎉 <b>TOUR OUTPUT</b><br/><br/>Personalized<br/>Playlist"]
+    end
+
+    %% Main Flow - Horizontal
+    U ==>|"1️⃣"| G
+    G ==>|"2️⃣ Route[]"| S
+    S ==>|"3️⃣ on_arrival"| O
+    O ==>|"4️⃣"| A1
+    O ==>|"4️⃣"| A2
+    O ==>|"4️⃣"| A3
+    A1 ==>|"5️⃣"| SQ
+    A2 ==>|"5️⃣"| SQ
+    A3 ==>|"5️⃣"| SQ
+    SQ --> STATES
+    STATES ==>|"6️⃣"| J
+    J ==>|"7️⃣"| C
+    C --> OUT
+    OUT -.->|"8️⃣ loop"| S
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% STYLING - Professional Dark Theme with Vibrant Accents
+    %% ═══════════════════════════════════════════════════════════════
+
+    %% Phase containers
+    style PHASE1 fill:#312e81,stroke:#6366f1,stroke-width:3px,color:#fff
+    style PHASE2 fill:#4c1d95,stroke:#8b5cf6,stroke-width:3px,color:#fff
+    style PHASE3 fill:#831843,stroke:#ec4899,stroke-width:3px,color:#fff
+    style PHASE4 fill:#7c2d12,stroke:#f97316,stroke-width:3px,color:#fff
+    style PHASE5 fill:#1e3a5f,stroke:#38bdf8,stroke-width:3px,color:#fff
+    style PHASE6 fill:#134e4a,stroke:#14b8a6,stroke-width:3px,color:#fff
+    style PHASE7 fill:#164e63,stroke:#06b6d4,stroke-width:3px,color:#fff
+    style PHASE8 fill:#1e3a8a,stroke:#3b82f6,stroke-width:3px,color:#fff
+    
+    %% Nodes
+    style U fill:#6366f1,stroke:#a5b4fc,stroke-width:2px,color:#fff
+    style G fill:#8b5cf6,stroke:#c4b5fd,stroke-width:2px,color:#fff
+    style S fill:#ec4899,stroke:#f9a8d4,stroke-width:2px,color:#fff
+    style O fill:#f97316,stroke:#fdba74,stroke-width:2px,color:#fff
+    style A1 fill:#ef4444,stroke:#fca5a5,stroke-width:2px,color:#fff
+    style A2 fill:#eab308,stroke:#fde047,stroke-width:2px,color:#1f2937
+    style A3 fill:#22c55e,stroke:#86efac,stroke-width:2px,color:#fff
+    style SQ fill:#14b8a6,stroke:#5eead4,stroke-width:2px,color:#fff
+    style STATES fill:#0d9488,stroke:#2dd4bf,stroke-width:2px,color:#fff
+    style J fill:#06b6d4,stroke:#67e8f9,stroke-width:2px,color:#fff
+    style C fill:#3b82f6,stroke:#93c5fd,stroke-width:2px,color:#fff
+    style OUT fill:#2563eb,stroke:#60a5fa,stroke-width:2px,color:#fff
+
+    %% Link styling
+    linkStyle default stroke:#94a3b8,stroke-width:2px

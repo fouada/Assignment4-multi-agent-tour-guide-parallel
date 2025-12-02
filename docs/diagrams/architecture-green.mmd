@@ -1,0 +1,118 @@
+%%{init: {
+  'theme': 'dark',
+  'themeVariables': {
+    'primaryColor': '#6366f1',
+    'primaryTextColor': '#ffffff',
+    'primaryBorderColor': '#818cf8',
+    'lineColor': '#94a3b8',
+    'background': '#0f172a',
+    'mainBkg': '#1e293b',
+    'nodeBorder': '#475569',
+    'clusterBkg': '#1e293b',
+    'clusterBorder': '#475569',
+    'titleColor': '#f1f5f9',
+    'edgeLabelBackground': '#1e293b'
+  }
+}}%%
+
+flowchart TB
+    subgraph INPUT["<b>👤 USER INPUT</b>"]
+        U[("👤 User Request<br/><br/>• origin: Tel Aviv<br/>• destination: Jerusalem<br/>• profile: interests, age")]
+    end
+
+    subgraph MAPS["<b>🗺️ GOOGLE MAPS API</b>"]
+        G["🗺️ GoogleMapsClient<br/><i>src/services/google_maps.py</i>"]
+        R[("📍 Route Object<br/><br/>RoutePoint[]<br/>• location_name<br/>• coordinates<br/>• duration")]
+    end
+
+    subgraph SCHEDULER["<b>⏱️ SCHEDULER</b>"]
+        S["⏱️ TravelSimulator<br/><i>src/core/timer_scheduler.py</i>"]
+        LOOP{{"🔄 for point in route.points:<br/>on_point_arrival(point)"}}
+    end
+
+    subgraph ORCHESTRATOR["<b>🎭 ORCHESTRATOR</b>"]
+        O["🎭 PointProcessor<br/><i>src/core/orchestrator.py</i>"]
+        TPE["⚡ ThreadPoolExecutor<br/>max_workers=3"]
+    end
+
+    subgraph AGENTS["<b>⚡ PARALLEL AGENTS</b>"]
+        A1["🎬 VideoAgent<br/><i>video_agent.py</i><br/><br/>YouTube API"]
+        A2["🎵 MusicAgent<br/><i>music_agent.py</i><br/><br/>Spotify API"]
+        A3["📖 TextAgent<br/><i>text_agent.py</i><br/><br/>Wikipedia API"]
+    end
+
+    subgraph QUEUE["<b>🚦 SMART QUEUE</b>"]
+        SQ["🚦 SmartAgentQueue<br/><i>src/core/smart_queue.py</i>"]
+        ST1["✅ COMPLETE<br/>3/3 agents < 15s"]
+        ST2["⚠️ SOFT_DEGRADED<br/>2/3 agents @ 15s"]
+        ST3["⚡ HARD_DEGRADED<br/>1/3 agents @ 30s"]
+    end
+
+    subgraph JUDGE["<b>⚖️ JUDGE AGENT</b>"]
+        J["⚖️ JudgeAgent<br/><i>src/agents/judge_agent.py</i>"]
+        TS["🎰 Thompson Sampling<br/>Adaptive Selection"]
+        SH["📊 SHAP Values<br/>Explainability"]
+    end
+
+    subgraph COLLECTOR["<b>📥 RESULT COLLECTOR</b>"]
+        C["📥 ResultCollector<br/><i>src/core/collector.py</i>"]
+        OUT[("🎉 TourGuideOutput<br/><br/>Personalized Playlist<br/>per RoutePoint")]
+    end
+
+    %% Flow connections with numbered steps
+    U -->|"1️⃣ Request"| G
+    G -->|"2️⃣ Fetch Route"| R
+    R -->|"3️⃣ Route Object"| S
+    S -->|"4️⃣ Initialize Loop"| LOOP
+    LOOP -->|"5️⃣ on_point_arrival()"| O
+    O -->|"6️⃣ Spawn Parallel"| TPE
+    TPE -->|"7️⃣a"| A1
+    TPE -->|"7️⃣b"| A2
+    TPE -->|"7️⃣c"| A3
+    A1 -->|"8️⃣ ContentResult"| SQ
+    A2 -->|"8️⃣ ContentResult"| SQ
+    A3 -->|"8️⃣ ContentResult"| SQ
+    SQ --> ST1
+    SQ --> ST2
+    SQ --> ST3
+    ST1 -->|"9️⃣"| J
+    ST2 -->|"9️⃣"| J
+    ST3 -->|"9️⃣"| J
+    J --> TS
+    J --> SH
+    TS -->|"🔟 Decision"| C
+    SH -->|"🔟 Reasoning"| C
+    C -->|"1️⃣1️⃣ Store"| OUT
+    OUT -.->|"1️⃣2️⃣ Next Point"| LOOP
+    LOOP -->|"1️⃣3️⃣ Complete"| U
+
+    %% Professional color scheme - Dark theme with vibrant accents
+    style INPUT fill:#312e81,stroke:#6366f1,stroke-width:3px,color:#fff
+    style MAPS fill:#4c1d95,stroke:#8b5cf6,stroke-width:3px,color:#fff
+    style SCHEDULER fill:#831843,stroke:#ec4899,stroke-width:3px,color:#fff
+    style ORCHESTRATOR fill:#7c2d12,stroke:#f97316,stroke-width:3px,color:#fff
+    style AGENTS fill:#1e3a5f,stroke:#38bdf8,stroke-width:3px,color:#fff
+    style QUEUE fill:#134e4a,stroke:#14b8a6,stroke-width:3px,color:#fff
+    style JUDGE fill:#164e63,stroke:#06b6d4,stroke-width:3px,color:#fff
+    style COLLECTOR fill:#1e3a8a,stroke:#3b82f6,stroke-width:3px,color:#fff
+    
+    %% Node styling
+    style U fill:#6366f1,stroke:#a5b4fc,stroke-width:2px,color:#fff
+    style G fill:#8b5cf6,stroke:#c4b5fd,stroke-width:2px,color:#fff
+    style R fill:#a855f7,stroke:#d8b4fe,stroke-width:2px,color:#fff
+    style S fill:#ec4899,stroke:#f9a8d4,stroke-width:2px,color:#fff
+    style LOOP fill:#f472b6,stroke:#fbcfe8,stroke-width:2px,color:#1f2937
+    style O fill:#f97316,stroke:#fdba74,stroke-width:2px,color:#fff
+    style TPE fill:#fb923c,stroke:#fed7aa,stroke-width:2px,color:#1f2937
+    style A1 fill:#ef4444,stroke:#fca5a5,stroke-width:2px,color:#fff
+    style A2 fill:#eab308,stroke:#fde047,stroke-width:2px,color:#1f2937
+    style A3 fill:#22c55e,stroke:#86efac,stroke-width:2px,color:#fff
+    style SQ fill:#14b8a6,stroke:#5eead4,stroke-width:2px,color:#fff
+    style ST1 fill:#10b981,stroke:#6ee7b7,stroke-width:2px,color:#fff
+    style ST2 fill:#f59e0b,stroke:#fcd34d,stroke-width:2px,color:#1f2937
+    style ST3 fill:#ef4444,stroke:#fca5a5,stroke-width:2px,color:#fff
+    style J fill:#06b6d4,stroke:#67e8f9,stroke-width:2px,color:#fff
+    style TS fill:#0891b2,stroke:#22d3ee,stroke-width:2px,color:#fff
+    style SH fill:#0e7490,stroke:#06b6d4,stroke-width:2px,color:#fff
+    style C fill:#3b82f6,stroke:#93c5fd,stroke-width:2px,color:#fff
+    style OUT fill:#2563eb,stroke:#60a5fa,stroke-width:2px,color:#fff
