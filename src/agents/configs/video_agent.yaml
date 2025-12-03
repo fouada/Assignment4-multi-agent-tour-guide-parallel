@@ -10,7 +10,7 @@ agent:
     music videos filmed at the specified location.
 
 config:
-  model: "claude-sonnet-4"  # Primary: Claude, Alternative: gpt-4o-mini
+  model: "claude-sonnet-4-20250514"  # Primary: Claude, Alternative: gpt-4o-mini
   temperature: 0.7
   max_tokens: 2000
   timeout_seconds: 30

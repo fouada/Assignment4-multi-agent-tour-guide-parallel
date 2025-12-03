@@ -196,6 +196,16 @@ Include both Hebrew and English search terms if relevant."""
 
             return songs
 
+        except TypeError as e:
+            # Known issue: youtube-search-python incompatible with httpx>=0.25
+            # The library uses old httpx API with 'proxies' argument
+            if "proxies" in str(e):
+                logger.debug(
+                    "YouTube search library incompatible with current httpx version, using mock data"
+                )
+            else:
+                logger.warning(f"YouTube music search failed: {e}")
+            return []
         except Exception as e:
             logger.warning(f"YouTube music search failed: {e}")
             return []

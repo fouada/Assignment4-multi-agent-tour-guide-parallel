@@ -60,7 +60,7 @@ The Multi-Agent Tour Guide System is an enterprise-grade AI orchestration platfo
 ├─────────────────────────────────────────────────────────────┤
 │                     AI/ML STACK                              │
 ├─────────────────────────────────────────────────────────────┤
-│  LLM Primary    │  Anthropic Claude (claude-sonnet-4)       │
+│  LLM Primary    │  Anthropic Claude (claude-sonnet-4-20250514) │
 │  LLM Fallback   │  OpenAI GPT-4o-mini                       │
 │  Orchestration  │  Custom multi-agent system                │
 ├─────────────────────────────────────────────────────────────┤

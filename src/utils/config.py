@@ -37,7 +37,7 @@ class Settings(BaseSettings):
 
     # LLM Settings (Default: Claude/Anthropic)
     llm_provider: str = Field(default="anthropic", alias="LLM_PROVIDER")
-    llm_model: str = Field(default="claude-sonnet-4", alias="LLM_MODEL")
+    llm_model: str = Field(default="claude-sonnet-4-20250514", alias="LLM_MODEL")
     llm_temperature: float = Field(default=0.7, alias="LLM_TEMPERATURE")
 
     # Logging

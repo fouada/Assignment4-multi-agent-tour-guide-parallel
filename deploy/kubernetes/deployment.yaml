@@ -25,7 +25,7 @@ metadata:
 data:
   LOG_LEVEL: "INFO"
   LLM_PROVIDER: "anthropic"
-  LLM_MODEL: "claude-sonnet-4"
+  LLM_MODEL: "claude-sonnet-4-20250514"
   AGENT_TIMEOUT_SECONDS: "30"
   QUEUE_SOFT_TIMEOUT: "15"
   QUEUE_HARD_TIMEOUT: "30"

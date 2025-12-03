@@ -10,7 +10,7 @@ agent:
     Makes decision based on relevance, engagement, and user preferences.
 
 config:
-  model: "claude-sonnet-4"  # Primary: Claude, Alternative: gpt-4o-mini
+  model: "claude-sonnet-4-20250514"  # Primary: Claude, Alternative: gpt-4o-mini
   temperature: 0.5  # Lower temperature for more consistent judging
   max_tokens: 1500
   timeout_seconds: 20

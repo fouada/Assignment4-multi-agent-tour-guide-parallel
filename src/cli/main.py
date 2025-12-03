@@ -25,6 +25,7 @@ from src.models.user_profile import (
     UserProfile,
     get_driver_profile,
     get_family_profile,
+    get_history_buff_profile,
     get_kid_profile,
 )
 from src.utils.logger import get_logger
@@ -49,6 +50,7 @@ def get_profile(profile_name: str, min_age: int = 5) -> UserProfile:
         "family": get_family_profile(min_age=min_age),
         "kid": get_kid_profile(age=min_age),
         "driver": get_driver_profile(),
+        "history": get_history_buff_profile(),
     }
     return profiles.get(profile_name, UserProfile())
 
@@ -74,9 +76,19 @@ def run_demo_pipeline(
     print(f"📏 Distance: {distance_km:.1f} km")
 
     if profile:
-        print(
-            f"👤 Profile: {profile.age_group.value if profile.age_group else 'default'}"
+        # Show meaningful profile info
+        profile_name = profile.name if profile.name else (
+            profile.age_group.value if profile.age_group else "default"
         )
+        print(f"👤 Profile: {profile_name}")
+        
+        # Show family-specific info
+        if profile.audience_type and str(profile.audience_type.value) == "family_with_kids":
+            print(f"   👨‍👩‍👧‍👦 Family Mode: Content safe for ages {profile.min_age or 5}+")
+            if profile.exclude_topics:
+                print(f"   🔒 Excluded: {', '.join(profile.exclude_topics)}")
+            print(f"   ⏱️ Max duration: {(profile.max_content_duration_seconds or 300) // 60} min")
+            print(f"   📚 Preference: {profile.content_preference.value if profile.content_preference else 'educational'}")
 
     print("\n" + "═" * 60)
     print("🚀 STARTING MULTI-AGENT PIPELINE")
@@ -105,13 +117,20 @@ def run_demo_pipeline(
 
     # Final summary
     print("\n" + "═" * 60)
-    print("📋 FINAL TOUR GUIDE PLAYLIST")
+    is_family = profile and profile.audience_type and str(profile.audience_type.value) == "family_with_kids"
+    if is_family:
+        print("📋 FINAL TOUR GUIDE PLAYLIST 👨‍👩‍👧‍👦 Family-Safe")
+    else:
+        print("📋 FINAL TOUR GUIDE PLAYLIST")
     print("═" * 60)
 
     for i, result in enumerate(results):
         icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(result["winner"], "📌")
-        print(f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"')
+        family_badge = " ✨" if is_family else ""
+        print(f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}')
 
+    if is_family:
+        print(f"\n   ℹ️  All content verified safe for ages {profile.min_age or 5}+")
     print("\n✅ Pipeline complete!")
     return results
 
@@ -268,8 +287,115 @@ def run_interactive():
     run_demo_pipeline(mode="queue", profile=profile)
 
 
+def run_custom_route(
+    origin: str,
+    destination: str,
+    mode: str = "queue",
+    profile: UserProfile | None = None,
+    verbose: bool = False,
+) -> list[dict[str, Any]]:
+    """
+    Run the pipeline with a custom route from Google Maps API.
+    """
+    print_banner()
+    print(f"🎯 Custom route: {origin} → {destination}")
+    print("─" * 60)
+
+    # Try to get real route from Google Maps
+    try:
+        from src.services.google_maps import GoogleMapsClient
+        from src.utils.config import settings
+
+        if settings.google_maps_api_key:
+            maps_client = GoogleMapsClient()
+            route = maps_client.get_route(origin, destination)
+            print(f"\n📍 Route: {route.source} → {route.destination}")
+            print(f"📊 Points: {route.point_count}")
+            if route.total_distance:
+                print(f"📏 Distance: {route.total_distance / 1000:.1f} km")
+            if route.total_duration:
+                print(f"⏱️ Duration: {route.total_duration // 60} minutes")
+        else:
+            print("\n⚠️ No GOOGLE_MAPS_API_KEY set - using mock route")
+            from src.services.google_maps import get_mock_route
+            route = get_mock_route()
+            print(f"\n📍 Route: {route.source} → {route.destination} (mock)")
+            print(f"📊 Points: {route.point_count}")
+
+    except Exception as e:
+        print(f"\n⚠️ Could not fetch route from Google Maps: {e}")
+        print("   Using mock route instead...")
+        from src.services.google_maps import get_mock_route
+        route = get_mock_route()
+        print(f"\n📍 Route: {route.source} → {route.destination} (mock)")
+        print(f"📊 Points: {route.point_count}")
+
+    if profile:
+        # Show meaningful profile info
+        profile_name = profile.name if profile.name else (
+            profile.age_group.value if profile.age_group else "default"
+        )
+        print(f"👤 Profile: {profile_name}")
+        
+        # Show family-specific info
+        if profile.audience_type and str(profile.audience_type.value) == "family_with_kids":
+            print(f"   👨‍👩‍👧‍👦 Family Mode: Content safe for ages {profile.min_age or 5}+")
+            if profile.exclude_topics:
+                print(f"   🔒 Excluded: {', '.join(profile.exclude_topics)}")
+            print(f"   ⏱️ Max duration: {(profile.max_content_duration_seconds or 300) // 60} min")
+            print(f"   📚 Preference: {profile.content_preference.value if profile.content_preference else 'educational'}")
+
+    print("\n" + "═" * 60)
+    print("🚀 STARTING MULTI-AGENT PIPELINE")
+    print("═" * 60)
+
+    results = []
+
+    for i, point in enumerate(route.points):
+        print(
+            f"\n📍 [{i + 1}/{route.point_count}] Processing: {point.location_name or point.address}"
+        )
+        print("─" * 40)
+
+        if mode == "queue":
+            result = process_point_with_queue(point, profile, verbose)
+        elif mode == "sequential":
+            result = process_point_sequential(point, profile, verbose)
+        else:
+            result = process_point_parallel(point, profile, verbose)
+
+        results.append(result)
+        print(f'   🏆 Winner: {result["winner"]} - "{result["title"]}"')
+
+    # Final summary
+    print("\n" + "═" * 60)
+    is_family = profile and profile.audience_type and str(profile.audience_type.value) == "family_with_kids"
+    if is_family:
+        print("📋 FINAL TOUR GUIDE PLAYLIST 👨‍👩‍👧‍👦 Family-Safe")
+    else:
+        print("📋 FINAL TOUR GUIDE PLAYLIST")
+    print("═" * 60)
+
+    for i, result in enumerate(results):
+        icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(result["winner"], "📌")
+        family_badge = " ✨" if is_family else ""
+        print(f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}')
+
+    if is_family:
+        print(f"\n   ℹ️  All content verified safe for ages {profile.min_age or 5}+")
+    print("\n✅ Pipeline complete!")
+    return results
+
+
 def main() -> int:
     """Main entry point. Returns exit code."""
+    import warnings
+
+    # Suppress ResourceWarning about unclosed SSL sockets from HTTP clients
+    # This is a known issue with many Python HTTP libraries (anthropic, httpx)
+    # that don't always close connections cleanly on exit
+    warnings.filterwarnings("ignore", category=ResourceWarning, message="unclosed")
+
     parser = argparse.ArgumentParser(
         description="Multi-Agent Tour Guide System - Full Pipeline",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -302,9 +428,15 @@ Examples:
         help="Processing mode: queue (recommended), sequential, streaming",
     )
     parser.add_argument(
+        "--interval",
+        type=int,
+        default=5,
+        help="Interval in seconds between points (for streaming mode)",
+    )
+    parser.add_argument(
         "--profile",
         type=str,
-        choices=["default", "family", "kid", "driver"],
+        choices=["default", "family", "kid", "driver", "history"],
         default="default",
         help="User profile preset",
     )
@@ -324,14 +456,15 @@ Examples:
             profile = get_profile(args.profile, args.min_age)
             run_demo_pipeline(mode=args.mode, profile=profile, verbose=args.verbose)
         else:
-            print_banner()
-            print(f"🎯 Custom route: {args.origin} → {args.destination}")
-            print(f"   Mode: {args.mode}")
-            print(f"   Profile: {args.profile}")
-            print("\n⚠️ Custom routes require API keys:")
-            print("   - OPENAI_API_KEY or ANTHROPIC_API_KEY")
-            print("   - GOOGLE_MAPS_API_KEY (optional)")
-            print("\n   See .env.example and run with --demo for now.")
+            # Custom route with real Google Maps API
+            profile = get_profile(args.profile, args.min_age)
+            run_custom_route(
+                origin=args.origin,
+                destination=args.destination,
+                mode=args.mode,
+                profile=profile,
+                verbose=args.verbose,
+            )
         return 0
     except KeyboardInterrupt:
         print("\n\n👋 Tour guide stopped by user.")

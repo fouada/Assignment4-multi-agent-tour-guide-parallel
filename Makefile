@@ -106,37 +106,40 @@ upgrade:
 # Running
 # ============================================================================
 
+# Suppress third-party library warnings (DuckDuckGo rename, unclosed sockets)
+PYTHONWARNINGS := ignore::RuntimeWarning,ignore::ResourceWarning
+
 run:
 	@echo "🚀 Running tour guide (demo mode)..."
-	uv run python main.py --demo
+	PYTHONWARNINGS="$(PYTHONWARNINGS)" uv run python main.py --demo
 
 run-demo: run
 
 run-queue:
 	@echo "🚀 Running with queue mode (recommended - shows all hops)..."
-	uv run python main.py --demo --mode queue
+	PYTHONWARNINGS="$(PYTHONWARNINGS)" uv run python main.py --demo --mode queue
 
 run-streaming:
 	@echo "🚀 Running with streaming mode..."
-	uv run python main.py --demo --mode streaming --interval 5
+	PYTHONWARNINGS="$(PYTHONWARNINGS)" uv run python main.py --demo --mode streaming --interval 5
 
 run-stream: run-streaming
 
 run-instant:
 	@echo "🚀 Running with instant mode..."
-	uv run python main.py --demo --mode instant
+	PYTHONWARNINGS="$(PYTHONWARNINGS)" uv run python main.py --demo --mode instant
 
 run-sequential:
 	@echo "🚀 Running with sequential mode..."
-	uv run python main.py --demo --mode sequential
+	PYTHONWARNINGS="$(PYTHONWARNINGS)" uv run python main.py --demo --mode sequential
 
 run-interactive:
 	@echo "🚀 Running interactive setup..."
-	uv run python main.py --interactive
+	PYTHONWARNINGS="$(PYTHONWARNINGS)" uv run python main.py --interactive
 
 run-family:
 	@echo "🚀 Running with family profile..."
-	uv run python main.py --demo --mode queue --profile family --min-age 5
+	PYTHONWARNINGS="$(PYTHONWARNINGS)" uv run python main.py --demo --mode queue --profile family --min-age 5
 
 run-history:
 	@echo "🚀 Running with history buff profile..."

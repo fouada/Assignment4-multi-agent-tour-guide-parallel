@@ -29,7 +29,7 @@ class TestSettings:
         assert test_settings.max_agents_per_point == 4
         assert test_settings.agent_timeout_seconds == 30.0
         assert test_settings.llm_provider == "anthropic"
-        assert test_settings.llm_model == "claude-sonnet-4"
+        assert test_settings.llm_model == "claude-sonnet-4-20250514"
         assert test_settings.llm_temperature == 0.7
         assert test_settings.log_level == "INFO"
         assert test_settings.max_concurrent_threads == 12

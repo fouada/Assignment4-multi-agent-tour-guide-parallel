@@ -4,7 +4,12 @@ Uses web search and LLM for intelligent content discovery.
 """
 
 import re
+import warnings
 from typing import Any
+
+# Suppress the deprecation warning about duckduckgo_search package rename
+# This warning is triggered when importing the package
+warnings.filterwarnings("ignore", message=".*has been renamed.*", category=RuntimeWarning)
 
 from src.agents.base_agent import BaseAgent
 from src.models.content import ContentResult, ContentType
@@ -29,9 +34,18 @@ class TextAgent(BaseAgent):
         self.search_available = False
 
         try:
+            # Suppress RuntimeWarning from duckduckgo_search about package rename
+            # This uses filterwarnings with lineno=0 to catch all warnings from this module
+            warnings.filterwarnings(
+                "ignore",
+                message=".*renamed.*",
+                category=RuntimeWarning,
+                lineno=0,  # Match any line
+            )
             from duckduckgo_search import DDGS
 
             self.search_client = DDGS()
+
             self.search_available = True
             logger.info("DuckDuckGo search client initialized")
         except ImportError:
