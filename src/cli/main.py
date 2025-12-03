@@ -146,7 +146,7 @@ def run_demo_pipeline(
             f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}'
         )
 
-    if is_family:
+    if is_family and profile is not None:
         print(f"\n   ℹ️  All content verified safe for ages {profile.min_age or 5}+")
     print("\n✅ Pipeline complete!")
     return results
@@ -417,7 +417,7 @@ def run_custom_route(
             f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}'
         )
 
-    if is_family:
+    if is_family and profile is not None:
         print(f"\n   ℹ️  All content verified safe for ages {profile.min_age or 5}+")
     print("\n✅ Pipeline complete!")
     return results
