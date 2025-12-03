@@ -90,10 +90,7 @@ CUSTOM_CSS = f"""
 
 body {{
     font-family: {FONTS["body"]};
-    background: linear-gradient(135deg, 
-        {THEME["gradient_start"]} 0%, 
-        {THEME["gradient_mid"]} 50%, 
-        {THEME["gradient_end"]} 100%);
+    background: linear-gradient(135deg, {THEME["gradient_start"]} 0%, {THEME["gradient_mid"]} 50%, {THEME["gradient_end"]} 100%);
     background-attachment: fixed;
     color: {THEME["text_primary"]};
     margin: 0;
@@ -109,10 +106,7 @@ body::before {{
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: 
-        radial-gradient(circle at 20% 80%, rgba(0, 245, 212, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(114, 9, 183, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(247, 37, 133, 0.03) 0%, transparent 30%);
+    background-image: radial-gradient(circle at 20% 80%, rgba(0, 245, 212, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(114, 9, 183, 0.05) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(247, 37, 133, 0.03) 0%, transparent 30%);
     pointer-events: none;
     z-index: -1;
 }}
@@ -134,10 +128,7 @@ body::before {{
     font-family: {FONTS["display"]};
     font-size: 3rem;
     font-weight: 700;
-    background: linear-gradient(135deg, 
-        {THEME["accent_primary"]} 0%, 
-        {THEME["accent_secondary"]} 50%, 
-        {THEME["accent_tertiary"]} 100%);
+    background: linear-gradient(135deg, {THEME["accent_primary"]} 0%, {THEME["accent_secondary"]} 50%, {THEME["accent_tertiary"]} 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -160,25 +151,19 @@ body::before {{
 
 /* Cards */
 .glass-card {{
-    background: linear-gradient(145deg, 
-        rgba(26, 26, 46, 0.8), 
-        rgba(22, 33, 62, 0.6));
+    background: linear-gradient(145deg, rgba(26, 26, 46, 0.8), rgba(22, 33, 62, 0.6));
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 20px;
     padding: 25px;
     margin-bottom: 20px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }}
 
 .glass-card:hover {{
     transform: translateY(-2px);
-    box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.5),
-        0 0 20px rgba(0, 245, 212, 0.1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 245, 212, 0.1);
 }}
 
 .card-title {{
@@ -231,9 +216,7 @@ body::before {{
 
 /* Buttons */
 .btn-primary {{
-    background: linear-gradient(135deg, 
-        {THEME["accent_primary"]}, 
-        {THEME["accent_secondary"]});
+    background: linear-gradient(135deg, {THEME["accent_primary"]}, {THEME["accent_secondary"]});
     border: none;
     color: {THEME["bg_dark"]};
     font-family: {FONTS["display"]};
@@ -256,10 +239,7 @@ body::before {{
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.3), 
-        transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.5s ease;
 }}
 
@@ -286,9 +266,7 @@ body::before {{
 .custom-tabs .tab--selected {{
     color: {THEME["accent_primary"]} !important;
     border-bottom-color: {THEME["accent_primary"]} !important;
-    background: linear-gradient(180deg, 
-        transparent 0%, 
-        rgba(0, 245, 212, 0.05) 100%) !important;
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 245, 212, 0.05) 100%) !important;
 }}
 
 /* Grid Layouts */
@@ -1497,7 +1475,7 @@ def create_architecture_diagram():
                 x=[nodes_x[start], nodes_x[end]],
                 y=[nodes_y[start], nodes_y[end]],
                 mode="lines",
-                line=dict(color="rgba(255,255,255,0.2)", width=2),
+                line={"color": "rgba(255,255,255,0.2)", "width": 2},
                 hoverinfo="skip",
             )
         )
@@ -1508,18 +1486,18 @@ def create_architecture_diagram():
             x=nodes_x,
             y=nodes_y,
             mode="markers+text",
-            marker=dict(
-                size=50,
-                color=node_colors,
-                line=dict(color="rgba(255,255,255,0.3)", width=2),
-            ),
+            marker={
+                "size": 50,
+                "color": node_colors,
+                "line": {"color": "rgba(255,255,255,0.3)", "width": 2},
+            },
             text=node_labels,
             textposition="bottom center",
-            textfont=dict(
-                family=FONTS["display"],
-                size=12,
-                color=THEME["text_primary"],
-            ),
+            textfont={
+                "family": FONTS["display"],
+                "size": 12,
+                "color": THEME["text_primary"],
+            },
             hovertemplate="%{text}<extra></extra>",
         )
     )
@@ -1528,19 +1506,29 @@ def create_architecture_diagram():
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         showlegend=False,
-        xaxis=dict(
-            showgrid=False, zeroline=False, showticklabels=False, range=[-0.05, 1.05]
-        ),
-        yaxis=dict(
-            showgrid=False, zeroline=False, showticklabels=False, range=[-0.1, 1.1]
-        ),
-        margin=dict(l=20, r=20, t=40, b=20),
+        xaxis={
+            "showgrid": False,
+            "zeroline": False,
+            "showticklabels": False,
+            "range": [-0.05, 1.05],
+        },
+        yaxis={
+            "showgrid": False,
+            "zeroline": False,
+            "showticklabels": False,
+            "range": [-0.1, 1.1],
+        },
+        margin={"l": 20, "r": 20, "t": 40, "b": 20},
         height=300,
-        title=dict(
-            text="System Architecture Flow",
-            font=dict(family=FONTS["display"], size=16, color=THEME["text_primary"]),
-            x=0.5,
-        ),
+        title={
+            "text": "System Architecture Flow",
+            "font": {
+                "family": FONTS["display"],
+                "size": 16,
+                "color": THEME["text_primary"],
+            },
+            "x": 0.5,
+        },
     )
 
     return fig
@@ -2217,7 +2205,7 @@ def create_tour_guide_app() -> Dash:
 
         # Generate mock recommendations
         recommendations = []
-        for i, point in enumerate(mock_points):
+        for point in mock_points:
             content_type = random.choice(content_types)
 
             if content_type == "VIDEO":
@@ -2331,15 +2319,18 @@ def create_tour_guide_app() -> Dash:
                     labels=list(content_counts.keys()),
                     values=list(content_counts.values()),
                     hole=0.6,
-                    marker=dict(
-                        colors=[
+                    marker={
+                        "colors": [
                             THEME["video_agent"],
                             THEME["music_agent"],
                             THEME["text_agent"],
                         ]
-                    ),
+                    },
                     textinfo="label+percent",
-                    textfont=dict(family=FONTS["display"], color=THEME["text_primary"]),
+                    textfont={
+                        "family": FONTS["display"],
+                        "color": THEME["text_primary"],
+                    },
                 )
             ]
         )
@@ -2348,7 +2339,7 @@ def create_tour_guide_app() -> Dash:
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             showlegend=False,
-            margin=dict(l=20, r=20, t=20, b=20),
+            margin={"l": 20, "r": 20, "t": 20, "b": 20},
             height=300,
             annotations=[
                 {
@@ -2401,23 +2392,27 @@ def create_tour_guide_app() -> Dash:
                 y=throughput_data,
                 mode="lines",
                 fill="tozeroy",
-                line=dict(color=THEME["accent_primary"], width=2),
+                line={"color": THEME["accent_primary"], "width": 2},
                 fillcolor="rgba(0, 245, 212, 0.1)",
             )
         )
         throughput_fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=False, title="Time (s)", color=THEME["text_secondary"]),
-            yaxis=dict(
-                showgrid=True,
-                gridcolor="rgba(255,255,255,0.05)",
-                title="Requests/s",
-                color=THEME["text_secondary"],
-            ),
-            margin=dict(l=50, r=20, t=20, b=50),
+            xaxis={
+                "showgrid": False,
+                "title": "Time (s)",
+                "color": THEME["text_secondary"],
+            },
+            yaxis={
+                "showgrid": True,
+                "gridcolor": "rgba(255,255,255,0.05)",
+                "title": "Requests/s",
+                "color": THEME["text_secondary"],
+            },
+            margin={"l": 50, "r": 20, "t": 20, "b": 50},
             height=250,
-            font=dict(family=FONTS["mono"], color=THEME["text_secondary"]),
+            font={"family": FONTS["mono"], "color": THEME["text_secondary"]},
         )
 
         # Agent response times
@@ -2426,7 +2421,7 @@ def create_tour_guide_app() -> Dash:
 
         response_fig = go.Figure()
         colors = [THEME["video_agent"], THEME["music_agent"], THEME["text_agent"]]
-        for agent, times, color in zip(agents, response_times, colors):
+        for agent, times, color in zip(agents, response_times, colors, strict=True):
             response_fig.add_trace(
                 go.Box(
                     y=times,
@@ -2439,17 +2434,17 @@ def create_tour_guide_app() -> Dash:
         response_fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=False, color=THEME["text_secondary"]),
-            yaxis=dict(
-                showgrid=True,
-                gridcolor="rgba(255,255,255,0.05)",
-                title="Response Time (s)",
-                color=THEME["text_secondary"],
-            ),
-            margin=dict(l=50, r=20, t=20, b=50),
+            xaxis={"showgrid": False, "color": THEME["text_secondary"]},
+            yaxis={
+                "showgrid": True,
+                "gridcolor": "rgba(255,255,255,0.05)",
+                "title": "Response Time (s)",
+                "color": THEME["text_secondary"],
+            },
+            margin={"l": 50, "r": 20, "t": 20, "b": 50},
             height=250,
             showlegend=False,
-            font=dict(family=FONTS["mono"], color=THEME["text_secondary"]),
+            font={"family": FONTS["mono"], "color": THEME["text_secondary"]},
         )
 
         # Queue status
@@ -2475,7 +2470,7 @@ def create_tour_guide_app() -> Dash:
                     marker_color=status_colors,
                     text=status_counts,
                     textposition="outside",
-                    textfont=dict(family=FONTS["mono"], color=THEME["text_primary"]),
+                    textfont={"family": FONTS["mono"], "color": THEME["text_primary"]},
                 )
             ]
         )
@@ -2483,16 +2478,16 @@ def create_tour_guide_app() -> Dash:
         queue_fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=False, color=THEME["text_secondary"]),
-            yaxis=dict(
-                showgrid=True,
-                gridcolor="rgba(255,255,255,0.05)",
-                title="Count",
-                color=THEME["text_secondary"],
-            ),
-            margin=dict(l=50, r=20, t=20, b=50),
+            xaxis={"showgrid": False, "color": THEME["text_secondary"]},
+            yaxis={
+                "showgrid": True,
+                "gridcolor": "rgba(255,255,255,0.05)",
+                "title": "Count",
+                "color": THEME["text_secondary"],
+            },
+            margin={"l": 50, "r": 20, "t": 20, "b": 50},
             height=300,
-            font=dict(family=FONTS["mono"], color=THEME["text_secondary"]),
+            font={"family": FONTS["mono"], "color": THEME["text_secondary"]},
         )
 
         return throughput_fig, response_fig, queue_fig
