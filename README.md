@@ -190,39 +190,57 @@ uv run python main.py --demo --profile family --min-age 5
 
 The system follows a **fan-out/fan-in pattern**:
 
+```mermaid
+flowchart TB
+    subgraph INPUT["📥 INPUT LAYER"]
+        A["👤 User Input<br/><i>Origin → Destination</i>"]
+        B["🗺️ Google Maps<br/><i>Route API</i>"]
+    end
+    
+    subgraph ORCHESTRATION["⚙️ ORCHESTRATION"]
+        C["⏱️ Scheduler<br/><i>Timer Control</i>"]
+        D["🔀 Fan-Out<br/><i>Parallel Dispatch</i>"]
+    end
+    
+    subgraph AGENTS["🤖 PARALLEL AGENTS"]
+        E["🎬 Video Agent<br/><i>YouTube API</i>"]
+        F["🎵 Music Agent<br/><i>Spotify API</i>"]
+        G["📖 Text Agent<br/><i>Web Search</i>"]
+    end
+    
+    subgraph SYNC["🔄 SYNCHRONIZATION"]
+        H["🔀 Fan-In<br/><i>Result Collection</i>"]
+        I["🚦 Smart Queue<br/><i>τ_soft=15s | τ_hard=30s</i>"]
+    end
+    
+    subgraph OUTPUT["📤 OUTPUT LAYER"]
+        J["⚖️ Judge Agent<br/><i>LLM Evaluation</i>"]
+        K["📤 Content Output<br/><i>Personalized Result</i>"]
+    end
+    
+    A --> B
+    B --> C
+    C --> D
+    D --> E & F & G
+    E & F & G --> H
+    H --> I
+    I --> J
+    J --> K
+    
+    style A fill:#3b82f6,color:#fff,stroke:#1d4ed8
+    style B fill:#22c55e,color:#fff,stroke:#15803d
+    style C fill:#6366f1,color:#fff,stroke:#4338ca
+    style D fill:#8b5cf6,color:#fff,stroke:#6d28d9
+    style E fill:#f59e0b,color:#fff,stroke:#d97706
+    style F fill:#10b981,color:#fff,stroke:#047857
+    style G fill:#8b5cf6,color:#fff,stroke:#6d28d9
+    style H fill:#ec4899,color:#fff,stroke:#be185d
+    style I fill:#ef4444,color:#fff,stroke:#b91c1c
+    style J fill:#f97316,color:#fff,stroke:#c2410c
+    style K fill:#06b6d4,color:#fff,stroke:#0e7490
 ```
-                    ┌─────────────┐
-                    │  User Input │
-                    └──────┬──────┘
-                           │
-                    ┌──────▼──────┐
-                    │ Google Maps │
-                    │    Route    │
-                    └──────┬──────┘
-                           │
-         ┌─────────────────┼─────────────────┐  ← FAN-OUT
-         │                 │                 │
-   ┌─────▼─────┐     ┌─────▼─────┐     ┌─────▼─────┐
-   │   VIDEO   │     │   MUSIC   │     │   TEXT    │
-   │   AGENT   │     │   AGENT   │     │   AGENT   │
-   └─────┬─────┘     └─────┬─────┘     └─────┬─────┘
-         │                 │                 │
-         └─────────────────┼─────────────────┘  ← FAN-IN
-                           │
-                    ┌──────▼──────┐
-                    │ Smart Queue │
-                    │  (15s/30s)  │
-                    └──────┬──────┘
-                           │
-                    ┌──────▼──────┐
-                    │   JUDGE     │
-                    │   AGENT     │
-                    └──────┬──────┘
-                           │
-                    ┌──────▼──────┐
-                    │   OUTPUT    │
-                    └─────────────┘
-```
+
+<p align="center"><em><strong>Figure 2:</strong> Fan-Out/Fan-In Architecture Pattern with Graceful Degradation</em></p>
 
 <p align="center">
 <img src="assets/images/System-sequence-Overview.png" alt="Sequence Diagram" width="95%"/>
@@ -389,20 +407,43 @@ We provide **7 mathematical theorems** with rigorous proofs:
 
 The Smart Queue ensures the system **never blocks indefinitely**:
 
+```mermaid
+stateDiagram-v2
+    direction LR
+    
+    [*] --> WAITING: Start
+    
+    WAITING --> COMPLETE: 3/3 agents<br/>before 15s
+    WAITING --> SOFT_DEGRADED: 2/3 agents<br/>at t=15s
+    WAITING --> HARD_DEGRADED: 1/3 agents<br/>at t=30s
+    WAITING --> FAILED: 0/3 agents<br/>at t=30s
+    
+    COMPLETE --> JUDGE: Optimal Quality<br/>✅ 85% of requests
+    SOFT_DEGRADED --> JUDGE: Good Quality<br/>⚠️ 12% of requests
+    HARD_DEGRADED --> JUDGE: Fallback<br/>⚡ 3% of requests
+    FAILED --> FALLBACK: Graceful Error<br/>❌ <1% of requests
+    
+    JUDGE --> [*]: Output
+    FALLBACK --> [*]: Cached/Default
 ```
-     t=0                    t=15s (SOFT)             t=30s (HARD)
-      │                          │                        │
-      ▼                          ▼                        ▼
- ┌─────────────────────────────────────────────────────────────┐
- │                                                             │
- │  Waiting for all 3 agents...                                │
- │                                                             │
- │  ✅ 3/3 before 15s → COMPLETE (85% of requests)            │
- │  ⚠️ 2/3 at 15s     → SOFT_DEGRADED (12% of requests)       │
- │  ⚡ 1/3 at 30s     → HARD_DEGRADED (3% of requests)        │
- │  ❌ 0/3 at 30s     → FAILED → Graceful fallback (<1%)      │
- │                                                             │
- └─────────────────────────────────────────────────────────────┘
+
+```mermaid
+gantt
+    title Smart Queue Timeline
+    dateFormat ss
+    axisFormat %Ss
+    
+    section Agents
+    Video Agent     :active, v1, 00, 8s
+    Music Agent     :active, m1, 00, 10s
+    Text Agent      :active, t1, 00, 14s
+    
+    section Timeouts
+    Soft Timeout (τ=15s)    :milestone, soft, 15, 0s
+    Hard Timeout (τ=30s)    :milestone, hard, 30, 0s
+    
+    section Status
+    COMPLETE (3/3)  :done, complete, 14, 1s
 ```
 
 ### Timeout Optimization
