@@ -292,39 +292,165 @@ t=16.2s  │ 🏆 Winner: TEXT - "The Hill That Changed a War"
 
 ---
 
-## 📸 Demo Screenshots
+## 📸 System Capabilities Gallery
 
-### Queue Mode Execution
+This section showcases the production-ready capabilities of the Multi-Agent Tour Guide System through visual demonstrations.
 
-<p align="center">
-<img src="assets/images/07-queue-mode.png" alt="Queue Mode Demo" width="85%"/>
-</p>
-
-<p align="center"><em>Real-time parallel agent execution with status updates</em></p>
-
-### Family-Safe Mode
+### 🎯 Core Feature: Smart Queue with Graceful Degradation
 
 <p align="center">
-<img src="assets/images/08-family-mode.png" alt="Family Mode Demo" width="85%"/>
+<img src="assets/images/07-queue-mode.png" alt="Queue Mode Demo" width="90%"/>
 </p>
 
-<p align="center"><em>Content filtering for family-friendly recommendations</em></p>
+<p align="center"><em><strong>Figure 3:</strong> Smart Queue in Action — 3 parallel agents with real-time status updates and graceful degradation (3→2→1)</em></p>
 
-### Test Coverage
+**What you're seeing:**
+- ✅ Three agents (Video, Music, Text) executing in parallel
+- 🏆 Judge Agent selecting the best content per waypoint
+- 📊 Real-time scoring and decision reasoning
+- ⏱️ Latency tracking and queue status (COMPLETE/SOFT_DEGRADED/HARD_DEGRADED)
+
+---
+
+### 👨‍👩‍👧 Profile-Based Personalization: Family Mode
 
 <p align="center">
-<img src="assets/images/06-coverage-terminal.png" alt="Test Coverage" width="85%"/>
+<img src="assets/images/08-family-mode.png" alt="Family Mode Demo" width="90%"/>
 </p>
 
-<p align="center"><em>683+ tests with 85%+ code coverage</em></p>
+<p align="center"><em><strong>Figure 4:</strong> Family-Safe Mode — Content filtering with age-appropriate recommendations</em></p>
 
-### Quality Checks
+**Personalization Features:**
+| Profile | Behavior |
+|---------|----------|
+| **Family** | Safe content, educational focus, age filtering |
+| **Driver** | **NO VIDEO** (safety), audio-only content |
+| **History** | In-depth documentaries, cultural content |
+| **Kid** | Child-friendly, engaging, short duration |
+
+---
+
+### 🧪 Quality Assurance: 683+ Tests with 85%+ Coverage
+
+<table>
+<tr>
+<td width="50%">
+
+<p align="center">
+<img src="assets/images/05-test-results.png" alt="Test Results" width="100%"/>
+</p>
+
+<p align="center"><em>All 683+ tests passing</em></p>
+
+</td>
+<td width="50%">
+
+<p align="center">
+<img src="assets/images/06-coverage-terminal.png" alt="Test Coverage" width="100%"/>
+</p>
+
+<p align="center"><em>85%+ code coverage</em></p>
+
+</td>
+</tr>
+</table>
+
+**Test Categories:**
+| Category | Count | Purpose |
+|----------|-------|---------|
+| Unit Tests | 500+ | Component isolation |
+| Integration Tests | 100+ | Multi-component flows |
+| E2E Tests | 50+ | Full pipeline validation |
+| Performance Tests | 30+ | Latency benchmarks |
+
+---
+
+### ✅ Code Quality: Automated Validation
 
 <p align="center">
 <img src="assets/images/04-make-check.png" alt="Quality Checks" width="85%"/>
 </p>
 
-<p align="center"><em>Automated linting, type checking, and validation</em></p>
+<p align="center"><em><strong>Figure 5:</strong> Automated quality gates — Linting (Ruff), Type Checking (MyPy), Security Scanning</em></p>
+
+---
+
+### 🏗️ Architecture: Complete System Design
+
+<table>
+<tr>
+<td width="50%">
+
+<p align="center">
+<img src="assets/images/architecture-Overview.png" alt="Architecture" width="100%"/>
+</p>
+
+<p align="center"><em>8-Phase Pipeline Architecture</em></p>
+
+</td>
+<td width="50%">
+
+<p align="center">
+<img src="assets/images/System-sequence-Overview.png" alt="Sequence Diagram" width="100%"/>
+</p>
+
+<p align="center"><em>Agent Orchestration Sequence</em></p>
+
+</td>
+</tr>
+</table>
+
+---
+
+### 📊 Research Dashboard (6 Interactive Panels)
+
+The MIT-level research dashboard provides publication-quality visualizations:
+
+| Panel | Capability | Use Case |
+|-------|------------|----------|
+| **System Monitor** | Real-time agent health gauges | Production monitoring |
+| **Sensitivity Analysis** | Sobol indices, parameter impact | Configuration tuning |
+| **Pareto Frontier** | Quality-Latency tradeoff curves | SLA optimization |
+| **A/B Testing** | Statistical comparison (t-test, Mann-Whitney) | Configuration validation |
+| **Monte Carlo** | N=10,000+ stochastic simulations | Risk analysis |
+| **Agent Performance** | Historical trends, reliability tracking | Capacity planning |
+
+```bash
+# Start the dashboard
+uv run python run_dashboard.py
+# Open http://localhost:8050
+```
+
+---
+
+### 🌐 REST API with OpenAPI Documentation
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check with component status |
+| `/tour` | POST | Create personalized tour |
+| `/tour/{id}` | GET | Get tour status and results |
+| `/docs` | GET | Interactive Swagger documentation |
+
+```bash
+# Start API server
+make run-api
+# Open http://localhost:8000/docs
+```
+
+---
+
+### 📓 Jupyter Research Notebooks
+
+| Notebook | Purpose | Key Outputs |
+|----------|---------|-------------|
+| `01_sensitivity_analysis.ipynb` | Parameter impact analysis | Sobol indices, Morris screening |
+| `02_interactive_dashboard.ipynb` | Dashboard exploration | Interactive Plotly charts |
+| `03_cost_analysis.ipynb` | Cost optimization | ROI projections, model selection |
+
+```bash
+uv run jupyter notebook notebooks/
+```
 
 ---
 
@@ -633,6 +759,81 @@ multi-agent-tour-guide/
 | Explainable AI (SHAP/LIME) | ✅ | ❌ | ❌ | ❌ |
 | ISO/IEC 25010 Compliance | ✅ | ❌ | ❌ | ❌ |
 | Interactive Dashboard | ✅ | ❌ | ❌ | ❌ |
+
+---
+
+## 🏆 Complete Capabilities Summary
+
+<details>
+<summary><strong>Click to expand full capabilities checklist (50+ features)</strong></summary>
+
+### Core System
+
+| Capability | Status | Implementation |
+|------------|:------:|----------------|
+| Multi-Agent Parallel Processing | ✅ | `ThreadPoolExecutor(max_workers=3)` |
+| Smart Queue with Graceful Degradation | ✅ | `SmartAgentQueue` (3→2→1) |
+| Configurable Timeouts (τ_soft/τ_hard) | ✅ | `soft=15s, hard=30s` |
+| LLM-Powered Judge Agent | ✅ | Claude/GPT integration |
+| Profile-Based Personalization | ✅ | 5 profiles with constraints |
+| Real-time Route Processing | ✅ | Google Maps Directions API |
+
+### Content Agents
+
+| Agent | Source | Fallback |
+|-------|--------|----------|
+| 🎬 Video Agent | YouTube Data API v3 | LLM-generated |
+| 🎵 Music Agent | Spotify API | YouTube Music |
+| 📖 Text Agent | DuckDuckGo + Wikipedia | LLM synthesis |
+
+### Research Framework
+
+| Category | Features |
+|----------|----------|
+| **Statistical Analysis** | t-test, Mann-Whitney U, KS test, Bootstrap CI, Cohen's d |
+| **Sensitivity Analysis** | Sobol indices (S1, ST), Morris screening, Local SA |
+| **Monte Carlo** | N=10,000+ simulations, percentile analysis |
+| **Adaptive Learning** | Thompson Sampling, UCB, Contextual Bandits |
+| **Causal Inference** | SCM, do-calculus, ATE, Counterfactuals |
+| **Bayesian Optimization** | Gaussian Process, Expected Improvement |
+| **Explainable AI** | SHAP, LIME, Counterfactual explanations |
+| **Information Theory** | Lai-Robbins bounds, Entropy, Diversity metrics |
+
+### Formal Verification
+
+| Theorem | Statement | Guarantee |
+|---------|-----------|-----------|
+| Thm 2.1 (Liveness) | Queue terminates within τ_hard | Bounded wait |
+| Thm 2.2 (Safety) | No premature partial returns | Data consistency |
+| Thm 2.3 (Progress) | Non-empty if ≥1 agent succeeds | Useful output |
+| Thm 3.1 (Complexity) | E[T] = O(m·n·s) | Predictable performance |
+| Thm 7.1 (Optimal) | τ* = (1/λ)ln(n/k) | Optimal configuration |
+
+### Production Features
+
+| Feature | Status | Technology |
+|---------|:------:|------------|
+| REST API | ✅ | FastAPI + OpenAPI |
+| Interactive Dashboard | ✅ | Dash + Plotly |
+| Docker Support | ✅ | Multi-stage build |
+| Kubernetes Ready | ✅ | Helm charts + HPA |
+| Circuit Breaker | ✅ | 5 failures → open |
+| Retry with Backoff | ✅ | Exponential (1s→2s→4s→8s) |
+| Rate Limiting | ✅ | Token bucket |
+| Structured Logging | ✅ | JSON + correlation IDs |
+
+### Quality Metrics
+
+| Metric | Value |
+|--------|-------|
+| **Total Tests** | 683+ |
+| **Code Coverage** | 85%+ |
+| **Formal Theorems** | 7 |
+| **ISO 25010 Compliance** | 8/8 characteristics |
+| **Documentation Files** | 30+ |
+| **Research Notebooks** | 3 |
+
+</details>
 
 ---
 
