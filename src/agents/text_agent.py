@@ -9,7 +9,9 @@ from typing import Any
 
 # Suppress the deprecation warning about duckduckgo_search package rename
 # This warning is triggered when importing the package
-warnings.filterwarnings("ignore", message=".*has been renamed.*", category=RuntimeWarning)
+warnings.filterwarnings(
+    "ignore", message=".*has been renamed.*", category=RuntimeWarning
+)
 
 from src.agents.base_agent import BaseAgent
 from src.models.content import ContentResult, ContentType

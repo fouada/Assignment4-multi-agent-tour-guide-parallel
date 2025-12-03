@@ -455,3 +455,108 @@ def large_route():
 def benchmark_iterations():
     """Number of iterations for benchmark tests."""
     return 100
+
+
+# =============================================================================
+# Tour Guide Dashboard Fixtures
+# =============================================================================
+
+
+@pytest.fixture
+def dashboard_family_profile():
+    """Create a family profile for dashboard testing."""
+    return {
+        "preset": "family",
+        "age_group": "adult",
+        "min_age": 5,
+        "travel_mode": "car",
+        "trip_purpose": "vacation",
+        "content_preference": "educational",
+        "family_mode": ["enabled"],
+        "driver_mode": [],
+        "interests": "history, nature, culture",
+        "exclude_topics": "violence, adult content",
+        "max_duration": 300,
+    }
+
+
+@pytest.fixture
+def dashboard_driver_profile():
+    """Create a driver profile for dashboard testing (no video)."""
+    return {
+        "preset": "driver",
+        "age_group": "adult",
+        "min_age": 30,
+        "travel_mode": "car",
+        "trip_purpose": "business",
+        "content_preference": "educational",
+        "family_mode": [],
+        "driver_mode": ["enabled"],
+        "interests": "podcasts, audio books",
+        "exclude_topics": "",
+        "max_duration": 600,
+    }
+
+
+@pytest.fixture
+def dashboard_tour_route():
+    """Create a sample tour route for dashboard testing."""
+    return {
+        "source": "Tel Aviv, Israel",
+        "destination": "Jerusalem, Israel",
+        "waypoints": "Latrun, Bab al-Wad",
+        "points": [
+            {"name": "Tel Aviv", "lat": 32.0853, "lon": 34.7818},
+            {"name": "Latrun Monastery", "lat": 31.8377, "lon": 34.9781},
+            {"name": "Bab al-Wad Memorial", "lat": 31.8419, "lon": 35.0614},
+            {"name": "Ein Karem", "lat": 31.7667, "lon": 35.1583},
+            {"name": "Jerusalem", "lat": 31.7683, "lon": 35.2137},
+        ],
+    }
+
+
+@pytest.fixture
+def dashboard_mock_recommendations():
+    """Create mock recommendations for dashboard testing."""
+    return [
+        {
+            "point": "Tel Aviv",
+            "type": "TEXT",
+            "title": "The Story of Tel Aviv",
+            "description": "Historical narrative about the founding of Tel Aviv",
+            "quality_score": 8.5,
+            "duration": "3 min",
+        },
+        {
+            "point": "Latrun",
+            "type": "VIDEO",
+            "title": "Latrun Tank Museum Virtual Tour",
+            "description": "Interactive tour of the famous tank museum",
+            "quality_score": 9.2,
+            "duration": "5 min",
+        },
+        {
+            "point": "Jerusalem",
+            "type": "MUSIC",
+            "title": "Jerusalem of Gold",
+            "description": "Famous song celebrating Jerusalem",
+            "quality_score": 9.8,
+            "duration": "4 min",
+        },
+    ]
+
+
+@pytest.fixture
+def dashboard_edge_case_inputs():
+    """Edge case inputs for dashboard testing."""
+    return {
+        "empty_source": "",
+        "empty_destination": "",
+        "unicode_location": "ירושלים, ישראל",  # Hebrew
+        "long_location": "A" * 500,
+        "min_age_zero": 0,
+        "max_age": 120,
+        "min_duration": 30,
+        "max_duration": 600,
+        "special_chars": "Location with <special> & 'chars'",
+    }

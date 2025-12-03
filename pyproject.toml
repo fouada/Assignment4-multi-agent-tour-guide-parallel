@@ -219,6 +219,9 @@ ignore = [
 "tests/unit/test_sequential_optimization.py" = ["E402"]
 "tests/unit/test_statistical_analysis.py" = ["E402"]
 "tests/unit/test_uncertainty_quantification.py" = ["E402"]
+"tests/unit/test_tour_guide_dashboard.py" = ["E402"]
+"tests/integration/test_tour_guide_dashboard_integration.py" = ["E402"]
+"tests/e2e/test_tour_guide_dashboard_e2e.py" = ["E402"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]

@@ -26,7 +26,7 @@ Usage:
     run_dashboard()
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 
 # Lazy imports to avoid import errors when dependencies not installed
@@ -36,6 +36,17 @@ def __getattr__(name):
         from .app import create_app, run_dashboard
 
         return {"create_app": create_app, "run_dashboard": run_dashboard}[name]
+
+    elif name in ("create_tour_guide_app", "run_tour_guide_dashboard"):
+        from .tour_guide_dashboard import (
+            create_tour_guide_app,
+            run_tour_guide_dashboard,
+        )
+
+        return {
+            "create_tour_guide_app": create_tour_guide_app,
+            "run_tour_guide_dashboard": run_tour_guide_dashboard,
+        }[name]
 
     elif name == "DashboardDataManager":
         from .data_manager import DashboardDataManager
@@ -58,6 +69,7 @@ def __getattr__(name):
 
 
 __all__ = [
+    # Original research dashboard
     "create_app",
     "run_dashboard",
     "DashboardDataManager",
@@ -67,4 +79,7 @@ __all__ = [
     "StatisticalComparisonPanel",
     "MonteCarloPanel",
     "AgentPerformancePanel",
+    # Tour Guide Interactive Dashboard
+    "create_tour_guide_app",
+    "run_tour_guide_dashboard",
 ]

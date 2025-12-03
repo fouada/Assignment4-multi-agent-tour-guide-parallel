@@ -8,15 +8,16 @@
 
 | Section | Description |
 |---------|-------------|
-| [🎯 MIT PROJECT COMPLETE SHOWCASE](#-mit-project-complete-showcase) | **START HERE** - Full step-by-step guide with all 35 screenshots |
+| [🎯 MIT PROJECT COMPLETE SHOWCASE](#-mit-project-complete-showcase) | **START HERE** - Full step-by-step guide with all 54 screenshots |
 | [1. Installation](#1-installation) | UV package manager, dependencies setup |
 | [2. API Keys Setup](#2-api-keys-setup) | Anthropic, Google Maps, YouTube, Spotify keys |
 | [3. All Features Overview](#3-all-features-overview) | Feature matrix - all available modes |
-| [4. Complete End-to-End Flow](#4-complete-end-to-end-flow-execution) | **🔥 NEW** - Full sequence diagram execution explained |
+| [4. Complete End-to-End Flow](#4-complete-end-to-end-flow-execution) | Full sequence diagram execution explained |
 | [5. Running Each Mode](#5-running-each-mode) | Queue, Demo, Family, History, Streaming modes |
+| [5B. Tour Guide Dashboard](#-phase-5b-interactive-tour-guide-dashboard-new---15-minutes) | **🆕 NEW** - Interactive tour planning dashboard |
 | [6. Real Flow Execution](#6-real-flow-execution-with-api-keys) | Live API execution with real data |
 | [7. Research & Innovation Flows](#7-research--innovation-execution-flows) | Sensitivity analysis, Monte Carlo, innovations |
-| [8. Interactive Dashboard](#8-interactive-research-dashboard) | 6-panel MIT-level research dashboard |
+| [8. Interactive Research Dashboard](#8-interactive-research-dashboard) | 6-panel MIT-level research dashboard |
 | [9. Screenshot Guide](#9-screenshot-guide) | Quick screenshot workflow |
 | [10. API Operations](#10-api-operations) | REST API server and endpoints |
 | [11. Dashboard Operations](#11-dashboard-operations) | Dashboard startup and features |
@@ -30,6 +31,29 @@
 ## Your Complete Step-by-Step Guide to Demonstrate ALL Capabilities
 
 This section provides the **exact sequence** to showcase every feature of your MIT-level Multi-Agent Tour Guide System.
+
+### 📊 Dashboard Overview
+
+This project includes **TWO interactive dashboards**:
+
+| Dashboard | Port | Purpose | Command |
+|-----------|------|---------|---------|
+| **🗺️ Tour Guide Dashboard** | 8051 | User-facing tour planning with full profile config | `python run_tour_dashboard.py` |
+| **📈 Research Dashboard** | 8050 | Publication-quality analysis & monitoring | `python run_dashboard.py` |
+
+### 📸 Screenshot Summary
+
+| Phase | Screenshots | Time |
+|-------|-------------|------|
+| Phase 1: Installation | 4 | 5 min |
+| Phase 2: Testing | 3 | 3 min |
+| Phase 3: Core Flows | 7 | 10 min |
+| Phase 4: API | 4 | 5 min |
+| Phase 5: Research Dashboard | 7 | 10 min |
+| **Phase 5B: Tour Guide Dashboard** | **19** | **15 min** |
+| Phase 6: Research & Innovation | 7 | 15 min |
+| Phase 7: Architecture | 3 | 5 min |
+| **TOTAL** | **54** | **~68 min** |
 
 ---
 
@@ -325,6 +349,299 @@ open http://localhost:8050
 
 ---
 
+## 🗺️ PHASE 5B: Interactive Tour Guide Dashboard (NEW! - 15 minutes)
+
+The **Tour Guide Dashboard** is a comprehensive, user-facing interactive dashboard for planning and visualizing personalized tours with full pipeline flow visualization.
+
+### Step 5B.1: Start Tour Guide Dashboard
+```bash
+python run_tour_dashboard.py
+```
+📸 **Screenshot 36:** Terminal showing Tour Guide Dashboard started on port 8051
+📁 **Save as:** `assets/images/36-tour-dashboard-started.png`
+
+**Expected Output:**
+```
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║   🗺️  Multi-Agent Tour Guide Interactive Dashboard                       ║
+║   ═══════════════════════════════════════════════════                    ║
+║                                                                          ║
+║   ✨ Features:                                                           ║
+║      • Complete user profile configuration                               ║
+║      • Family mode & driver mode                                         ║
+║      • Interactive pipeline visualization                                ║
+║      • Real-time agent monitoring                                        ║
+║      • Personalized content recommendations                              ║
+║                                                                          ║
+║   🌐 Dashboard URL: http://127.0.0.1:8051                                 ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+### Step 5B.2: Open Tour Dashboard in Browser
+```bash
+open http://localhost:8051
+```
+📸 **Screenshot 37:** Full Tour Guide Dashboard with Plan Your Tour tab
+📁 **Save as:** `assets/images/37-tour-dashboard-overview.png`
+
+**Dashboard Features Overview:**
+| Tab | Purpose |
+|-----|---------|
+| **🗺️ Plan Your Tour** | Configure source, destination, and user profile |
+| **⚡ Pipeline Flow** | Visualize the 6-stage pipeline and agent status |
+| **🎯 Recommendations** | View personalized content recommendations |
+| **📊 Live Monitor** | Real-time throughput, latency, queue status |
+
+---
+
+### Step 5B.3: Configure Tour Planning (Plan Your Tour Tab)
+
+#### Step 5B.3.1: Set Source and Destination
+1. In the **📍 Tour Planning** card:
+   - Enter **Starting Point**: `Tel Aviv, Israel`
+   - Enter **Destination**: `Jerusalem, Israel`
+   - Optionally add **Waypoints**: `Latrun, Bab al-Wad`
+
+📸 **Screenshot 38:** Tour Planning card with source and destination filled
+📁 **Save as:** `assets/images/38-tour-planning-input.png`
+
+---
+
+#### Step 5B.3.2: Select User Profile Preset
+1. In the **👤 User Profile** card:
+   - Click **Quick Profile Preset** dropdown
+   - Select **"👨‍👩‍👧‍👦 Family with Kids"**
+
+📸 **Screenshot 39:** Profile preset dropdown showing options
+📁 **Save as:** `assets/images/39-profile-preset-selection.png`
+
+**Available Profile Presets:**
+| Preset | Description |
+|--------|-------------|
+| 🧑 Default Adult | Standard adult traveler |
+| 👨‍👩‍👧‍👦 Family with Kids | Family-friendly, age-filtered content |
+| 🧒 Kid-Friendly | Fun, educational content for children |
+| 🎓 Teenager | Modern, trending content |
+| 👴 Senior | Clear, nostalgic content |
+| 🚗 Driver (Audio Only) | NO VIDEO - safety constraint |
+| 📚 History Enthusiast | In-depth historical content |
+| ❤️ Romantic Couple | Beautiful, atmospheric content |
+| ⚙️ Custom... | Full custom configuration |
+
+---
+
+#### Step 5B.3.3: Configure Custom Profile Options
+1. Select **"⚙️ Custom..."** from the preset dropdown
+2. Configure the following options:
+   - **Age Group**: `Adult`
+   - **Minimum Age in Group**: `5` (for family with kids)
+   - **Travel Mode**: `Car`
+   - **Trip Purpose**: `Vacation`
+   - **Content Preference**: `Educational`
+   - Enable **✓ Family-Safe Mode**
+   - **Interests**: `history, nature, culture`
+   - **Topics to Avoid**: `violence, adult content`
+   - **Max Content Duration**: `5 minutes` (slide to 300s)
+
+📸 **Screenshot 40:** Custom profile options fully expanded and configured
+📁 **Save as:** `assets/images/40-custom-profile-options.png`
+
+---
+
+#### Step 5B.3.4: Review Profile Summary
+1. View the **📋 Active Profile Summary** card on the right side
+2. Verify all settings are displayed correctly:
+   - Route: Tel Aviv → Jerusalem
+   - Profile badges: Family with Kids, Family Safe
+   - Travel mode, purpose, preferences
+
+📸 **Screenshot 41:** Active Profile Summary showing all configured options
+📁 **Save as:** `assets/images/41-profile-summary.png`
+
+---
+
+#### Step 5B.3.5: View System Architecture
+1. Below the profile summary, view the **🏗️ System Architecture** visualization
+2. This shows the flow: User Input → Agents → Queue → Judge → Output
+
+📸 **Screenshot 42:** Interactive architecture diagram with node connections
+📁 **Save as:** `assets/images/42-architecture-diagram.png`
+
+---
+
+### Step 5B.4: Start the Tour
+
+#### Step 5B.4.1: Click Start Tour Button
+1. Click the **🚀 Start Tour** button at the bottom
+2. Watch the pipeline process the request
+
+📸 **Screenshot 43:** Start Tour button being clicked
+📁 **Save as:** `assets/images/43-start-tour-button.png`
+
+---
+
+### Step 5B.5: View Pipeline Flow (Pipeline Flow Tab)
+
+#### Step 5B.5.1: Navigate to Pipeline Flow Tab
+1. Click the **⚡ Pipeline Flow** tab
+
+📸 **Screenshot 44:** Pipeline Flow tab showing 6 stages
+📁 **Save as:** `assets/images/44-pipeline-flow-tab.png`
+
+**Pipeline Stages Displayed:**
+| Stage | Name | Description |
+|:-----:|------|-------------|
+| 1 | User Input & Profile | Configure journey and preferences |
+| 2 | Route Generation | Calculate route and POIs |
+| 3 | Parallel Agent Processing | Video, Music & Text agents |
+| 4 | Smart Queue Collection | Aggregate with intelligent timeouts |
+| 5 | Judge Evaluation | AI selects best content |
+| 6 | Personalized Playlist | Curated content delivered |
+
+---
+
+#### Step 5B.5.2: View Agent Orchestra
+1. In the **🤖 Agent Orchestra** section, view the 4 agent cards:
+   - 🎬 Video Agent - YouTube, educational videos
+   - 🎵 Music Agent - Spotify, ambient music
+   - 📖 Text Agent - Historical facts, stories
+   - ⚖️ Judge Agent - AI-powered selection
+
+📸 **Screenshot 45:** Agent Orchestra showing 4 agent status cards
+📁 **Save as:** `assets/images/45-agent-orchestra.png`
+
+---
+
+#### Step 5B.5.3: View System Metrics
+1. In the **📊 System Metrics** section, view:
+   - Route Points count
+   - Average Latency
+   - Quality Score percentage
+   - Total Recommendations
+
+📸 **Screenshot 46:** System Metrics showing all 4 metric boxes
+📁 **Save as:** `assets/images/46-system-metrics.png`
+
+---
+
+### Step 5B.6: View Recommendations (Recommendations Tab)
+
+#### Step 5B.6.1: Navigate to Recommendations Tab
+1. Click the **🎯 Recommendations** tab
+2. View the personalized content recommendations
+
+📸 **Screenshot 47:** Recommendations tab with content cards
+📁 **Save as:** `assets/images/47-recommendations-tab.png`
+
+**Each Recommendation Card Shows:**
+- Location name and content type (VIDEO/MUSIC/TEXT)
+- Content title and description
+- Quality score (⭐ rating)
+- Duration estimate
+
+---
+
+#### Step 5B.6.2: View Content Distribution Chart
+1. Scroll down to see the **📈 Content Distribution** pie chart
+2. Shows breakdown of VIDEO vs MUSIC vs TEXT recommendations
+
+📸 **Screenshot 48:** Content Distribution pie chart
+📁 **Save as:** `assets/images/48-content-distribution.png`
+
+---
+
+### Step 5B.7: Monitor Live System (Live Monitor Tab)
+
+#### Step 5B.7.1: Navigate to Live Monitor Tab
+1. Click the **📊 Live Monitor** tab
+2. View real-time system status
+
+📸 **Screenshot 49:** Live Monitor tab overview
+📁 **Save as:** `assets/images/49-live-monitor-tab.png`
+
+---
+
+#### Step 5B.7.2: View Real-Time Throughput
+1. In the **📡 Real-Time System Status** section
+2. Watch the throughput line chart updating in real-time
+
+📸 **Screenshot 50:** Real-time throughput chart
+📁 **Save as:** `assets/images/50-realtime-throughput.png`
+
+---
+
+#### Step 5B.7.3: View Agent Response Times
+1. In the **⏱️ Agent Response Times** section
+2. View box plots for Video, Music, and Text agents
+
+📸 **Screenshot 51:** Agent response time box plots
+📁 **Save as:** `assets/images/51-agent-response-times.png`
+
+---
+
+#### Step 5B.7.4: View Queue Status
+1. In the **🎯 Queue Status** section
+2. View bar chart showing Complete, Soft Degraded, Hard Degraded, Failed counts
+
+📸 **Screenshot 52:** Queue status bar chart
+📁 **Save as:** `assets/images/52-queue-status-chart.png`
+
+---
+
+### Step 5B.8: Test Different Profile Scenarios
+
+#### Step 5B.8.1: Driver Mode (No Video)
+1. Go back to **🗺️ Plan Your Tour** tab
+2. Select **"🚗 Driver (Audio Only)"** profile
+3. Click **🚀 Start Tour**
+4. Verify in Recommendations that **no VIDEO content** appears
+
+📸 **Screenshot 53:** Driver mode recommendations showing only MUSIC and TEXT
+📁 **Save as:** `assets/images/53-driver-mode-results.png`
+
+---
+
+#### Step 5B.8.2: Kid-Friendly Mode
+1. Select **"🧒 Kid-Friendly"** profile
+2. Set **Minimum Age**: `8`
+3. Click **🚀 Start Tour**
+4. Verify content is child-appropriate
+
+📸 **Screenshot 54:** Kid-friendly recommendations
+📁 **Save as:** `assets/images/54-kid-mode-results.png`
+
+---
+
+### 📁 Tour Dashboard Screenshot Checklist
+
+| # | Screenshot | Action | Filename |
+|---|------------|--------|----------|
+| 36 | Dashboard Start | `python run_tour_dashboard.py` | `36-tour-dashboard-started.png` |
+| 37 | Dashboard Overview | Open browser | `37-tour-dashboard-overview.png` |
+| 38 | Tour Planning | Enter source/dest | `38-tour-planning-input.png` |
+| 39 | Profile Preset | Select family | `39-profile-preset-selection.png` |
+| 40 | Custom Options | Configure all | `40-custom-profile-options.png` |
+| 41 | Profile Summary | Review settings | `41-profile-summary.png` |
+| 42 | Architecture | View diagram | `42-architecture-diagram.png` |
+| 43 | Start Tour | Click button | `43-start-tour-button.png` |
+| 44 | Pipeline Flow | Tab overview | `44-pipeline-flow-tab.png` |
+| 45 | Agent Orchestra | View agents | `45-agent-orchestra.png` |
+| 46 | System Metrics | View metrics | `46-system-metrics.png` |
+| 47 | Recommendations | View content | `47-recommendations-tab.png` |
+| 48 | Distribution | Pie chart | `48-content-distribution.png` |
+| 49 | Live Monitor | Tab overview | `49-live-monitor-tab.png` |
+| 50 | Throughput | Line chart | `50-realtime-throughput.png` |
+| 51 | Response Times | Box plots | `51-agent-response-times.png` |
+| 52 | Queue Status | Bar chart | `52-queue-status-chart.png` |
+| 53 | Driver Mode | No video | `53-driver-mode-results.png` |
+| 54 | Kid Mode | Kid-safe | `54-kid-mode-results.png` |
+
+---
+
 ## 🔬 PHASE 6: Research & Innovation Flows (15 minutes)
 
 ### Step 6.1: Sensitivity Analysis Notebook
@@ -463,7 +780,9 @@ cat docs/research/INNOVATION_FRAMEWORK.md | head -100
 
 ---
 
-## 📁 COMPLETE SCREENSHOT CHECKLIST
+## 📁 COMPLETE SCREENSHOT CHECKLIST (54 Total)
+
+### Phase 1-5: Core System (35 Screenshots)
 
 | # | Screenshot | Command/Action | Filename |
 |---|------------|----------------|----------|
@@ -503,6 +822,30 @@ cat docs/research/INNOVATION_FRAMEWORK.md | head -100
 | 34 | Math Proofs | Documentation | `34-mathematical-proofs.png` |
 | 35 | Innovation | Documentation | `35-innovation-framework.png` |
 
+### Phase 5B: Tour Guide Dashboard (19 Screenshots) ⭐ NEW!
+
+| # | Screenshot | Command/Action | Filename |
+|---|------------|----------------|----------|
+| 36 | Tour Dashboard Start | `python run_tour_dashboard.py` | `36-tour-dashboard-started.png` |
+| 37 | **Tour Overview** | Browser full view | `37-tour-dashboard-overview.png` ⭐ |
+| 38 | Tour Planning | Source/dest input | `38-tour-planning-input.png` |
+| 39 | Profile Preset | Select family | `39-profile-preset-selection.png` |
+| 40 | **Custom Profile** | All options | `40-custom-profile-options.png` ⭐ |
+| 41 | Profile Summary | Review settings | `41-profile-summary.png` |
+| 42 | Architecture | Visual diagram | `42-architecture-diagram.png` |
+| 43 | Start Tour | Click button | `43-start-tour-button.png` |
+| 44 | **Pipeline Flow** | Tab overview | `44-pipeline-flow-tab.png` ⭐ |
+| 45 | Agent Orchestra | All agents | `45-agent-orchestra.png` |
+| 46 | System Metrics | All metrics | `46-system-metrics.png` |
+| 47 | **Recommendations** | Content cards | `47-recommendations-tab.png` ⭐ |
+| 48 | Distribution | Pie chart | `48-content-distribution.png` |
+| 49 | **Live Monitor** | Full tab | `49-live-monitor-tab.png` ⭐ |
+| 50 | Throughput | Line chart | `50-realtime-throughput.png` |
+| 51 | Response Times | Box plots | `51-agent-response-times.png` |
+| 52 | Queue Status | Bar chart | `52-queue-status-chart.png` |
+| 53 | Driver Mode | No video results | `53-driver-mode-results.png` |
+| 54 | Kid Mode | Kid-safe results | `54-kid-mode-results.png` |
+
 ---
 
 ## 📂 Screenshot Organization
@@ -510,29 +853,29 @@ cat docs/research/INNOVATION_FRAMEWORK.md | head -100
 All screenshots should be saved in:
 ```
 assets/images/
-├── architecture-overview.png    ✅ Already exists
-├── 01-uv-installed.png          📸 Phase 1
-├── 02-make-setup.png            📸 Phase 1
-├── 03-env-configured.png        📸 Phase 1
-├── 04-make-check.png            📸 Phase 1
-├── 05-test-results.png          📸 Phase 2
-├── 06-coverage-terminal.png     📸 Phase 2
-├── 07-coverage-report.png       📸 Phase 2
-├── 08-queue-mode.png            📸 Phase 3 ⭐ MAIN
-├── 09-demo-mode.png             📸 Phase 3
-├── 10-family-mode.png           📸 Phase 3
-├── 11-history-mode.png          📸 Phase 3
-├── 12-verbose-mode.png          📸 Phase 3
-├── 13-streaming-mode.png        📸 Phase 3
-├── 14-custom-route.png          📸 Phase 3
-├── 15-api-server-started.png    📸 Phase 4
-├── 16-api-health.png            📸 Phase 4
-├── 17-swagger-docs.png          📸 Phase 4
-├── 18-api-tour-response.png     📸 Phase 4
-├── 19-dashboard-started.png     📸 Phase 5
-├── 20-dashboard-overview.png    📸 Phase 5 ⭐ KEY
-├── 21-dashboard-system-monitor.png    📸 Phase 5
-├── 22-dashboard-sensitivity.png       📸 Phase 5
+├── architecture-overview.png         ✅ Already exists
+├── 01-uv-installed.png               📸 Phase 1
+├── 02-make-setup.png                 📸 Phase 1
+├── 03-env-configured.png             📸 Phase 1
+├── 04-make-check.png                 📸 Phase 1
+├── 05-test-results.png               📸 Phase 2
+├── 06-coverage-terminal.png          📸 Phase 2
+├── 07-coverage-report.png            📸 Phase 2
+├── 08-queue-mode.png                 📸 Phase 3 ⭐ MAIN
+├── 09-demo-mode.png                  📸 Phase 3
+├── 10-family-mode.png                📸 Phase 3
+├── 11-history-mode.png               📸 Phase 3
+├── 12-verbose-mode.png               📸 Phase 3
+├── 13-streaming-mode.png             📸 Phase 3
+├── 14-custom-route.png               📸 Phase 3
+├── 15-api-server-started.png         📸 Phase 4
+├── 16-api-health.png                 📸 Phase 4
+├── 17-swagger-docs.png               📸 Phase 4
+├── 18-api-tour-response.png          📸 Phase 4
+├── 19-dashboard-started.png          📸 Phase 5
+├── 20-dashboard-overview.png         📸 Phase 5 ⭐ KEY
+├── 21-dashboard-system-monitor.png   📸 Phase 5
+├── 22-dashboard-sensitivity.png      📸 Phase 5
 ├── 23-dashboard-pareto.png           📸 Phase 5
 ├── 24-dashboard-ab-testing.png       📸 Phase 5
 ├── 25-dashboard-monte-carlo.png      📸 Phase 5
@@ -545,12 +888,34 @@ assets/images/
 ├── 32-cost-optimizer.png             📸 Phase 6
 ├── 33-architecture-diagram.png       📸 Phase 7
 ├── 34-mathematical-proofs.png        📸 Phase 7
-└── 35-innovation-framework.png       📸 Phase 7 ⭐ INNOVATION
+├── 35-innovation-framework.png       📸 Phase 7 ⭐ INNOVATION
+│
+│   ══ PHASE 5B: Tour Guide Dashboard (NEW!) ══
+│
+├── 36-tour-dashboard-started.png     📸 Phase 5B
+├── 37-tour-dashboard-overview.png    📸 Phase 5B ⭐⭐⭐ KEY
+├── 38-tour-planning-input.png        📸 Phase 5B
+├── 39-profile-preset-selection.png   📸 Phase 5B
+├── 40-custom-profile-options.png     📸 Phase 5B ⭐⭐ KEY
+├── 41-profile-summary.png            📸 Phase 5B
+├── 42-architecture-diagram.png       📸 Phase 5B
+├── 43-start-tour-button.png          📸 Phase 5B
+├── 44-pipeline-flow-tab.png          📸 Phase 5B ⭐⭐ KEY
+├── 45-agent-orchestra.png            📸 Phase 5B
+├── 46-system-metrics.png             📸 Phase 5B
+├── 47-recommendations-tab.png        📸 Phase 5B ⭐⭐ KEY
+├── 48-content-distribution.png       📸 Phase 5B
+├── 49-live-monitor-tab.png           📸 Phase 5B ⭐⭐ KEY
+├── 50-realtime-throughput.png        📸 Phase 5B
+├── 51-agent-response-times.png       📸 Phase 5B
+├── 52-queue-status-chart.png         📸 Phase 5B
+├── 53-driver-mode-results.png        📸 Phase 5B
+└── 54-kid-mode-results.png           📸 Phase 5B
 ```
 
 ---
 
-## ⏱️ TOTAL TIME: ~45-60 minutes
+## ⏱️ TOTAL TIME: ~68 minutes
 
 | Phase | Time | Screenshots |
 |-------|------|-------------|
@@ -558,26 +923,32 @@ assets/images/
 | Phase 2: Testing | 3 min | 3 screenshots |
 | Phase 3: Core Flows | 10 min | 7 screenshots |
 | Phase 4: API | 5 min | 4 screenshots |
-| Phase 5: Dashboard | 10 min | 7 screenshots |
+| Phase 5: Research Dashboard | 10 min | 7 screenshots |
+| **Phase 5B: Tour Dashboard** | **15 min** | **19 screenshots** ⭐ NEW |
 | Phase 6: Research | 15 min | 7 screenshots |
 | Phase 7: Architecture | 5 min | 3 screenshots |
-| **TOTAL** | **~53 min** | **35 screenshots** |
+| **TOTAL** | **~68 min** | **54 screenshots** |
 
 ---
 
-## 🎯 TOP 10 MUST-HAVE SCREENSHOTS
+## 🎯 TOP 15 MUST-HAVE SCREENSHOTS
 
 If time is limited, capture these **essential** screenshots:
 
 | Priority | Screenshot | Why It's Important |
 |----------|------------|-------------------|
 | ⭐⭐⭐ | `08-queue-mode.png` | Main feature - Smart Queue with graceful degradation |
+| ⭐⭐⭐ | `37-tour-dashboard-overview.png` | **NEW** - Interactive tour planning dashboard |
 | ⭐⭐⭐ | `20-dashboard-overview.png` | MIT-level interactive research dashboard |
 | ⭐⭐⭐ | `05-test-results.png` | Shows 683+ passing tests |
+| ⭐⭐⭐ | `44-pipeline-flow-tab.png` | **NEW** - Visual pipeline stages |
+| ⭐⭐ | `40-custom-profile-options.png` | **NEW** - Full user profile config |
+| ⭐⭐ | `47-recommendations-tab.png` | **NEW** - Personalized content cards |
 | ⭐⭐ | `07-coverage-report.png` | 90%+ code coverage |
 | ⭐⭐ | `22-dashboard-sensitivity.png` | Sobol indices - research quality |
 | ⭐⭐ | `17-swagger-docs.png` | Professional API documentation |
 | ⭐⭐ | `25-dashboard-monte-carlo.png` | Monte Carlo simulation |
+| ⭐⭐ | `49-live-monitor-tab.png` | **NEW** - Real-time monitoring |
 | ⭐ | `10-family-mode.png` | Child-safe content filtering |
 | ⭐ | `30-adaptive-learning.png` | Innovation - Thompson Sampling |
 | ⭐ | `architecture-overview.png` | System architecture |

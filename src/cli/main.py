@@ -77,18 +77,29 @@ def run_demo_pipeline(
 
     if profile:
         # Show meaningful profile info
-        profile_name = profile.name if profile.name else (
-            profile.age_group.value if profile.age_group else "default"
+        profile_name = (
+            profile.name
+            if profile.name
+            else (profile.age_group.value if profile.age_group else "default")
         )
         print(f"👤 Profile: {profile_name}")
-        
+
         # Show family-specific info
-        if profile.audience_type and str(profile.audience_type.value) == "family_with_kids":
-            print(f"   👨‍👩‍👧‍👦 Family Mode: Content safe for ages {profile.min_age or 5}+")
+        if (
+            profile.audience_type
+            and str(profile.audience_type.value) == "family_with_kids"
+        ):
+            print(
+                f"   👨‍👩‍👧‍👦 Family Mode: Content safe for ages {profile.min_age or 5}+"
+            )
             if profile.exclude_topics:
                 print(f"   🔒 Excluded: {', '.join(profile.exclude_topics)}")
-            print(f"   ⏱️ Max duration: {(profile.max_content_duration_seconds or 300) // 60} min")
-            print(f"   📚 Preference: {profile.content_preference.value if profile.content_preference else 'educational'}")
+            print(
+                f"   ⏱️ Max duration: {(profile.max_content_duration_seconds or 300) // 60} min"
+            )
+            print(
+                f"   📚 Preference: {profile.content_preference.value if profile.content_preference else 'educational'}"
+            )
 
     print("\n" + "═" * 60)
     print("🚀 STARTING MULTI-AGENT PIPELINE")
@@ -117,7 +128,11 @@ def run_demo_pipeline(
 
     # Final summary
     print("\n" + "═" * 60)
-    is_family = profile and profile.audience_type and str(profile.audience_type.value) == "family_with_kids"
+    is_family = (
+        profile
+        and profile.audience_type
+        and str(profile.audience_type.value) == "family_with_kids"
+    )
     if is_family:
         print("📋 FINAL TOUR GUIDE PLAYLIST 👨‍👩‍👧‍👦 Family-Safe")
     else:
@@ -127,7 +142,9 @@ def run_demo_pipeline(
     for i, result in enumerate(results):
         icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(result["winner"], "📌")
         family_badge = " ✨" if is_family else ""
-        print(f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}')
+        print(
+            f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}'
+        )
 
     if is_family:
         print(f"\n   ℹ️  All content verified safe for ages {profile.min_age or 5}+")
@@ -318,6 +335,7 @@ def run_custom_route(
         else:
             print("\n⚠️ No GOOGLE_MAPS_API_KEY set - using mock route")
             from src.services.google_maps import get_mock_route
+
             route = get_mock_route()
             print(f"\n📍 Route: {route.source} → {route.destination} (mock)")
             print(f"📊 Points: {route.point_count}")
@@ -326,24 +344,36 @@ def run_custom_route(
         print(f"\n⚠️ Could not fetch route from Google Maps: {e}")
         print("   Using mock route instead...")
         from src.services.google_maps import get_mock_route
+
         route = get_mock_route()
         print(f"\n📍 Route: {route.source} → {route.destination} (mock)")
         print(f"📊 Points: {route.point_count}")
 
     if profile:
         # Show meaningful profile info
-        profile_name = profile.name if profile.name else (
-            profile.age_group.value if profile.age_group else "default"
+        profile_name = (
+            profile.name
+            if profile.name
+            else (profile.age_group.value if profile.age_group else "default")
         )
         print(f"👤 Profile: {profile_name}")
-        
+
         # Show family-specific info
-        if profile.audience_type and str(profile.audience_type.value) == "family_with_kids":
-            print(f"   👨‍👩‍👧‍👦 Family Mode: Content safe for ages {profile.min_age or 5}+")
+        if (
+            profile.audience_type
+            and str(profile.audience_type.value) == "family_with_kids"
+        ):
+            print(
+                f"   👨‍👩‍👧‍👦 Family Mode: Content safe for ages {profile.min_age or 5}+"
+            )
             if profile.exclude_topics:
                 print(f"   🔒 Excluded: {', '.join(profile.exclude_topics)}")
-            print(f"   ⏱️ Max duration: {(profile.max_content_duration_seconds or 300) // 60} min")
-            print(f"   📚 Preference: {profile.content_preference.value if profile.content_preference else 'educational'}")
+            print(
+                f"   ⏱️ Max duration: {(profile.max_content_duration_seconds or 300) // 60} min"
+            )
+            print(
+                f"   📚 Preference: {profile.content_preference.value if profile.content_preference else 'educational'}"
+            )
 
     print("\n" + "═" * 60)
     print("🚀 STARTING MULTI-AGENT PIPELINE")
@@ -369,7 +399,11 @@ def run_custom_route(
 
     # Final summary
     print("\n" + "═" * 60)
-    is_family = profile and profile.audience_type and str(profile.audience_type.value) == "family_with_kids"
+    is_family = (
+        profile
+        and profile.audience_type
+        and str(profile.audience_type.value) == "family_with_kids"
+    )
     if is_family:
         print("📋 FINAL TOUR GUIDE PLAYLIST 👨‍👩‍👧‍👦 Family-Safe")
     else:
@@ -379,7 +413,9 @@ def run_custom_route(
     for i, result in enumerate(results):
         icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(result["winner"], "📌")
         family_badge = " ✨" if is_family else ""
-        print(f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}')
+        print(
+            f'   {icon} Point {i + 1}: {result["winner"]} - "{result["title"]}"{family_badge}'
+        )
 
     if is_family:
         print(f"\n   ℹ️  All content verified safe for ages {profile.min_age or 5}+")
