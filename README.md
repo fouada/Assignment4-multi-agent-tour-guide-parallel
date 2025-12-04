@@ -494,8 +494,18 @@ Full support for custom routes with intelligent waypoint selection.
 <sub>Four-tab interactive dashboard for end-to-end tour planning and monitoring</sub>
 
 ```bash
-python run_tour_dashboard.py  # http://localhost:8051
+# Demo mode (standalone)
+uv run python run_tour_dashboard.py  # http://localhost:8051
+
+# Full mode (with API for real-time processing)
+uv run uvicorn src.api.app:app --port 8000 &  # Start API first
+uv run python run_tour_dashboard.py            # Then dashboard
 ```
+
+**Real-Time Data Architecture:**
+- 📊 **Polling intervals** update UI every 1-2 seconds
+- 🔗 **API integration** fetches live tour status via REST
+- 🎬 **Animation intervals** (800ms) for pipeline visualization
 
 </div>
 
@@ -777,6 +787,27 @@ uv run python run_tour_dashboard.py
 
 # Access: http://localhost:8051
 ```
+
+> **📝 Note: Demo vs Full Mode**
+> 
+> The dashboard can run in two modes:
+> 
+> | Mode | How to Run | Features |
+> |------|------------|----------|
+> | **Demo Mode** | `uv run python run_tour_dashboard.py` | Pipeline animation, UI demo (no real tour processing) |
+> | **Full Mode** | Start API first, then dashboard | Real-time tour processing with API polling |
+> 
+> **For Full Mode (real-time data):**
+> ```bash
+> # Terminal 1: Start API server
+> uv run uvicorn src.api.app:app --reload --port 8000
+> 
+> # Terminal 2: Start dashboard
+> uv run python run_tour_dashboard.py
+> ```
+> 
+> If you see `Connection refused` when starting the dashboard alone, it's expected — 
+> the dashboard is trying to connect to the API but will continue in demo mode.
 
 #### 3️⃣ **Research Dashboard (Statistical Analysis)**
 

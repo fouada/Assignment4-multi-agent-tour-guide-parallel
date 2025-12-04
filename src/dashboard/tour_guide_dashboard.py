@@ -2555,7 +2555,7 @@ def create_tour_guide_app() -> Dash:
             Output("content-distribution-chart", "figure"),
             Output("current-tour-store", "data", allow_duplicate=True),
             Output("poll-interval", "disabled", allow_duplicate=True),
-            Output("tour-state-store", "data"),
+            Output("tour-state-store", "data", allow_duplicate=True),
             Output("tour-status-message", "children", allow_duplicate=True),
         ],
         Input("poll-interval", "n_intervals"),
@@ -3066,7 +3066,7 @@ def create_tour_guide_app() -> Dash:
 
     @app.callback(
         [
-            Output("tour-state-store", "data"),
+            Output("tour-state-store", "data", allow_duplicate=True),
             Output("animation-interval", "disabled"),
         ],
         [
