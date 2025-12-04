@@ -21,6 +21,7 @@ Date: December 2025
 from __future__ import annotations
 
 import logging
+import os
 import random
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -33,13 +34,13 @@ from dash.exceptions import PreventUpdate
 
 # Real agent imports - for actual API calls
 try:
-    from src.agents.video_agent import VideoAgent
+    from src.agents.judge_agent import JudgeAgent
     from src.agents.music_agent import MusicAgent
     from src.agents.text_agent import TextAgent
-    from src.agents.judge_agent import JudgeAgent
-    from src.models.user_profile import UserProfile, AgeGroup, TravelMode, TripPurpose
+    from src.agents.video_agent import VideoAgent
+    from src.core.smart_queue import SmartAgentQueue
     from src.models.route import RoutePoint
-    from src.core.smart_queue import SmartAgentQueue, QueueStatus
+    from src.models.user_profile import AgeGroup, TravelMode, TripPurpose, UserProfile
     from src.services.google_maps import GoogleMapsClient, get_mock_route
     REAL_AGENTS_AVAILABLE = True
 except ImportError as e:
@@ -79,7 +80,6 @@ logger = logging.getLogger(__name__)
 #
 # See docs/API_STRATEGY.md for full documentation
 # ============================================================================
-import os
 API_MODE = os.environ.get("TOUR_GUIDE_API_MODE", "auto")  # auto | real | mock
 
 # ============================================================================
@@ -2440,23 +2440,23 @@ def create_tour_guide_app() -> Dash:
                     )
 
                     # Run agents in parallel and submit to queue
-                    def run_agent(agent, agent_type, rp):
+                    def run_agent(agent, agent_type, rp, q):
                         try:
                             result = agent.execute(rp)
                             if result:
-                                queue.submit_success(agent_type.lower(), result)
+                                q.submit_success(agent_type.lower(), result)
                                 logger.info(f"  ✅ {agent_type} Agent submitted")
                             return result
                         except Exception as e:
                             logger.warning(f"  ❌ {agent_type} Agent failed: {e}")
-                            queue.submit_failure(agent_type.lower(), str(e))
+                            q.submit_failure(agent_type.lower(), str(e))
                             return None
 
                     with ThreadPoolExecutor(max_workers=3) as executor:
                         futures = [
-                            executor.submit(run_agent, video_agent, "VIDEO", route_point),
-                            executor.submit(run_agent, music_agent, "MUSIC", route_point),
-                            executor.submit(run_agent, text_agent, "TEXT", route_point),
+                            executor.submit(run_agent, video_agent, "VIDEO", route_point, queue),
+                            executor.submit(run_agent, music_agent, "MUSIC", route_point, queue),
+                            executor.submit(run_agent, text_agent, "TEXT", route_point, queue),
                         ]
                         # Wait for all to complete or timeout
                         for future in as_completed(futures, timeout=35):
@@ -2980,11 +2980,11 @@ def create_tour_guide_app() -> Dash:
         # Define styles for each state
         active_style = {
             "borderLeftColor": THEME["warning"],
-            "background": f"rgba(252, 163, 17, 0.1)",
+            "background": "rgba(252, 163, 17, 0.1)",
         }
         completed_style = {
             "borderLeftColor": THEME["success"],
-            "background": f"rgba(0, 245, 212, 0.05)",
+            "background": "rgba(0, 245, 212, 0.05)",
         }
         default_style = {}
 
