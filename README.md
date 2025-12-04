@@ -9,7 +9,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/images/architecture-Overview.png">
   <source media="(prefers-color-scheme: light)" srcset="assets/images/architecture-Overview.png">
-  <img alt="Multi-Agent Tour Guide System" src="assets/images/architecture-Overview.png" width="180"/>
+  <img alt="Multi-Agent Tour Guide System" src="assets/images/architecture-Overview.png" width="600"/>
 </picture>
 
 <br/>
