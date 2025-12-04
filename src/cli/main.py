@@ -56,10 +56,19 @@ def get_profile(profile_name: str, min_age: int = 5) -> UserProfile:
 
 
 def run_demo_pipeline(
-    mode: str = "queue", profile: UserProfile | None = None, verbose: bool = False
+    mode: str = "queue",
+    profile: UserProfile | None = None,
+    verbose: bool = False,
+    interval_seconds: float = 5.0,
 ) -> list[dict[str, Any]]:
     """
     Run the full pipeline in demo mode with mock data.
+
+    Args:
+        mode: Processing mode - 'queue', 'sequential', or 'streaming'
+        profile: User profile for content filtering
+        verbose: Enable verbose logging
+        interval_seconds: Interval between points in streaming mode
     """
     print_banner()
     print("🎯 Running FULL PIPELINE in DEMO mode")
@@ -105,26 +114,73 @@ def run_demo_pipeline(
     print("🚀 STARTING MULTI-AGENT PIPELINE")
     print("═" * 60)
 
-    results = []
+    results: list[dict[str, Any]] = []
 
-    for i, point in enumerate(route.points):
-        print(
-            f"\n📍 [{i + 1}/{route.point_count}] Processing: {point.location_name or point.address}"
-        )
+    # =========================================================================
+    # STREAMING MODE: Use TravelSimulator for interval-based processing
+    # =========================================================================
+    if mode == "streaming":
+        from src.core.timer_scheduler import TravelSimulator
+
+        print(f"\n⏰ STREAMING MODE: {interval_seconds}s interval between points")
         print("─" * 40)
 
-        if mode == "queue":
-            # Queue-based processing (recommended)
-            result = process_point_with_queue(point, profile, verbose)
-        elif mode == "sequential":
-            # Sequential processing (for debugging)
-            result = process_point_sequential(point, profile, verbose)
-        else:
-            # Parallel without queue
-            result = process_point_parallel(point, profile, verbose)
+        # Track current point index for processing
+        point_results: dict[int, dict[str, Any]] = {}
+        processed_count = 0
 
-        results.append(result)
-        print(f'   🏆 Winner: {result["winner"]} - "{result["title"]}"')
+        def on_point_arrival(point: RoutePoint) -> None:
+            nonlocal processed_count
+            idx = point.index
+            print(f"\n📍 [{idx + 1}/{route.point_count}] Arrived at: {point.location_name or point.address}")
+            print("─" * 40)
+
+            # Process point with queue
+            result = process_point_with_queue(point, profile, verbose)
+            point_results[idx] = result
+            processed_count += 1
+            print(f'   🏆 Winner: {result["winner"]} - "{result["title"]}"')
+
+        # Initialize and start the scheduler
+        simulator = TravelSimulator(
+            route=route,
+            interval_seconds=interval_seconds,
+            on_point_arrival=on_point_arrival,
+        )
+
+        print(f"🚗 Starting travel simulation...")
+        simulator.start()
+
+        # Wait for completion
+        while simulator.is_running:
+            import time
+            time.sleep(0.5)
+
+        # Collect results in order
+        results = [point_results[i] for i in range(len(point_results))]
+
+    # =========================================================================
+    # QUEUE/SEQUENTIAL MODE: Direct loop processing
+    # =========================================================================
+    else:
+        for i, point in enumerate(route.points):
+            print(
+                f"\n📍 [{i + 1}/{route.point_count}] Processing: {point.location_name or point.address}"
+            )
+            print("─" * 40)
+
+            if mode == "queue":
+                # Queue-based processing (recommended)
+                result = process_point_with_queue(point, profile, verbose)
+            elif mode == "sequential":
+                # Sequential processing (for debugging)
+                result = process_point_sequential(point, profile, verbose)
+            else:
+                # Parallel without queue (fallback)
+                result = process_point_parallel(point, profile, verbose)
+
+            results.append(result)
+            print(f'   🏆 Winner: {result["winner"]} - "{result["title"]}"')
 
     # Final summary
     print("\n" + "═" * 60)
@@ -521,7 +577,12 @@ Examples:
             run_interactive()
         elif args.demo or (not args.origin and not args.destination):
             profile = get_profile(args.profile, args.min_age)
-            run_demo_pipeline(mode=args.mode, profile=profile, verbose=args.verbose)
+            run_demo_pipeline(
+                mode=args.mode,
+                profile=profile,
+                verbose=args.verbose,
+                interval_seconds=float(args.interval),
+            )
         else:
             # Custom route with real Google Maps API
             profile = get_profile(args.profile, args.min_age)

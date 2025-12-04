@@ -989,90 +989,306 @@ make run-api
 
 <div align="center">
 
-### *How Each Component Connects — Visual Map*
+### *How Each Component Connects — Interactive Visual Map*
 
 </div>
 
 <br/>
 
-### 📐 Complete System Flow Diagram
+### 📐 Figure 10: Complete System Architecture (Interactive Mermaid)
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                           MIT-LEVEL SYSTEM ARCHITECTURE                              │
-├─────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                      │
-│   USER ENTRY POINTS                                                                  │
-│   ════════════════                                                                   │
-│                                                                                      │
-│   ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐                 │
-│   │ 🖥️ Tour Dashboard │  │ 🔬 Research Dash  │  │ 💻 CLI           │                 │
-│   │ make run-dashboard│  │ make run-research │  │ make run-queue   │                 │
-│   │ Port: 8051        │  │ Port: 8050        │  │ Terminal         │                 │
-│   └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘                 │
-│            │                     │                     │                            │
-│            ▼                     │                     ▼                            │
-│   ┌──────────────────────────────┴──────────────────────────────────────┐          │
-│   │                         🌐 FastAPI Server                            │          │
-│   │                         make run-api                                 │          │
-│   │                         Port: 8000                                   │          │
-│   │   ┌─────────────────────────────────────────────────────────────┐   │          │
-│   │   │ Endpoints:                                                   │   │          │
-│   │   │ • POST /api/v1/tours      → Create tour                     │   │          │
-│   │   │ • GET  /api/v1/tours/{id} → Get status                      │   │          │
-│   │   │ • GET  /health            → Health check                    │   │          │
-│   │   │ • WS   /api/v1/tours/{id}/ws → Real-time updates           │   │          │
-│   │   └─────────────────────────────────────────────────────────────┘   │          │
-│   └──────────────────────────────┬──────────────────────────────────────┘          │
-│                                  │                                                  │
-│                                  ▼                                                  │
-│   ┌──────────────────────────────────────────────────────────────────────┐         │
-│   │                        🎯 TourService                                 │         │
-│   │                     (Single Source of Truth)                          │         │
-│   │                                                                       │         │
-│   │   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐               │         │
-│   │   │ 1. Route    │──▶│ 2. Schedule │──▶│ 3. Process  │               │         │
-│   │   │   Fetch     │   │   Points    │   │   Points    │               │         │
-│   │   └─────────────┘   └─────────────┘   └──────┬──────┘               │         │
-│   └──────────────────────────────────────────────┼───────────────────────┘         │
-│                                                  │                                  │
-│                                                  ▼                                  │
-│   ┌──────────────────────────────────────────────────────────────────────┐         │
-│   │                        🔄 Orchestrator                                │         │
-│   │                                                                       │         │
-│   │   ┌─────────────────────────────────────────────────────────────┐   │         │
-│   │   │              ThreadPoolExecutor (Fan-Out)                    │   │         │
-│   │   │                                                              │   │         │
-│   │   │   ┌──────────┐   ┌──────────┐   ┌──────────┐               │   │         │
-│   │   │   │🎬 Video  │   │🎵 Music  │   │📖 Text   │               │   │         │
-│   │   │   │  Agent   │   │  Agent   │   │  Agent   │               │   │         │
-│   │   │   └────┬─────┘   └────┬─────┘   └────┬─────┘               │   │         │
-│   │   │        │              │              │                      │   │         │
-│   │   └────────┼──────────────┼──────────────┼──────────────────────┘   │         │
-│   │            │              │              │                          │         │
-│   │            ▼              ▼              ▼                          │         │
-│   │   ┌─────────────────────────────────────────────────────────────┐   │         │
-│   │   │                   📬 Smart Queue (Fan-In)                    │   │         │
-│   │   │                                                              │   │         │
-│   │   │   τ_soft = 15s (2/3 agents) │ τ_hard = 30s (1/3 agents)    │   │         │
-│   │   │                                                              │   │         │
-│   │   │   States: COMPLETE → SOFT_DEGRADED → HARD_DEGRADED → FAILED │   │         │
-│   │   └────────────────────────────┬─────────────────────────────────┘   │         │
-│   │                                │                                     │         │
-│   │                                ▼                                     │         │
-│   │   ┌─────────────────────────────────────────────────────────────┐   │         │
-│   │   │                   ⚖️ Judge Agent (LLM)                       │   │         │
-│   │   │                                                              │   │         │
-│   │   │   • Profile-aware scoring                                    │   │         │
-│   │   │   • Family mode filtering                                    │   │         │
-│   │   │   • Driver mode (no video)                                   │   │         │
-│   │   └─────────────────────────────────────────────────────────────┘   │         │
-│   └──────────────────────────────────────────────────────────────────────┘         │
-│                                                                                      │
-└─────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph UI["🖥️ USER ENTRY POINTS"]
+        direction LR
+        D["🖥️ Tour Dashboard<br/>make run-dashboard<br/>Port: 8051"]
+        R["🔬 Research Dashboard<br/>make run-research<br/>Port: 8050"]
+        C["💻 CLI<br/>make run-queue<br/>Terminal"]
+    end
+
+    subgraph API["🌐 FastAPI Server (Port 8000)"]
+        direction TB
+        E1["POST /api/v1/tours"]
+        E2["GET /api/v1/tours/{id}"]
+        E3["WS /api/v1/tours/{id}/ws"]
+        E4["GET /health"]
+    end
+
+    subgraph TS["🎯 TourService (Single Source of Truth)"]
+        direction LR
+        RF["📍 1. Route Fetch<br/>Google Maps API"]
+        SCH["⏰ 2. SCHEDULER<br/>TravelSimulator<br/>Point Emitter"]
+        PP["⚙️ 3. Process Points"]
+    end
+
+    subgraph ORCH["🔄 Orchestrator"]
+        direction TB
+        TPE["ThreadPoolExecutor<br/>(Fan-Out)"]
+        
+        subgraph AGENTS["Parallel Agents"]
+            direction LR
+            VA["🎬 Video Agent<br/>YouTube API"]
+            MA["🎵 Music Agent<br/>Spotify API"]
+            TA["📖 Text Agent<br/>Claude/Web"]
+        end
+    end
+
+    subgraph QUEUE["📬 Smart Queue (Fan-In)"]
+        direction TB
+        Q1["τ_soft = 15s → 2/3 agents"]
+        Q2["τ_hard = 30s → 1/3 agents"]
+        Q3["States: COMPLETE → SOFT → HARD → FAILED"]
+    end
+
+    subgraph JUDGE["⚖️ Judge Agent (LLM)"]
+        direction TB
+        J1["Profile-aware scoring"]
+        J2["Family mode filtering"]
+        J3["Driver mode (no video)"]
+    end
+
+    OUT["📤 Personalized Output<br/>Playlist + Recommendations"]
+
+    D --> API
+    R -.-> API
+    C --> TS
+    API --> TS
+    
+    RF --> SCH
+    SCH --> PP
+    PP --> ORCH
+    
+    TPE --> VA & MA & TA
+    VA & MA & TA --> QUEUE
+    QUEUE --> JUDGE
+    JUDGE --> OUT
+
+    style UI fill:#e3f2fd,stroke:#1565c0
+    style API fill:#fff3e0,stroke:#ef6c00
+    style TS fill:#e8f5e9,stroke:#2e7d32
+    style SCH fill:#ffeb3b,stroke:#f57f17,stroke-width:3px
+    style ORCH fill:#f3e5f5,stroke:#7b1fa2
+    style QUEUE fill:#fff9c4,stroke:#fbc02d
+    style JUDGE fill:#fce4ec,stroke:#c2185b
+    style OUT fill:#e1f5fe,stroke:#0277bd
 ```
 
 <br/>
+
+---
+
+### ⏰ Figure 11: Scheduler Detail — Point Emission Flow
+
+The **Scheduler** (`TravelSimulator`) is the key component that receives points from Google Maps and emits them to the Orchestrator at controlled intervals, simulating the travel experience.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant GM as 🗺️ Google Maps API
+    participant TS as 🎯 TourService
+    participant SCH as ⏰ Scheduler<br/>(TravelSimulator)
+    participant O as 🔄 Orchestrator
+    participant A as 🤖 Agents
+    participant Q as 📬 Smart Queue
+
+    Note over GM,Q: PHASE 1: Route Fetching
+    TS->>GM: getRoute(source, destination)
+    GM-->>TS: Route with N points
+    
+    Note over GM,Q: PHASE 2: Scheduling Points
+    TS->>SCH: Initialize with Route
+    SCH->>SCH: Calculate intervals
+    
+    Note over GM,Q: PHASE 3: Point-by-Point Processing
+    loop For Each Point (interval-based)
+        SCH->>O: emit(point[i])
+        Note right of SCH: ⏱️ Wait interval<br/>(simulates travel)
+        O->>A: process_point(parallel)
+        A->>Q: submit_results()
+        Q-->>O: aggregated_results
+        O-->>TS: point_completed
+    end
+    
+    TS-->>TS: All points processed
+```
+
+<br/>
+
+### 🔧 Scheduler Modes
+
+| Mode | Class | Behavior | Use Case |
+|------|-------|----------|----------|
+| **Streaming** | `TravelSimulator` | Emits points at intervals (e.g., 5s) | Realistic travel simulation |
+| **Instant** | `InstantTravelSimulator` | Processes all points immediately | Testing, fast demos |
+| **Scheduled** | `ScheduledPointEmitter` | Emits on external triggers | Event-driven processing |
+
+```bash
+# Streaming mode (interval-based)
+uv run python main.py --demo --mode streaming --interval 5
+
+# Instant mode (all at once)
+uv run python main.py --demo --mode instant
+
+# Queue mode (recommended)
+uv run python main.py --demo --mode queue
+```
+
+<br/>
+
+### 📁 Scheduler Code Location & Implementation
+
+The scheduler system has **two modes**:
+
+| Mode | Class | Location | Use Case |
+|------|-------|----------|----------|
+| **Interactive CLI** | `TravelSimulator` | `src/core/timer_scheduler.py` | Real-time travel simulation with intervals |
+| **API Service** | Embedded in `TourService` | `src/services/tour_service.py` | Fast sequential processing |
+
+<br/>
+
+#### 🎮 Interactive Mode (CLI) — `TravelSimulator`
+
+**File:** `src/core/timer_scheduler.py`
+
+```python
+class TravelSimulator:
+    """
+    Simulates traveling along a route by emitting points at regular intervals.
+    This creates the effect of "arriving" at each point along the journey.
+    """
+    def __init__(
+        self,
+        route: Route,
+        interval_seconds: float | None = None,      # e.g., 5 seconds between points
+        on_point_arrival: Callable[[RoutePoint], None] | None = None,  # → Orchestrator
+    ):
+        self.route = route
+        self.interval = interval_seconds or settings.point_interval_seconds
+        self.on_point_arrival = on_point_arrival
+        ...
+
+    def _simulation_loop(self):
+        """Main loop that emits points at intervals."""
+        while not self._should_stop.is_set():
+            if self._current_index >= len(self.route.points):
+                logger.info("🏁 Reached destination!")
+                break
+            
+            self._emit_current_point()  # → on_point_arrival(point) → Orchestrator
+            self._should_stop.wait(timeout=self.interval)  # ⏱️ Simulate travel time
+            self._current_index += 1
+```
+
+<br/>
+
+#### ⚡ API Mode — Embedded Scheduler in `TourService`
+
+**File:** `src/services/tour_service.py`
+
+```python
+# STEP 2: SCHEDULER - Prepare points for processing
+self.store.update(
+    tour_id,
+    status=TourStatus.SCHEDULING,  # Status indicator
+    total_points=len(route["points"]),
+)
+
+# Initialize point queue (scheduler prepares work items)
+points = [
+    PointResult(point_index=i, point_name=p["name"])
+    for i, p in enumerate(route["points"])
+]
+logger.info(f"✅ Scheduler ready: {len(points)} points queued")
+
+# STEP 3: ORCHESTRATOR - Scheduler emits points one by one
+for i, point_data in enumerate(route["points"]):  # Sequential emission
+    self._process_point(tour_id, i, point_data, profile)  # → Orchestrator → Agents
+```
+
+> **Note:** The API mode uses a **sequential scheduler** for maximum throughput. The `TravelSimulator` is used in CLI mode for interactive demonstration with realistic travel timing.
+
+<br/>
+
+### ⏱️ Figure 11b: Scheduler Mode Comparison
+
+```mermaid
+graph TB
+    subgraph CLI["🎮 CLI Mode (TravelSimulator)"]
+        direction TB
+        C1["📍 Point 1"] --> C2["⏱️ Wait 5s"]
+        C2 --> C3["📍 Point 2"]
+        C3 --> C4["⏱️ Wait 5s"]
+        C4 --> C5["📍 Point N"]
+    end
+
+    subgraph API["⚡ API Mode (Sequential)"]
+        direction TB
+        A1["📍 Point 1"] --> A2["📍 Point 2"]
+        A2 --> A3["📍 Point N"]
+    end
+
+    CLI -.->|"Realistic<br/>simulation"| DEMO["🎬 Interactive Demo"]
+    API -.->|"Fast<br/>processing"| PROD["🚀 Production"]
+
+    style CLI fill:#e8f5e9,stroke:#2e7d32
+    style API fill:#e3f2fd,stroke:#1565c0
+    style DEMO fill:#fff9c4,stroke:#fbc02d
+    style PROD fill:#fce4ec,stroke:#c2185b
+```
+
+<br/>
+
+---
+
+### 📐 Figure 12: Complete Processing Pipeline
+
+```mermaid
+graph TD
+    subgraph INPUT["📥 INPUT LAYER"]
+        U["👤 User Request"]
+        GM["🗺️ Google Maps API<br/>Route with Points"]
+    end
+
+    subgraph SCHEDULING["⏰ SCHEDULING LAYER"]
+        SCH["⏰ TravelSimulator<br/>━━━━━━━━━━━━━━━━<br/>• Receives N points<br/>• Emits at intervals<br/>• Simulates travel time"]
+    end
+
+    subgraph PARALLEL["🔄 PARALLEL PROCESSING"]
+        direction LR
+        VA["🎬 Video<br/>YouTube"]
+        MA["🎵 Music<br/>Spotify"]
+        TA["📖 Text<br/>Claude/Web"]
+    end
+
+    subgraph SYNC["📬 SYNCHRONIZATION"]
+        SQ["Smart Queue<br/>━━━━━━━━━━━━━━━━<br/>τ_soft = 15s<br/>τ_hard = 30s"]
+    end
+
+    subgraph DECISION["⚖️ DECISION"]
+        JA["Judge Agent<br/>━━━━━━━━━━━━━━━━<br/>• Scores content<br/>• Applies profile<br/>• Filters unsafe"]
+    end
+
+    subgraph OUTPUT["📤 OUTPUT"]
+        PL["Personalized Playlist"]
+    end
+
+    U --> GM
+    GM --> SCH
+    SCH -->|"Point 1"| VA & MA & TA
+    SCH -->|"Point 2"| VA & MA & TA
+    SCH -->|"Point N"| VA & MA & TA
+    VA & MA & TA --> SQ
+    SQ --> JA
+    JA --> PL
+
+    style SCH fill:#ffeb3b,stroke:#f57f17,stroke-width:3px
+    style SQ fill:#fff9c4,stroke:#fbc02d
+    style JA fill:#fce4ec,stroke:#c2185b
+```
+
+<br/>
+
+---
 
 ### 🎯 How to Invoke Each Component
 
@@ -1083,46 +1299,51 @@ make run-api
 | **Research Dashboard** | `make run-research` | http://localhost:8050 | Statistical analysis |
 | **API Server** | `make run-api` | http://localhost:8000/docs | REST endpoints |
 | **CLI Queue Mode** | `make run-queue` | Terminal | Command-line demo |
+| **CLI Streaming** | `make run-streaming` | Terminal | Interval-based processing |
 | **CLI Family Mode** | `make run-family` | Terminal | Family-safe content |
 
 <br/>
 
-### 🔗 Component Interactions
+### 🔗 Figure 13: Component Communication Map
 
 ```mermaid
 graph LR
     subgraph "Entry Points"
-        D[🖥️ Dashboard<br/>8051]
-        R[🔬 Research<br/>8050]
-        C[💻 CLI]
+        D["🖥️ Dashboard<br/>Port 8051"]
+        R["🔬 Research<br/>Port 8050"]
+        C["💻 CLI"]
     end
     
-    subgraph "Backend"
-        A[🌐 API<br/>8000]
-        T[🎯 TourService]
-        O[🔄 Orchestrator]
+    subgraph "Backend Services"
+        A["🌐 API Server<br/>Port 8000"]
+        T["🎯 TourService"]
+        S["⏰ Scheduler"]
+        O["🔄 Orchestrator"]
     end
     
-    subgraph "Agents"
-        V[🎬 Video]
-        M[🎵 Music]
-        X[📖 Text]
+    subgraph "AI Agents"
+        V["🎬 Video"]
+        M["🎵 Music"]
+        X["📖 Text"]
     end
     
     subgraph "Processing"
-        Q[📬 Queue]
-        J[⚖️ Judge]
+        Q["📬 Smart Queue"]
+        J["⚖️ Judge"]
     end
     
-    D --> A
-    R -.-> A
-    C --> T
-    A --> T
-    T --> O
-    O --> V & M & X
-    V & M & X --> Q
-    Q --> J
-    J --> T
+    D -->|HTTP| A
+    R -.->|HTTP| A
+    C -->|Direct| T
+    A -->|Internal| T
+    T -->|Init| S
+    S -->|emit point| O
+    O -->|parallel| V & M & X
+    V & M & X -->|results| Q
+    Q -->|candidates| J
+    J -->|decision| T
+    
+    style S fill:#ffeb3b,stroke:#f57f17,stroke-width:2px
 ```
 
 <br/>
