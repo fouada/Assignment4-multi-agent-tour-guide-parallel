@@ -220,6 +220,15 @@ def process_point_with_queue(
 
             try:
                 decision = judge.evaluate(point, candidates, user_profile=profile)
+                if decision.selected_content is None:
+                    # No content selected, fallback to first candidate
+                    best = candidates[0]
+                    return {
+                        "winner": best.content_type.value.upper(),
+                        "title": best.title,
+                        "point": point.location_name,
+                    }
+
                 winner_type = decision.selected_content.content_type.value.upper()
                 winner_title = decision.selected_content.title
 
