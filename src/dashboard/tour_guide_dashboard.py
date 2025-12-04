@@ -52,8 +52,8 @@ API_CLIENT_AVAILABLE = False
 api_client = None
 
 try:
-    from src.api.client import TourGuideClient, APIConfig, APIConnectionError
-    
+    from src.api.client import APIConfig, TourGuideClient
+
     # Check if API is actually running
     _test_client = TourGuideClient(APIConfig(
         base_url=os.environ.get("TOUR_GUIDE_API_URL", "http://localhost:8000"),
@@ -2456,9 +2456,9 @@ def create_tour_guide_app() -> Dash:
                 logger.info("=" * 60)
                 logger.info("🚀 MIT-LEVEL: Using API Client (Proper Architecture)")
                 logger.info("=" * 60)
-                
+
                 start_time = time.time()
-                
+
                 # Build profile for API
                 api_profile = {
                     "is_driver": is_driver,
@@ -2467,7 +2467,7 @@ def create_tour_guide_app() -> Dash:
                 if is_family:
                     api_profile["min_age"] = 5
                     api_profile["exclude_topics"] = ["violence", "adult_content"]
-                
+
                 # Create tour via API
                 logger.info(f"📍 Creating tour: {source or 'Tel Aviv'} → {dest or 'Jerusalem'}")
                 tour_response = api_client.create_tour(
@@ -2477,17 +2477,17 @@ def create_tour_guide_app() -> Dash:
                 )
                 tour_id = tour_response["tour_id"]
                 logger.info(f"✅ Tour created: {tour_id}")
-                
+
                 # Poll for completion with status updates
                 logger.info("⏳ Waiting for processing to complete...")
-                
+
                 def status_callback(status):
                     progress = status.get("progress", {})
                     completed = progress.get("completed_points", 0)
                     total = progress.get("total_points", 0)
                     percentage = progress.get("percentage", 0)
                     logger.info(f"   📊 Progress: {completed}/{total} points ({percentage}%)")
-                
+
                 # Wait for results
                 results = api_client.wait_for_completion(
                     tour_id=tour_id,
@@ -2495,22 +2495,22 @@ def create_tour_guide_app() -> Dash:
                     timeout=120.0,
                     callback=status_callback,
                 )
-                
+
                 total_latency = time.time() - start_time
                 using_api = True
-                
+
                 # Extract recommendations from API results
                 playlist = results.get("playlist", [])
                 route_info = results.get("route_info", {})
-                
+
                 # Update route_points from API response
                 if route_info.get("points"):
                     route_points = route_info["points"]
-                
+
                 for item in playlist:
                     decision = item.get("decision", {})
                     content_type = decision.get("content_type", "text").upper()
-                    
+
                     # Driver safety: report actual content (API already filtered)
                     recommendations.append({
                         "point": item.get("point_name", "Unknown"),
@@ -2524,15 +2524,15 @@ def create_tour_guide_app() -> Dash:
                         "via_api": True,
                         "queue_status": "COMPLETE",
                     })
-                    
+
                     logger.info(f"   🏆 {item.get('point_name')}: {content_type} - {decision.get('title')}")
-                
+
                 logger.info("=" * 60)
                 logger.info("✅ API PIPELINE COMPLETE!")
                 logger.info(f"   Total latency: {total_latency:.1f}s")
                 logger.info(f"   Recommendations: {len(recommendations)}")
                 logger.info("=" * 60)
-                
+
             except Exception as e:
                 logger.warning(f"⚠️ API pipeline failed: {e}")
                 logger.info("   Falling back to direct mode...")
@@ -2558,7 +2558,7 @@ def create_tour_guide_app() -> Dash:
         # STEP 1: GET ROUTE (Google Maps API or Mock) - DIRECT MODE
         # ================================================================
         use_real_apis = not using_api and REAL_AGENTS_AVAILABLE and API_MODE != "mock"
-        
+
         if not recommendations and use_real_apis:
             try:
                 logger.info("=" * 60)

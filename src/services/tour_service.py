@@ -250,7 +250,7 @@ class TourService:
         self._api_status = self._get_api_status()
 
         # Log startup status
-        logger.info(f"🚀 TourService initialized:")
+        logger.info("🚀 TourService initialized:")
         logger.info(f"   Mode: {self._api_mode}")
         logger.info(f"   Agents Available: {self._agents_available}")
         logger.info(f"   API Keys: {self._api_keys_available}")
