@@ -20,13 +20,67 @@ Date: December 2025
 
 from __future__ import annotations
 
+import logging
 import random
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import Enum
 
 import numpy as np
 import plotly.graph_objects as go
 from dash import Dash, Input, Output, State, dcc, html
 from dash.exceptions import PreventUpdate
+
+# Real agent imports - for actual API calls
+try:
+    from src.agents.video_agent import VideoAgent
+    from src.agents.music_agent import MusicAgent
+    from src.agents.text_agent import TextAgent
+    from src.agents.judge_agent import JudgeAgent
+    from src.models.user_profile import UserProfile, AgeGroup, TravelMode, TripPurpose
+    from src.models.route import RoutePoint
+    from src.core.smart_queue import SmartAgentQueue, QueueStatus
+    from src.services.google_maps import GoogleMapsClient, get_mock_route
+    REAL_AGENTS_AVAILABLE = True
+except ImportError as e:
+    REAL_AGENTS_AVAILABLE = False
+    logging.warning(f"Real agents not available - using mocked data: {e}")
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# ============================================================================
+# API MODE CONFIGURATION
+# ============================================================================
+# MIT-Level Strategy:
+#   - "auto"  : Try real APIs, fallback to mock if unavailable (DEFAULT)
+#   - "real"  : Force real APIs (fail if unavailable) - For Demo/Presentation
+#   - "mock"  : Always use mocked data (fast, deterministic) - For Tests/CI
+#
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                    USAGE BY CONTEXT                                     │
+# ├─────────────────┬───────────────────────────────────────────────────────┤
+# │ Context         │ Recommended Mode                                      │
+# ├─────────────────┼───────────────────────────────────────────────────────┤
+# │ Unit Tests      │ MOCK  - Fast, deterministic, no API costs            │
+# │ Integration     │ MOCK  - Reproducible, CI/CD friendly                 │
+# │ E2E Tests       │ MOCK  - With 1 real test to verify APIs work         │
+# │ Local Dev       │ AUTO  - Developer choice with fallback               │
+# │ Demo/Present    │ REAL  - Showcase actual capabilities                 │
+# │ Research        │ MOCK  - Statistical simulations                       │
+# │ CI/CD Pipeline  │ MOCK  - No API keys in CI                            │
+# │ Production      │ AUTO  - Real + Fallback for resilience               │
+# └─────────────────┴───────────────────────────────────────────────────────┘
+#
+# Set via environment variable:
+#   export TOUR_GUIDE_API_MODE=real   # For MIT demo
+#   export TOUR_GUIDE_API_MODE=mock   # For testing
+#
+# See docs/API_STRATEGY.md for full documentation
+# ============================================================================
+import os
+API_MODE = os.environ.get("TOUR_GUIDE_API_MODE", "auto")  # auto | real | mock
 
 # ============================================================================
 # THEME - Sophisticated Cyberpunk/Travel Aesthetic
@@ -304,15 +358,50 @@ body::before {{
     background: {THEME["bg_card"]} !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 12px !important;
+    z-index: 9999 !important;
+    position: absolute !important;
+    max-height: 180px !important;
+    overflow-y: auto !important;
+}}
+
+/* Force dropdown to open UPWARD */
+.glass-card .Select-menu-outer {{
+    bottom: 100% !important;
+    top: auto !important;
+    margin-bottom: 5px !important;
+    margin-top: 0 !important;
+}}
+
+/* Fix Dash dropdown overlay issue */
+.dash-dropdown {{
+    position: relative;
+    z-index: 100;
+}}
+
+.VirtualizedSelectFocusedOption {{
+    background: rgba(0, 245, 212, 0.15) !important;
+}}
+
+.Select-menu {{
+    max-height: 180px !important;
 }}
 
 .Select-option {{
     background: transparent !important;
     color: {THEME["text_primary"]} !important;
+    padding: 8px 12px !important;
 }}
 
 .Select-option.is-focused {{
     background: rgba(0, 245, 212, 0.1) !important;
+}}
+
+/* Start Tour Button - Above everything */
+.start-tour-container {{
+    position: relative;
+    z-index: 1;
+    margin-top: 20px;
+    clear: both;
 }}
 
 /* Slider styling */
@@ -1648,12 +1737,13 @@ def create_tour_guide_app() -> Dash:
     app.layout = html.Div(
         [
             # Stores for state management
-            dcc.Store(id="tour-state-store", data={}),
+            dcc.Store(id="tour-state-store", data={"running": False, "step": 0}),
             dcc.Store(id="profile-state-store", data={}),
             dcc.Store(id="results-store", data=[]),
+            dcc.Store(id="tour-results-store", data={}),
             # Interval for animations
             dcc.Interval(
-                id="animation-interval", interval=1000, n_intervals=0, disabled=True
+                id="animation-interval", interval=800, n_intervals=0, disabled=True
             ),
             html.Div(
                 [
@@ -1661,10 +1751,13 @@ def create_tour_guide_app() -> Dash:
                     create_header(),
                     # Main content area
                     dcc.Tabs(
-                        [
+                        id="main-tabs",
+                        value="tab-planning",
+                        children=[
                             # Tab 1: Tour Planning
                             dcc.Tab(
                                 label="🗺️ Plan Your Tour",
+                                value="tab-planning",
                                 className="custom-tab",
                                 selected_className="custom-tab--selected",
                                 children=[
@@ -1681,15 +1774,29 @@ def create_tour_guide_app() -> Dash:
                                                             html.Div(
                                                                 [
                                                                     html.Button(
-                                                                        "🚀 Start Tour",
+                                                                        [
+                                                                            html.Span("🚀 START TOUR", id="start-tour-text"),
+                                                                        ],
                                                                         id="start-tour-btn",
                                                                         className="btn-primary",
                                                                         style={
                                                                             "width": "100%",
-                                                                            "marginTop": "10px",
+                                                                            "fontSize": "1.1rem",
+                                                                            "padding": "18px 32px",
                                                                         },
                                                                     ),
-                                                                ]
+                                                                    # Loading feedback
+                                                                    html.Div(
+                                                                        id="tour-status-message",
+                                                                        style={
+                                                                            "textAlign": "center",
+                                                                            "marginTop": "10px",
+                                                                            "color": THEME["accent_primary"],
+                                                                            "fontFamily": FONTS["mono"],
+                                                                        },
+                                                                    ),
+                                                                ],
+                                                                className="start-tour-container",
                                                             ),
                                                         ],
                                                         style={"flex": "1"},
@@ -1742,6 +1849,7 @@ def create_tour_guide_app() -> Dash:
                             # Tab 2: Pipeline Visualization
                             dcc.Tab(
                                 label="⚡ Pipeline Flow",
+                                value="tab-pipeline",
                                 className="custom-tab",
                                 selected_className="custom-tab--selected",
                                 children=[
@@ -1777,6 +1885,7 @@ def create_tour_guide_app() -> Dash:
                             # Tab 3: Results & Recommendations
                             dcc.Tab(
                                 label="🎯 Recommendations",
+                                value="tab-recommendations",
                                 className="custom-tab",
                                 selected_className="custom-tab--selected",
                                 children=[
@@ -1814,6 +1923,7 @@ def create_tour_guide_app() -> Dash:
                             # Tab 4: Real-Time Monitor
                             dcc.Tab(
                                 label="📊 Live Monitor",
+                                value="tab-monitor",
                                 className="custom-tab",
                                 selected_className="custom-tab--selected",
                                 children=[
@@ -1835,6 +1945,7 @@ def create_tour_guide_app() -> Dash:
                                                                 config={
                                                                     "displayModeBar": False
                                                                 },
+                                                                style={"height": "300px"},
                                                             ),
                                                         ],
                                                         className="glass-card",
@@ -1853,6 +1964,7 @@ def create_tour_guide_app() -> Dash:
                                                                 config={
                                                                     "displayModeBar": False
                                                                 },
+                                                                style={"height": "300px"},
                                                             ),
                                                         ],
                                                         className="glass-card",
@@ -1877,6 +1989,7 @@ def create_tour_guide_app() -> Dash:
                                                                 config={
                                                                     "displayModeBar": False
                                                                 },
+                                                                style={"height": "300px"},
                                                             ),
                                                         ],
                                                         className="glass-card",
@@ -2167,6 +2280,8 @@ def create_tour_guide_app() -> Dash:
             Output("metric-quality", "children"),
             Output("metric-recommendations", "children"),
             Output("content-distribution-chart", "figure"),
+            Output("main-tabs", "value"),
+            Output("tour-status-message", "children"),
         ],
         Input("start-tour-btn", "n_clicks"),
         [
@@ -2182,74 +2297,321 @@ def create_tour_guide_app() -> Dash:
     def start_tour_simulation(
         n_clicks, source, dest, profile, family_mode, driver_mode, content_pref
     ):
-        """Simulate the tour guide pipeline and generate recommendations."""
+        """Run the REAL tour guide pipeline with actual API calls.
+
+        FULL PIPELINE:
+        1. Google Maps API → Route with waypoints
+        2. For each point → Spawn 3 agents in parallel
+        3. Smart Queue → Collect with soft/hard timeouts
+        4. Judge Agent → Select best content
+        5. Result → Personalized recommendations
+        """
         if not n_clicks:
             raise PreventUpdate
 
-        # Simulate route points
-        mock_points = [
-            {"name": source or "Starting Point", "lat": 32.0853, "lon": 34.7818},
+        # Profile settings
+        is_driver = bool(driver_mode and "enabled" in driver_mode)
+        is_family = bool(family_mode and "enabled" in family_mode)
+
+        recommendations = []
+        total_latency = 0.0
+        queue_metrics = []
+
+        # Default route points (used if real API fails or mock mode)
+        route_points = [
+            {"name": source or "Tel Aviv, Israel", "lat": 32.0853, "lon": 34.7818},
             {"name": "Latrun Monastery", "lat": 31.8377, "lon": 34.9781},
             {"name": "Bab al-Wad Memorial", "lat": 31.8419, "lon": 35.0614},
             {"name": "Ein Karem", "lat": 31.7667, "lon": 35.1583},
-            {"name": dest or "Destination", "lat": 31.7683, "lon": 35.2137},
+            {"name": dest or "Jerusalem, Israel", "lat": 31.7683, "lon": 35.2137},
         ]
 
-        # Determine content types based on profile
-        is_driver = driver_mode and "enabled" in driver_mode
-        is_family = family_mode and "enabled" in family_mode
+        # ================================================================
+        # DETERMINE API MODE
+        # ================================================================
+        use_real_apis = (
+            API_MODE == "real" or
+            (API_MODE == "auto" and REAL_AGENTS_AVAILABLE)
+        )
 
-        content_types = ["TEXT", "MUSIC", "TEXT"]
-        if not is_driver:
-            content_types.append("VIDEO")
+        if API_MODE == "mock":
+            logger.info("📋 API_MODE=mock - Using mocked data (fast, deterministic)")
+            use_real_apis = False
+        elif API_MODE == "real" and not REAL_AGENTS_AVAILABLE:
+            logger.error("❌ API_MODE=real but agents unavailable!")
+            raise PreventUpdate
 
-        # Generate mock recommendations
-        recommendations = []
-        for point in mock_points:
-            content_type = random.choice(content_types)
+        # ================================================================
+        # STEP 1: GET ROUTE (Google Maps API or Mock)
+        # ================================================================
+        if use_real_apis:
+            try:
+                logger.info("=" * 60)
+                logger.info("🗺️ STEP 1: Getting Route from Google Maps API...")
+                logger.info("=" * 60)
 
-            if content_type == "VIDEO":
-                titles = [
-                    f"Historical Tour of {point['name']}",
-                    f"Virtual Walk Through {point['name']}",
-                    f"Discover the Secrets of {point['name']}",
-                ]
-                desc = "Educational video about this fascinating location"
-            elif content_type == "MUSIC":
-                titles = [
-                    f"Ambient Music for {point['name']}",
-                    "Local Folk Songs of the Region",
-                    "Relaxing Journey Through Israel",
-                ]
-                desc = "Curated playlist matching the atmosphere"
-            else:
-                titles = [
-                    f"The Rich History of {point['name']}",
-                    f"Fascinating Facts About {point['name']}",
-                    f"Stories and Legends of {point['name']}",
-                ]
-                desc = "In-depth historical narrative"
+                try:
+                    # Try real Google Maps API
+                    maps_client = GoogleMapsClient()
+                    route = maps_client.get_route(
+                        origin=source or "Tel Aviv, Israel",
+                        destination=dest or "Jerusalem, Israel",
+                    )
+                    route_points = [
+                        {"name": p.location_name or p.address, "lat": p.latitude, "lon": p.longitude}
+                        for p in route.points
+                    ]
+                    logger.info(f"✅ Real route: {len(route_points)} points from Google Maps")
+                except Exception as e:
+                    logger.warning(f"Google Maps API failed: {e}, using mock route")
+                    route = get_mock_route()
+                    route_points = [
+                        {"name": p.location_name or p.address, "lat": p.latitude, "lon": p.longitude}
+                        for p in route.points
+                    ]
 
-            title = random.choice(titles)
-            if is_family:
-                title += " (Family Edition)"
+                logger.info(f"📍 Route: {source or 'Tel Aviv'} → {dest or 'Jerusalem'}")
+                logger.info(f"📊 Points: {len(route_points)}")
 
-            recommendations.append(
-                {
+                # ================================================================
+                # STEP 2: CREATE USER PROFILE
+                # ================================================================
+                logger.info("=" * 60)
+                logger.info("👤 STEP 2: Creating User Profile...")
+                logger.info("=" * 60)
+
+                age_group_map = {
+                    "kid": AgeGroup.KID,
+                    "teenager": AgeGroup.TEENAGER,
+                    "family": AgeGroup.ADULT,
+                    "senior": AgeGroup.SENIOR,
+                    "driver": AgeGroup.ADULT,
+                    "default": AgeGroup.ADULT,
+                }
+                user_profile = UserProfile(
+                    age_group=age_group_map.get(profile, AgeGroup.ADULT),
+                    is_driver=is_driver,
+                    travel_mode=TravelMode.CAR,
+                    trip_purpose=TripPurpose.VACATION,
+                    min_age=5 if is_family else None,
+                )
+                logger.info(f"✅ Profile: is_driver={is_driver}, is_family={is_family}")
+
+                # ================================================================
+                # STEP 3: INITIALIZE AGENTS
+                # ================================================================
+                logger.info("=" * 60)
+                logger.info("🤖 STEP 3: Initializing Agents...")
+                logger.info("=" * 60)
+
+                video_agent = VideoAgent()
+                music_agent = MusicAgent()
+                text_agent = TextAgent()
+                judge_agent = JudgeAgent()
+                logger.info("✅ All 4 agents initialized (Video, Music, Text, Judge)")
+
+                # ================================================================
+                # STEP 4: PROCESS EACH POINT WITH SMART QUEUE
+                # ================================================================
+                logger.info("=" * 60)
+                logger.info("⚡ STEP 4: Processing Points with Smart Queue...")
+                logger.info("=" * 60)
+
+                for idx, point in enumerate(route_points):
+                    point_start = time.time()
+                    location = f"{point['name']}, Israel"
+                    logger.info(f"\n📍 [{idx+1}/{len(route_points)}] Processing: {point['name']}")
+
+                    # Create RoutePoint object for agents
+                    route_point = RoutePoint(
+                        index=idx,
+                        address=location,
+                        location_name=point["name"],
+                        latitude=point["lat"],
+                        longitude=point["lon"],
+                    )
+
+                    # Create Smart Queue for this point
+                    queue = SmartAgentQueue(
+                        point_id=point["name"],
+                        expected_agents=3,
+                        soft_timeout=15.0,
+                        hard_timeout=30.0,
+                    )
+
+                    # Run agents in parallel and submit to queue
+                    def run_agent(agent, agent_type, rp):
+                        try:
+                            result = agent.execute(rp)
+                            if result:
+                                queue.submit_success(agent_type.lower(), result)
+                                logger.info(f"  ✅ {agent_type} Agent submitted")
+                            return result
+                        except Exception as e:
+                            logger.warning(f"  ❌ {agent_type} Agent failed: {e}")
+                            queue.submit_failure(agent_type.lower(), str(e))
+                            return None
+
+                    with ThreadPoolExecutor(max_workers=3) as executor:
+                        futures = [
+                            executor.submit(run_agent, video_agent, "VIDEO", route_point),
+                            executor.submit(run_agent, music_agent, "MUSIC", route_point),
+                            executor.submit(run_agent, text_agent, "TEXT", route_point),
+                        ]
+                        # Wait for all to complete or timeout
+                        for future in as_completed(futures, timeout=35):
+                            try:
+                                future.result(timeout=1)
+                            except Exception:
+                                pass
+
+                    # Wait for queue with timeouts
+                    results_list, metrics = queue.wait_for_results()
+                    # Convert list to dict for easier access
+                    results = {r.content_type.value: r for r in results_list}
+                    queue_metrics.append({
+                        "point": point["name"],
+                        "status": metrics.status.name,
+                        "agents_received": len(results),
+                    })
+                    logger.info(f"  📊 Queue Status: {metrics.status.name} ({len(results)}/3 agents)")
+
+                    # ================================================================
+                    # STEP 5: JUDGE EVALUATION
+                    # ================================================================
+                    if results:
+                        try:
+                            decision = judge_agent.evaluate(
+                                route_point,
+                                list(results.values()),
+                                user_profile,
+                            )
+                            if decision and decision.selected_content:
+                                best = decision.selected_content
+                                content_type = best.content_type.name
+                                # Driver safety: exclude VIDEO
+                                if is_driver and content_type == "VIDEO":
+                                    # Pick non-video alternative
+                                    for alt_type, alt_result in results.items():
+                                        if alt_type.upper() != "VIDEO":
+                                            best = alt_result
+                                            content_type = alt_type.upper()
+                                            break
+
+                                recommendations.append({
+                                    "point": point["name"],
+                                    "type": content_type,
+                                    "title": best.title,
+                                    "description": best.description or "Real content from API",
+                                    "quality_score": round(best.relevance_score * 10, 1),
+                                    "duration": f"{random.randint(2, 8)} min",
+                                    "url": getattr(best, "url", None),
+                                    "is_real": True,
+                                    "queue_status": metrics.status.name,
+                                })
+                                logger.info(f"  🏆 Winner: {content_type} - \"{best.title}\"")
+                        except Exception as e:
+                            logger.warning(f"  ⚠️ Judge failed: {e}")
+                            # Fallback to first result
+                            for ctype, result in results.items():
+                                recommendations.append({
+                                    "point": point["name"],
+                                    "type": ctype.upper(),
+                                    "title": result.title,
+                                    "description": result.description or "Real content",
+                                    "quality_score": round(result.relevance_score * 10, 1),
+                                    "duration": f"{random.randint(2, 8)} min",
+                                    "is_real": True,
+                                    "queue_status": metrics.status.name,
+                                })
+                                break
+
+                    point_latency = time.time() - point_start
+                    total_latency += point_latency
+                    logger.info(f"  ⏱️ Point latency: {point_latency:.1f}s")
+
+                logger.info("=" * 60)
+                logger.info("✅ PIPELINE COMPLETE!")
+                logger.info(f"   Total latency: {total_latency:.1f}s")
+                logger.info(f"   Recommendations: {len(recommendations)}")
+                logger.info("=" * 60)
+
+            except Exception as e:
+                logger.error(f"❌ Real pipeline failed: {e}")
+                import traceback
+                traceback.print_exc()
+                recommendations = []  # Reset to trigger fallback
+
+        # ================================================================
+        # FALLBACK TO MOCKED DATA if real agents fail or unavailable
+        # ================================================================
+        if not recommendations:
+            logging.info("📋 Using mocked data (real agents unavailable or failed)")
+
+            content_types = ["TEXT", "MUSIC", "TEXT"]
+            if not is_driver:
+                content_types.append("VIDEO")
+
+            for point in route_points:
+                content_type = random.choice(content_types)
+
+                if content_type == "VIDEO":
+                    titles = [
+                        f"Historical Tour of {point['name']}",
+                        f"Virtual Walk Through {point['name']}",
+                        f"Discover the Secrets of {point['name']}",
+                    ]
+                    desc = "Educational video about this fascinating location"
+                elif content_type == "MUSIC":
+                    titles = [
+                        f"Ambient Music for {point['name']}",
+                        "Local Folk Songs of the Region",
+                        "Relaxing Journey Through Israel",
+                    ]
+                    desc = "Curated playlist matching the atmosphere"
+                else:
+                    titles = [
+                        f"The Rich History of {point['name']}",
+                        f"Fascinating Facts About {point['name']}",
+                        f"Stories and Legends of {point['name']}",
+                    ]
+                    desc = "In-depth historical narrative"
+
+                title = random.choice(titles)
+                if is_family:
+                    title += " (Family Edition)"
+
+                recommendations.append({
                     "point": point["name"],
                     "type": content_type,
                     "title": title,
                     "description": desc,
                     "quality_score": round(random.uniform(7.5, 9.8), 1),
                     "duration": f"{random.randint(2, 8)} min",
-                }
-            )
+                    "is_real": False,
+                })
+            total_latency = random.uniform(2, 5)
 
         # Create recommendation cards
         recommendation_cards = []
+        is_using_real_data = any(rec.get("is_real", False) for rec in recommendations)
+
         for rec in recommendations:
             icon_class = rec["type"].lower()
             icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(rec["type"], "📌")
+
+            # Badge for real vs mocked
+            data_badge = html.Span(
+                "🔴 LIVE" if rec.get("is_real") else "⚪ DEMO",
+                style={
+                    "fontSize": "0.7rem",
+                    "padding": "2px 6px",
+                    "borderRadius": "4px",
+                    "marginLeft": "8px",
+                    "background": "rgba(0, 245, 212, 0.2)" if rec.get("is_real") else "rgba(255,255,255,0.1)",
+                    "color": THEME["success"] if rec.get("is_real") else THEME["text_muted"],
+                },
+            )
 
             recommendation_cards.append(
                 html.Div(
@@ -2270,6 +2632,7 @@ def create_tour_guide_app() -> Dash:
                                                 "fontSize": "0.85rem",
                                             },
                                         ),
+                                        data_badge,
                                     ]
                                 ),
                                 html.Div(
@@ -2361,13 +2724,46 @@ def create_tour_guide_app() -> Dash:
             recommendations
         )
 
+        # Status message
+        profile_name = {
+            "default": "Default Adult",
+            "family": "Family with Kids",
+            "kid": "Kid-Friendly",
+            "teenager": "Teenager",
+            "senior": "Senior",
+            "driver": "Driver (Audio Only)",
+            "history": "History Enthusiast",
+            "romantic": "Romantic Couple",
+            "custom": "Custom Profile",
+        }.get(profile, "Custom")
+
+        data_source = "🔴 LIVE API" if is_using_real_data else "⚪ DEMO DATA"
+
+        status_message = html.Div(
+            [
+                html.Span("✅ ", style={"color": THEME["success"]}),
+                f"Tour generated! {len(recommendations)} recommendations for ",
+                html.Strong(profile_name),
+                html.Span(
+                    f" [{data_source}]",
+                    style={
+                        "color": THEME["success"] if is_using_real_data else THEME["text_muted"],
+                        "marginLeft": "5px",
+                    },
+                ),
+            ],
+            style={"fontSize": "0.9rem"},
+        )
+
         return (
             recommendation_cards,
-            str(len(mock_points)),
-            f"{random.uniform(2, 5):.1f}s",
+            str(len(route_points)),
+            f"{total_latency:.1f}s",
             f"{avg_quality:.1f}",
             str(len(recommendations)),
             dist_fig,
+            "tab-recommendations",  # Switch to recommendations tab
+            status_message,  # Show success message
         )
 
     @app.callback(
@@ -2403,15 +2799,18 @@ def create_tour_guide_app() -> Dash:
                 "showgrid": False,
                 "title": "Time (s)",
                 "color": THEME["text_secondary"],
+                "range": [0, 60],
             },
             yaxis={
                 "showgrid": True,
                 "gridcolor": "rgba(255,255,255,0.05)",
                 "title": "Requests/s",
                 "color": THEME["text_secondary"],
+                "range": [0, 30],
             },
-            margin={"l": 50, "r": 20, "t": 20, "b": 50},
-            height=250,
+            margin={"l": 60, "r": 20, "t": 20, "b": 50},
+            height=280,
+            autosize=False,
             font={"family": FONTS["mono"], "color": THEME["text_secondary"]},
         )
 
@@ -2440,9 +2839,11 @@ def create_tour_guide_app() -> Dash:
                 "gridcolor": "rgba(255,255,255,0.05)",
                 "title": "Response Time (s)",
                 "color": THEME["text_secondary"],
+                "range": [0, 8],
             },
-            margin={"l": 50, "r": 20, "t": 20, "b": 50},
-            height=250,
+            margin={"l": 60, "r": 20, "t": 20, "b": 50},
+            height=280,
+            autosize=False,
             showlegend=False,
             font={"family": FONTS["mono"], "color": THEME["text_secondary"]},
         )
@@ -2484,13 +2885,196 @@ def create_tour_guide_app() -> Dash:
                 "gridcolor": "rgba(255,255,255,0.05)",
                 "title": "Count",
                 "color": THEME["text_secondary"],
+                "range": [0, 100],
             },
-            margin={"l": 50, "r": 20, "t": 20, "b": 50},
-            height=300,
+            margin={"l": 60, "r": 20, "t": 20, "b": 50},
+            height=280,
+            autosize=False,
             font={"family": FONTS["mono"], "color": THEME["text_secondary"]},
         )
 
         return throughput_fig, response_fig, queue_fig
+
+    # ========================================================================
+    # Pipeline Animation Callbacks
+    # ========================================================================
+
+    @app.callback(
+        [
+            Output("tour-state-store", "data"),
+            Output("animation-interval", "disabled"),
+        ],
+        [
+            Input("start-tour-btn", "n_clicks"),
+            Input("animation-interval", "n_intervals"),
+        ],
+        State("tour-state-store", "data"),
+        prevent_initial_call=True,
+    )
+    def manage_pipeline_animation(n_clicks, n_intervals, current_state):
+        """Start and stop the pipeline animation."""
+        from dash import ctx
+
+        triggered_id = ctx.triggered_id
+
+        if triggered_id == "start-tour-btn":
+            # Start animation from beginning
+            return {"running": True, "step": 0, "start_interval": n_intervals or 0}, False
+
+        elif triggered_id == "animation-interval":
+            if not current_state or not current_state.get("running"):
+                raise PreventUpdate
+
+            # Calculate current step based on intervals since start
+            start = current_state.get("start_interval", 0)
+            current_step = (n_intervals or 0) - start
+
+            # Stop animation after 7 steps (all complete)
+            if current_step >= 7:
+                return {"running": False, "step": 7, "completed": True}, True
+
+            # Keep running
+            return {"running": True, "step": current_step, "start_interval": start}, False
+
+        raise PreventUpdate
+
+    @app.callback(
+        [
+            Output("pipeline-step-1", "style"),
+            Output("pipeline-step-2", "style"),
+            Output("pipeline-step-3", "style"),
+            Output("pipeline-step-4", "style"),
+            Output("pipeline-step-5", "style"),
+            Output("pipeline-step-6", "style"),
+            Output("video-agent-status", "children"),
+            Output("music-agent-status", "children"),
+            Output("text-agent-status", "children"),
+            Output("judge-agent-status", "children"),
+        ],
+        Input("tour-state-store", "data"),
+    )
+    def animate_pipeline(state):
+        """Animate the pipeline steps and update agent statuses."""
+        if not state:
+            # Default styles - all steps inactive
+            default_style = {}
+            default_agent = [
+                html.Div("Ready", className="profile-badge", style={"marginTop": "10px"}),
+                html.P(
+                    "Waiting for tour...",
+                    style={
+                        "fontSize": "0.85rem",
+                        "color": THEME["text_muted"],
+                        "marginTop": "8px",
+                    },
+                ),
+            ]
+            return (
+                default_style, default_style, default_style,
+                default_style, default_style, default_style,
+                default_agent, default_agent, default_agent, default_agent,
+            )
+
+        step = state.get("step", 0)
+
+        # Define styles for each state
+        active_style = {
+            "borderLeftColor": THEME["warning"],
+            "background": f"rgba(252, 163, 17, 0.1)",
+        }
+        completed_style = {
+            "borderLeftColor": THEME["success"],
+            "background": f"rgba(0, 245, 212, 0.05)",
+        }
+        default_style = {}
+
+        # Pipeline step styles based on current step
+        styles = [default_style] * 6
+
+        if step >= 1:
+            styles[0] = completed_style
+        if step >= 2:
+            styles[1] = completed_style
+        if step >= 3:
+            styles[2] = completed_style
+        if step >= 4:
+            styles[3] = completed_style
+        if step >= 5:
+            styles[4] = completed_style
+        if step >= 6:
+            styles[5] = completed_style
+
+        # Current step is active (yellow)
+        if step < 6:
+            styles[step] = active_style
+
+        # Agent status based on step
+        def agent_ready():
+            return [
+                html.Div("Ready", className="profile-badge", style={"marginTop": "10px"}),
+                html.P(
+                    "Waiting...",
+                    style={"fontSize": "0.85rem", "color": THEME["text_muted"], "marginTop": "8px"},
+                ),
+            ]
+
+        def agent_running(name):
+            return [
+                html.Div(
+                    "⏳ Running",
+                    className="profile-badge",
+                    style={"marginTop": "10px", "background": "rgba(252, 163, 17, 0.3)"},
+                ),
+                html.P(
+                    f"Searching for {name}...",
+                    style={"fontSize": "0.85rem", "color": THEME["warning"], "marginTop": "8px"},
+                ),
+            ]
+
+        def agent_complete(result):
+            return [
+                html.Div(
+                    "✅ Complete",
+                    className="profile-badge",
+                    style={"marginTop": "10px", "background": "rgba(0, 245, 212, 0.3)"},
+                ),
+                html.P(
+                    result,
+                    style={"fontSize": "0.85rem", "color": THEME["success"], "marginTop": "8px"},
+                ),
+            ]
+
+        # Video, Music, Text, Judge agent statuses
+        if step < 2:
+            video_status = agent_ready()
+            music_status = agent_ready()
+            text_status = agent_ready()
+            judge_status = agent_ready()
+        elif step == 2:
+            video_status = agent_running("videos")
+            music_status = agent_running("music")
+            text_status = agent_running("facts")
+            judge_status = agent_ready()
+        elif step == 3:
+            video_status = agent_complete("Found 3 videos")
+            music_status = agent_running("tracks")
+            text_status = agent_running("articles")
+            judge_status = agent_ready()
+        elif step == 4:
+            video_status = agent_complete("Found 3 videos")
+            music_status = agent_complete("Found 5 tracks")
+            text_status = agent_complete("Found 2 articles")
+            judge_status = agent_running("evaluating")
+        else:
+            video_status = agent_complete("3 videos ready")
+            music_status = agent_complete("5 tracks ready")
+            text_status = agent_complete("2 articles ready")
+            judge_status = agent_complete("Best content selected!")
+
+        return (
+            styles[0], styles[1], styles[2], styles[3], styles[4], styles[5],
+            video_status, music_status, text_status, judge_status,
+        )
 
     return app
 

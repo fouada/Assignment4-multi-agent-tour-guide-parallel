@@ -207,19 +207,41 @@ def process_point_with_queue(
     # Queue ready - judge evaluates
     print(f"   ⏳ Queue ready ({len(queue_results)}/3)! Judge evaluating...")
 
-    # Simple judging (pick best based on available results)
+    # Use JudgeAgent for proper evaluation with profile-based filtering
     if queue_results:
-        # In real implementation, JudgeAgent would use LLM to compare
-        best = queue_results[0]
-        for r in queue_results:
-            if r["result"] and (not best["result"] or r["time"] < best["time"]):
-                best = r
+        from src.agents.judge_agent import JudgeAgent
 
-        return {
-            "winner": best["type"].upper(),
-            "title": best["result"].title if best["result"] else "Mock Content",
-            "point": point.location_name,
-        }
+        # Collect valid ContentResult objects
+        candidates = [r["result"] for r in queue_results if r["result"] is not None]
+
+        if candidates:
+            # Create judge with the user profile (enables driver mode filtering)
+            judge = JudgeAgent(user_profile=profile)
+
+            try:
+                decision = judge.evaluate(point, candidates, user_profile=profile)
+                winner_type = decision.selected_content.content_type.value.upper()
+                winner_title = decision.selected_content.title
+
+                # Show if profile constraints were applied
+                if profile and profile.is_driver and winner_type != "VIDEO":
+                    pass  # Driver mode working correctly - no video
+
+                print(f'   🏆 Winner: {winner_type} - "{winner_title}"')
+
+                return {
+                    "winner": winner_type,
+                    "title": winner_title,
+                    "point": point.location_name,
+                }
+            except Exception:
+                # Fallback to first available result
+                best = candidates[0]
+                return {
+                    "winner": best.content_type.value.upper(),
+                    "title": best.title,
+                    "point": point.location_name,
+                }
 
     return {
         "winner": "TEXT",

@@ -27,6 +27,12 @@ env:
   # Coverage threshold - MIT Level academic publishing quality
   # Comprehensive testing with 85%+ coverage, documented edge cases
   COVERAGE_THRESHOLD: 85
+  # =========================================================================
+  # API MODE STRATEGY (MIT-Level)
+  # =========================================================================
+  # CI/CD: Always MOCK - Fast, deterministic, no API costs, no secrets needed
+  # See docs/API_STRATEGY.md for full strategy documentation
+  TOUR_GUIDE_API_MODE: "mock"
 
 jobs:
   # ===========================================================================

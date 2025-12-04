@@ -12,15 +12,22 @@ Features:
 - Real-time agent monitoring
 - Personalized content recommendations
 
+API MODE STRATEGY (MIT-Level):
+------------------------------
+  --mode auto   : Try real APIs, fallback to mock (DEFAULT)
+  --mode real   : Force real APIs - For Demo/Presentation
+  --mode mock   : Use mocked data - For Testing/Development
+
 Usage:
-    python run_tour_dashboard.py
-    python run_tour_dashboard.py --port 8080
-    python run_tour_dashboard.py --host 0.0.0.0 --port 8080
+    python run_tour_dashboard.py                    # Default (auto mode)
+    python run_tour_dashboard.py --mode real        # MIT Demo (real APIs)
+    python run_tour_dashboard.py --mode mock        # Fast testing
 
 Author: Multi-Agent Tour Guide Research Team
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -34,11 +41,18 @@ def main():
         description="🗺️ Multi-Agent Tour Guide Interactive Dashboard",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
+API Mode Strategy (MIT-Level):
+==============================
+  auto  : Try real APIs, fallback to mock if unavailable (DEFAULT)
+  real  : Force real APIs - Use for Demo/Presentation
+  mock  : Always use mocked data - Use for Testing/CI
+
 Examples:
-  python run_tour_dashboard.py                    # Start on localhost:8051
-  python run_tour_dashboard.py --port 8080        # Custom port
-  python run_tour_dashboard.py --host 0.0.0.0     # Accessible from network
-  python run_tour_dashboard.py --no-debug         # Production mode
+  uv run python run_tour_dashboard.py                    # Auto mode
+  uv run python run_tour_dashboard.py --mode real        # MIT Demo (real APIs)
+  uv run python run_tour_dashboard.py --mode mock        # Fast testing
+  uv run python run_tour_dashboard.py --port 8080        # Custom port
+  uv run python run_tour_dashboard.py --host 0.0.0.0     # Network accessible
         """,
     )
     
@@ -55,12 +69,31 @@ Examples:
         help="Port to run the dashboard server (default: 8051)",
     )
     parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["auto", "real", "mock"],
+        default="auto",
+        help="API mode: auto (default), real (MIT demo), mock (testing)",
+    )
+    parser.add_argument(
         "--no-debug",
         action="store_true",
         help="Disable debug mode (for production)",
     )
     
     args = parser.parse_args()
+    
+    # Set API mode via environment variable
+    os.environ["TOUR_GUIDE_API_MODE"] = args.mode
+    
+    # Print mode banner
+    mode_info = {
+        "auto": ("🔄 AUTO", "Real APIs with mock fallback"),
+        "real": ("🔴 REAL", "Actual API calls (YouTube, Spotify, Claude)"),
+        "mock": ("⚪ MOCK", "Fast mocked data (no API calls)"),
+    }
+    mode_emoji, mode_desc = mode_info[args.mode]
+    print(f"\n📋 API Mode: {mode_emoji} - {mode_desc}\n")
     
     try:
         from src.dashboard.tour_guide_dashboard import run_tour_guide_dashboard

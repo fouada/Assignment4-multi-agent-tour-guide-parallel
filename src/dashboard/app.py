@@ -12,6 +12,18 @@ Features:
 - Monte Carlo simulation controls
 - Publication-quality visualizations
 
+API MODE STRATEGY:
+------------------
+This Research Dashboard ALWAYS uses SIMULATED/MOCKED data.
+This is intentional for:
+- Reproducible statistical experiments
+- Fast Monte Carlo simulations (10,000+ runs)
+- Parameter sensitivity analysis
+- No API costs for research
+
+For REAL API calls, use the Tour Guide Dashboard instead.
+See docs/API_STRATEGY.md for full documentation.
+
 Author: Multi-Agent Tour Guide Research Team
 Version: 1.0.0
 Date: November 2025

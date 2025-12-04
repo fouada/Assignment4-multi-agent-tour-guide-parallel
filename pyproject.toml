@@ -262,6 +262,7 @@ markers = [
     "e2e: End-to-end tests requiring LLM API keys",
     "integration: Integration tests that may require external services",
     "slow: Tests that take a long time to run",
+    "real_api: Tests that require real API keys (skipped in CI)",
 ]
 addopts = [
     "-v",
@@ -273,6 +274,20 @@ filterwarnings = [
     "ignore::DeprecationWarning",
 ]
 # asyncio_mode = "auto"  # Uncomment when using pytest-asyncio
+
+# ============================================================================
+# API MODE STRATEGY (MIT-Level)
+# ============================================================================
+# Tests always use MOCK mode for:
+# - Fast execution (no network calls)
+# - Deterministic results (reproducible)
+# - No API costs
+# - CI/CD compatibility (no secrets needed)
+#
+# See docs/API_STRATEGY.md for full documentation
+env = [
+    "TOUR_GUIDE_API_MODE=mock",
+]
 
 # ============================================================================
 # Coverage
