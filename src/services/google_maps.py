@@ -5,11 +5,18 @@ Fetches directions and extracts waypoints with addresses.
 
 import re
 
-import googlemaps
-
 from src.models.route import Route, RoutePoint
 from src.utils.config import settings
 from src.utils.logger import get_logger, set_log_context
+
+# googlemaps is an optional dependency (install with: uv sync --extra maps)
+try:
+    import googlemaps
+
+    GOOGLEMAPS_AVAILABLE = True
+except ImportError:
+    googlemaps = None  # type: ignore[assignment]
+    GOOGLEMAPS_AVAILABLE = False
 
 logger = get_logger(__name__)
 
@@ -23,7 +30,16 @@ class GoogleMapsClient:
 
         Args:
             api_key: Google Maps API key. Uses settings if not provided.
+
+        Raises:
+            ImportError: If googlemaps package is not installed.
+            ValueError: If no API key is provided.
         """
+        if not GOOGLEMAPS_AVAILABLE:
+            raise ImportError(
+                "googlemaps package is required. Install with: uv sync --extra maps"
+            )
+
         self.api_key = api_key or settings.google_maps_api_key
         if not self.api_key:
             raise ValueError(
@@ -322,10 +338,16 @@ def get_maps_client(use_mock: bool = False) -> GoogleMapsClient | MockGoogleMaps
     Returns:
         Maps client instance
     """
-    if use_mock or not settings.google_maps_api_key:
-        logger.warning(
-            "Using mock Google Maps client - set GOOGLE_MAPS_API_KEY for real routes"
-        )
+    if use_mock or not settings.google_maps_api_key or not GOOGLEMAPS_AVAILABLE:
+        if not GOOGLEMAPS_AVAILABLE:
+            logger.warning(
+                "googlemaps package not installed - using mock client. "
+                "Install with: uv sync --extra maps"
+            )
+        else:
+            logger.warning(
+                "Using mock Google Maps client - set GOOGLE_MAPS_API_KEY for real routes"
+            )
         return MockGoogleMapsClient()
     return GoogleMapsClient()
 
