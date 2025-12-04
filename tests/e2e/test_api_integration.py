@@ -72,7 +72,8 @@ class TestAPIEndpoints:
         assert response.status_code == 201  # Created
         data = response.json()
         assert "tour_id" in data
-        assert data["status"] == "processing"
+        # Tour starts in "fetching_route" status (Step 1 of processing)
+        assert data["status"] in ["fetching_route", "processing", "scheduling"]
 
     @pytest.mark.e2e
     def test_create_tour_validation_error(self, api_client):
@@ -92,20 +93,38 @@ class TestAPIEndpoints:
         assert response.status_code in [400, 422]
 
     @pytest.mark.e2e
-    def test_get_tour_by_id(self, api_client):
+    def test_get_tour_by_id(self, api_client, valid_tour_request):
         """Test retrieving tour by ID."""
-        response = api_client.get("/api/v1/tours/test-tour-123")
+        # First create a tour
+        create_response = api_client.post(
+            "/api/v1/tours",
+            json=valid_tour_request,
+            headers={"Content-Type": "application/json"},
+        )
+        assert create_response.status_code == 201
+        tour_id = create_response.json()["tour_id"]
+
+        # Then retrieve it
+        response = api_client.get(f"/api/v1/tours/{tour_id}")
 
         assert response.status_code == 200
         data = response.json()
-        assert data["tour_id"] == "test-tour-123"
+        assert data["tour_id"] == tour_id
 
     @pytest.mark.e2e
-    def test_get_tour_returns_status(self, api_client):
+    def test_get_tour_returns_status(self, api_client, valid_tour_request):
         """Test that get tour returns status information."""
-        # Note: Current implementation returns success for any tour_id
-        # This tests the actual API behavior
-        response = api_client.get("/api/v1/tours/any-tour-id")
+        # First create a tour
+        create_response = api_client.post(
+            "/api/v1/tours",
+            json=valid_tour_request,
+            headers={"Content-Type": "application/json"},
+        )
+        assert create_response.status_code == 201
+        tour_id = create_response.json()["tour_id"]
+
+        # Then check its status
+        response = api_client.get(f"/api/v1/tours/{tour_id}")
 
         assert response.status_code == 200
         data = response.json()
@@ -222,21 +241,40 @@ class TestAPIPagination:
     """E2E tests for API pagination."""
 
     @pytest.mark.e2e
-    def test_tour_results_endpoint(self, api_client):
+    def test_tour_results_endpoint(self, api_client, valid_tour_request):
         """Test tour results endpoint."""
-        response = api_client.get("/api/v1/tours/test-tour-123/results")
+        # First create a tour
+        create_response = api_client.post(
+            "/api/v1/tours",
+            json=valid_tour_request,
+            headers={"Content-Type": "application/json"},
+        )
+        assert create_response.status_code == 201
+        tour_id = create_response.json()["tour_id"]
+
+        # Get results (may be partial while processing)
+        response = api_client.get(f"/api/v1/tours/{tour_id}/results")
 
         assert response.status_code == 200
         data = response.json()
         # Verify results structure
         assert "tour_id" in data
         assert "status" in data
-        assert "playlist" in data or "summary" in data
 
     @pytest.mark.e2e
-    def test_cancel_tour_endpoint(self, api_client):
+    def test_cancel_tour_endpoint(self, api_client, valid_tour_request):
         """Test tour cancellation endpoint."""
-        response = api_client.delete("/api/v1/tours/test-tour-123")
+        # First create a tour to cancel
+        create_response = api_client.post(
+            "/api/v1/tours",
+            json=valid_tour_request,
+            headers={"Content-Type": "application/json"},
+        )
+        assert create_response.status_code == 201
+        tour_id = create_response.json()["tour_id"]
+
+        # Cancel the tour
+        response = api_client.delete(f"/api/v1/tours/{tour_id}")
 
         assert response.status_code == 200
         data = response.json()
