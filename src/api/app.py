@@ -1,28 +1,86 @@
 """
 Multi-Agent Tour Guide - REST API Server
+=========================================
 
-Production-ready FastAPI application with:
-- OpenAPI documentation
-- Health/readiness endpoints
-- Metrics endpoint (Prometheus)
-- CORS configuration
-- Rate limiting
-- Request tracing
+MIT-Level Production-Ready FastAPI Application
+
+This API serves as the SINGLE ENTRY POINT for all tour guide operations.
+The Dashboard and any other clients consume this API via HTTP.
+
+Features:
+- OpenAPI documentation with full Swagger UI
+- Real tour processing via TourService
+- WebSocket support for real-time updates
+- Health/readiness endpoints for Kubernetes
+- Prometheus metrics endpoint
+- CORS configuration for cross-origin requests
+- Request tracing with unique IDs
+- Comprehensive error handling
+
+Architecture:
+    Dashboard ──HTTP──▶ FastAPI ──▶ TourService ──▶ Agents
+                           │
+                           └──▶ WebSocket (real-time updates)
+
+Author: Multi-Agent Tour Guide Research Team
+Version: 2.0.0
 """
 
+import asyncio
 import logging
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Request,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from src.services.tour_service import (
+    TourService,
+    TourStatus,
+    get_tour_service,
+)
+
+logger = logging.getLogger(__name__)
+
+
 # =============================================================================
-# Models
+# Pydantic Models for API Request/Response
 # =============================================================================
+
+
+class ProfileSettings(BaseModel):
+    """User profile settings for tour customization."""
+
+    age_group: str | None = Field(
+        default=None, description="Age group: child, teen, adult, senior"
+    )
+    is_driver: bool = Field(
+        default=False, description="Driver mode - audio only, no video"
+    )
+    is_family_mode: bool = Field(
+        default=False, description="Family-friendly content filtering"
+    )
+    min_age: int | None = Field(default=None, description="Minimum age for family mode")
+    interests: list[str] = Field(default_factory=list, description="User interests")
+    content_preference: str | None = Field(
+        default=None, description="Preferred content type"
+    )
+    max_content_duration_seconds: int | None = Field(
+        default=None, description="Max content duration"
+    )
+    exclude_topics: list[str] = Field(
+        default_factory=list, description="Topics to exclude"
+    )
 
 
 class TourRequest(BaseModel):
@@ -30,7 +88,9 @@ class TourRequest(BaseModel):
 
     source: str = Field(..., min_length=1, description="Starting location")
     destination: str = Field(..., min_length=1, description="Ending location")
-    profile: dict | None = Field(default=None, description="User profile settings")
+    profile: ProfileSettings | None = Field(
+        default=None, description="User profile settings"
+    )
     options: dict | None = Field(default=None, description="Processing options")
 
     class Config:
@@ -38,7 +98,11 @@ class TourRequest(BaseModel):
             "example": {
                 "source": "Tel Aviv, Israel",
                 "destination": "Jerusalem, Israel",
-                "profile": {"age_group": "adult", "interests": ["history", "culture"]},
+                "profile": {
+                    "age_group": "adult",
+                    "is_driver": False,
+                    "interests": ["history", "culture"],
+                },
                 "options": {"mode": "queue"},
             }
         }
@@ -53,6 +117,46 @@ class TourResponse(BaseModel):
     message: str
 
 
+class TourStatusResponse(BaseModel):
+    """Response for tour status."""
+
+    tour_id: str
+    status: str
+    source: str
+    destination: str
+    progress: dict
+    created_at: str
+    started_at: str | None
+    completed_at: str | None
+    error: str | None
+
+
+class PlaylistItem(BaseModel):
+    """Single item in the tour playlist."""
+
+    point_index: int
+    point_name: str
+    decision: dict
+    reasoning: str | None
+    processing_time_seconds: float
+    all_candidates: list[dict]
+
+
+class TourResultsResponse(BaseModel):
+    """Complete tour results with playlist."""
+
+    tour_id: str
+    status: str
+    source: str
+    destination: str
+    profile: dict
+    route_info: dict
+    playlist: list[PlaylistItem]
+    summary: dict
+    created_at: str
+    completed_at: str | None
+
+
 class HealthResponse(BaseModel):
     """Health check response."""
 
@@ -60,6 +164,7 @@ class HealthResponse(BaseModel):
     version: str
     uptime_seconds: float
     timestamp: str
+    api_mode: str
     checks: dict
 
 
@@ -72,51 +177,116 @@ class ErrorResponse(BaseModel):
 
 
 # =============================================================================
+# WebSocket Connection Manager
+# =============================================================================
+
+
+class ConnectionManager:
+    """Manages WebSocket connections for real-time tour updates."""
+
+    def __init__(self):
+        self.active_connections: dict[str, list[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, tour_id: str):
+        await websocket.accept()
+        if tour_id not in self.active_connections:
+            self.active_connections[tour_id] = []
+        self.active_connections[tour_id].append(websocket)
+        logger.info(f"WebSocket connected for tour {tour_id}")
+
+    def disconnect(self, websocket: WebSocket, tour_id: str):
+        if tour_id in self.active_connections:
+            self.active_connections[tour_id] = [
+                ws for ws in self.active_connections[tour_id] if ws != websocket
+            ]
+            if not self.active_connections[tour_id]:
+                del self.active_connections[tour_id]
+        logger.info(f"WebSocket disconnected for tour {tour_id}")
+
+    async def broadcast(self, tour_id: str, message: dict):
+        if tour_id in self.active_connections:
+            for connection in self.active_connections[tour_id]:
+                try:
+                    await connection.send_json(message)
+                except Exception as e:
+                    logger.warning(f"Failed to send WebSocket message: {e}")
+
+
+manager = ConnectionManager()
+
+
+# =============================================================================
 # App Lifecycle
 # =============================================================================
 
+
 startup_time: datetime | None = None
+tour_service: TourService | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    global startup_time
+    global startup_time, tour_service
     startup_time = datetime.now()
-    logging.info("🚀 Tour Guide API starting up...")
+    tour_service = get_tour_service()
 
-    # Initialize components here
-    # - Load configurations
-    # - Initialize LLM clients
-    # - Set up metrics
+    logger.info("🚀 Tour Guide API starting up...")
+    logger.info(f"   API Mode: {tour_service._api_mode}")
+    logger.info(f"   Agents Available: {tour_service._agents_available}")
 
     yield
 
-    # Cleanup
-    logging.info("👋 Tour Guide API shutting down...")
+    logger.info("👋 Tour Guide API shutting down...")
 
 
 # =============================================================================
 # FastAPI Application
 # =============================================================================
 
+
 app = FastAPI(
     title="Multi-Agent Tour Guide API",
     description="""
-    ## 🗺️ Multi-Agent Tour Guide System
+## 🗺️ Multi-Agent Tour Guide System - MIT-Level Architecture
 
-    Enterprise-grade AI orchestration for personalized travel experiences.
+Enterprise-grade AI orchestration for personalized travel experiences.
 
-    ### Features
-    - **Multi-Agent Architecture**: Video, Music, Text agents working in parallel
-    - **Smart Synchronization**: Queue-based with graceful degradation
-    - **Personalization**: User profile-based content selection
-    - **Plugin System**: Extensible content providers
+### Architecture Overview
 
-    ### Quick Start
-    1. Create a tour with POST `/tours`
-    2. Poll status with GET `/tours/{tour_id}`
-    3. Get results with GET `/tours/{tour_id}/results`
+```
+┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│   Dashboard     │──────▶│    FastAPI      │──────▶│  TourService    │
+│   (Port 8050)   │ HTTP  │   (Port 8000)   │       │  (Agents+Queue) │
+└─────────────────┘       └─────────────────┘       └─────────────────┘
+                                   │
+                                   └── WebSocket (real-time updates)
+```
+
+### Key Features
+
+- **Multi-Agent Architecture**: Video, Music, Text agents working in parallel
+- **Smart Synchronization**: Queue-based with graceful degradation
+- **Real-time Updates**: WebSocket support for live pipeline visualization
+- **Personalization**: User profile-based content selection
+- **Plugin System**: Extensible content providers
+
+### API Workflow
+
+1. **Create Tour**: `POST /api/v1/tours` - Returns tour ID immediately
+2. **Poll Status**: `GET /api/v1/tours/{tour_id}` - Check processing progress
+3. **Get Results**: `GET /api/v1/tours/{tour_id}/results` - Get complete playlist
+4. **Real-time**: `WS /api/v1/tours/{tour_id}/ws` - Subscribe to live updates
+
+### API Modes
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| `auto` | Try real APIs, fallback to mock | Development, Production |
+| `real` | Force real APIs | Demo, Presentation |
+| `mock` | Always use mocked data | Testing, CI/CD |
+
+Set via environment: `TOUR_GUIDE_API_MODE=real`
     """,
     version="2.0.0",
     docs_url="/docs",
@@ -125,10 +295,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS Middleware
+# CORS Middleware - Allow Dashboard to call API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=[
+        "http://localhost:8050",
+        "http://localhost:8051",
+        "http://127.0.0.1:8050",
+        "http://127.0.0.1:8051",
+        "*",  # Allow all for development
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -167,26 +343,48 @@ async def health_check():
     Check application health status.
 
     Returns health status of all components including:
-    - LLM provider connectivity
+    - TourService availability
     - Agent availability
-    - System resources
+    - API mode configuration
+    - Which APIs are using real data vs mock
     """
+    global tour_service
     uptime = (datetime.now() - startup_time).total_seconds() if startup_time else 0
+
+    service = tour_service or get_tour_service()
+    api_status = service.get_api_status()
+    is_live = api_status.get("is_live", False)
 
     return HealthResponse(
         status="healthy",
         version="2.0.0",
         uptime_seconds=uptime,
         timestamp=datetime.now().isoformat(),
+        api_mode=service._api_mode,
         checks={
-            "llm_provider": {"status": "healthy", "provider": "anthropic"},
+            "tour_service": {"status": "healthy"},
+            "data_mode": "🔴 LIVE" if is_live else "⚪ DEMO",
+            "using_real_apis": api_status.get("using_real_apis", False),
+            "agents_available": service._agents_available,
+            "api_keys": api_status.get("api_keys", {}),
             "agents": {
-                "video": {"status": "healthy"},
-                "music": {"status": "healthy"},
-                "text": {"status": "healthy"},
-                "judge": {"status": "healthy"},
+                "video": {
+                    "status": "live" if is_live else "mock",
+                    "icon": "🔴" if is_live else "⚪",
+                },
+                "music": {
+                    "status": "live" if is_live else "mock",
+                    "icon": "🔴" if is_live else "⚪",
+                },
+                "text": {
+                    "status": "live" if is_live else "mock",
+                    "icon": "🔴" if is_live else "⚪",
+                },
+                "judge": {
+                    "status": "live" if is_live else "mock",
+                    "icon": "🔴" if is_live else "⚪",
+                },
             },
-            "queue": {"status": "healthy"},
         },
     )
 
@@ -214,23 +412,29 @@ async def metrics():
     - Request counts and latencies
     - Agent response times
     - Queue statistics
-    - Error rates
+    - Active tour counts
     """
-    # In production, use prometheus_client library
-    metrics_text = """
+    service = get_tour_service()
+    tours = service.store.list_all()
+
+    active_count = len([t for t in tours if t.status == TourStatus.PROCESSING])
+    completed_count = len([t for t in tours if t.status == TourStatus.COMPLETED])
+    failed_count = len([t for t in tours if t.status == TourStatus.FAILED])
+
+    metrics_text = f"""
 # HELP tour_requests_total Total tour requests
 # TYPE tour_requests_total counter
-tour_requests_total{status="success"} 0
-tour_requests_total{status="error"} 0
-
-# HELP agent_response_seconds Agent response time
-# TYPE agent_response_seconds histogram
-agent_response_seconds_bucket{agent="video",le="1.0"} 0
-agent_response_seconds_bucket{agent="video",le="5.0"} 0
+tour_requests_total{{status="completed"}} {completed_count}
+tour_requests_total{{status="failed"}} {failed_count}
+tour_requests_total{{status="processing"}} {active_count}
 
 # HELP active_tours Currently processing tours
 # TYPE active_tours gauge
-active_tours 0
+active_tours {active_count}
+
+# HELP tour_service_api_mode Current API mode
+# TYPE tour_service_api_mode gauge
+tour_service_api_mode{{mode="{service._api_mode}"}} 1
 """
     return JSONResponse(
         content=metrics_text,
@@ -239,7 +443,7 @@ active_tours 0
 
 
 # =============================================================================
-# Tour Endpoints
+# Tour Endpoints - Real Processing
 # =============================================================================
 
 
@@ -256,32 +460,40 @@ async def create_tour(request: TourRequest):
 
     This endpoint:
     1. Validates the request
-    2. Fetches route from Google Maps
-    3. Starts parallel agent processing
-    4. Returns tour ID for status polling
+    2. Creates a tour in the TourService
+    3. Starts background processing (async)
+    4. Returns tour ID immediately for status polling
 
-    **Processing Modes:**
-    - `queue`: Queue-based synchronization (recommended)
-    - `streaming`: Real-time point processing
-    - `instant`: All points in parallel
+    The actual processing happens in the background. Use:
+    - `GET /api/v1/tours/{tour_id}` to poll status
+    - `GET /api/v1/tours/{tour_id}/results` to get final results
+    - `WS /api/v1/tours/{tour_id}/ws` for real-time updates
     """
-    tour_id = f"tour_{uuid.uuid4().hex[:12]}"
+    service = get_tour_service()
 
-    # In production, this would:
-    # 1. Create tour in database
-    # 2. Start background processing
-    # 3. Return immediately
+    # Convert profile to dict if provided
+    profile_dict = {}
+    if request.profile:
+        profile_dict = request.profile.model_dump(exclude_none=True)
+
+    # Create tour (starts processing in background)
+    tour = service.create_tour(
+        source=request.source,
+        destination=request.destination,
+        profile=profile_dict,
+    )
 
     return TourResponse(
-        tour_id=tour_id,
-        status="processing",
-        created_at=datetime.now().isoformat(),
-        message=f"Tour created. Processing route from {request.source} to {request.destination}",
+        tour_id=tour.tour_id,
+        status=tour.status.value,
+        created_at=tour.created_at.isoformat(),
+        message=f"Tour created. Processing route from {request.source} to {request.destination}. Poll /api/v1/tours/{tour.tour_id} for status.",
     )
 
 
 @app.get(
     "/api/v1/tours/{tour_id}",
+    response_model=TourStatusResponse,
     tags=["Tours"],
     summary="Get tour status",
 )
@@ -292,18 +504,19 @@ async def get_tour(tour_id: str):
     Returns:
     - Current processing status
     - Number of completed points
-    - Estimated completion time
+    - Progress percentage
+    - Timestamps
     """
-    return {
-        "tour_id": tour_id,
-        "status": "completed",
-        "progress": {
-            "total_points": 4,
-            "completed_points": 4,
-            "percentage": 100,
-        },
-        "created_at": datetime.now().isoformat(),
-    }
+    service = get_tour_service()
+    summary = service.get_tour_summary(tour_id)
+
+    if not summary:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tour {tour_id} not found",
+        )
+
+    return TourStatusResponse(**summary)
 
 
 @app.get(
@@ -318,40 +531,19 @@ async def get_tour_results(tour_id: str):
     Returns the full tour guide output including:
     - Content selection for each point
     - Judge reasoning
-    - Alternative content options
+    - All candidate content from agents
     - Processing metrics
     """
-    return {
-        "tour_id": tour_id,
-        "status": "completed",
-        "playlist": [
-            {
-                "point_index": 1,
-                "point_name": "Latrun",
-                "decision": {
-                    "content_type": "text",
-                    "title": "The Silent Monks of Latrun",
-                    "score": 9.2,
-                    "reasoning": "Historical content matches user interest in history",
-                },
-            },
-            {
-                "point_index": 2,
-                "point_name": "Ammunition Hill",
-                "decision": {
-                    "content_type": "video",
-                    "title": "Battle of Ammunition Hill Documentary",
-                    "score": 8.8,
-                    "reasoning": "Visual documentary best captures historical significance",
-                },
-            },
-        ],
-        "summary": {
-            "total_points": 4,
-            "successful_decisions": 4,
-            "content_distribution": {"video": 1, "music": 1, "text": 2},
-        },
-    }
+    service = get_tour_service()
+    results = service.get_tour_results(tour_id)
+
+    if not results:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tour {tour_id} not found",
+        )
+
+    return results
 
 
 @app.delete(
@@ -361,11 +553,117 @@ async def get_tour_results(tour_id: str):
 )
 async def cancel_tour(tour_id: str):
     """Cancel an in-progress tour."""
+    service = get_tour_service()
+
+    if service.cancel_tour(tour_id):
+        return {
+            "tour_id": tour_id,
+            "status": "cancelled",
+            "cancelled_at": datetime.now().isoformat(),
+        }
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Tour {tour_id} cannot be cancelled (not found or not in progress)",
+    )
+
+
+@app.get(
+    "/api/v1/tours",
+    tags=["Tours"],
+    summary="List all tours",
+)
+async def list_tours(limit: int = 20):
+    """List all tours with their current status."""
+    service = get_tour_service()
+    tours = service.store.list_all(limit=limit)
+
     return {
-        "tour_id": tour_id,
-        "status": "cancelled",
-        "cancelled_at": datetime.now().isoformat(),
+        "tours": [
+            {
+                "tour_id": t.tour_id,
+                "source": t.source,
+                "destination": t.destination,
+                "status": t.status.value,
+                "progress": f"{t.completed_points}/{t.total_points}",
+                "created_at": t.created_at.isoformat(),
+            }
+            for t in tours
+        ],
+        "count": len(tours),
     }
+
+
+# =============================================================================
+# WebSocket Endpoint for Real-Time Updates
+# =============================================================================
+
+
+@app.websocket("/api/v1/tours/{tour_id}/ws")
+async def tour_websocket(websocket: WebSocket, tour_id: str):
+    """
+    WebSocket endpoint for real-time tour updates.
+
+    Connect to receive live updates as the tour is processed:
+    - Point processing started
+    - Agent results
+    - Judge decisions
+    - Tour completion
+    """
+    service = get_tour_service()
+    tour = service.get_tour(tour_id)
+
+    if not tour:
+        await websocket.close(code=4004, reason="Tour not found")
+        return
+
+    await manager.connect(websocket, tour_id)
+
+    try:
+        # Send current state
+        summary = service.get_tour_summary(tour_id)
+        await websocket.send_json({"type": "status", "data": summary})
+
+        # Keep connection alive and send updates
+        while True:
+            # Wait for messages (or use for ping/pong)
+            try:
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=1.0)
+                if data == "ping":
+                    await websocket.send_text("pong")
+            except asyncio.TimeoutError:
+                pass
+
+            # Check tour status and send updates
+            current = service.get_tour(tour_id)
+            if current:
+                await websocket.send_json(
+                    {
+                        "type": "update",
+                        "data": service.get_tour_summary(tour_id),
+                    }
+                )
+
+                if current.status in [
+                    TourStatus.COMPLETED,
+                    TourStatus.FAILED,
+                    TourStatus.CANCELLED,
+                ]:
+                    await websocket.send_json(
+                        {
+                            "type": "complete",
+                            "data": service.get_tour_results(tour_id),
+                        }
+                    )
+                    break
+
+            await asyncio.sleep(0.5)
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, tour_id)
+    except Exception as e:
+        logger.warning(f"WebSocket error: {e}")
+        manager.disconnect(websocket, tour_id)
 
 
 # =============================================================================
@@ -386,8 +684,6 @@ async def list_profile_presets():
     - default: General adult user
     - family: Family with children
     - history: History enthusiast
-    - teen: Teenager
-    - senior: Senior citizen
     - driver: Driver mode (no video)
     """
     return {
@@ -396,21 +692,35 @@ async def list_profile_presets():
                 "id": "default",
                 "name": "Default Adult",
                 "description": "General adult user with no specific preferences",
+                "settings": {},
             },
             {
                 "id": "family",
                 "name": "Family with Kids",
                 "description": "Family-friendly content for traveling with children",
+                "settings": {
+                    "is_family_mode": True,
+                    "min_age": 5,
+                    "exclude_topics": ["violence", "adult_content"],
+                },
             },
             {
                 "id": "history",
                 "name": "History Enthusiast",
                 "description": "In-depth historical content",
+                "settings": {
+                    "interests": ["history", "archaeology", "culture"],
+                    "content_preference": "educational",
+                },
             },
             {
                 "id": "driver",
                 "name": "Driver Mode",
-                "description": "Audio-only content for drivers",
+                "description": "Audio-only content for drivers (no video)",
+                "settings": {
+                    "is_driver": True,
+                    "content_preference": "audio",
+                },
             },
         ]
     }
@@ -442,7 +752,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions."""
-    logging.exception(f"Unexpected error: {exc}")
+    logger.exception(f"Unexpected error: {exc}")
     return JSONResponse(
         status_code=500,
         content={

@@ -5,7 +5,7 @@
 # Docs: https://docs.astral.sh/uv/
 # ============================================================================
 
-.PHONY: help install sync dev test lint format run run-demo run-queue run-streaming run-instant run-sequential run-verbose clean
+.PHONY: help install sync dev test lint format run run-demo run-queue run-streaming run-instant run-sequential run-verbose run-system run-api run-dashboard clean
 
 # Default target
 help:
@@ -22,7 +22,13 @@ help:
 	@echo "  lock         Update uv.lock file"
 	@echo "  add PKG=x    Add a package (e.g., make add PKG=requests)"
 	@echo ""
-	@echo "  🚀 Running"
+	@echo "  🚀 Running (MIT-Level Architecture)"
+	@echo "  ─────────────────────────────────────────────────────────────"
+	@echo "  run-system   Start FULL SYSTEM (API + Dashboard) - RECOMMENDED"
+	@echo "  run-api      Start REST API server only (port 8000)"
+	@echo "  run-dashboard Start Dashboard only (port 8051)"
+	@echo ""
+	@echo "  🚀 Running (CLI Mode)"
 	@echo "  ─────────────────────────────────────────────────────────────"
 	@echo "  run          Run tour guide in demo mode"
 	@echo "  run-queue    Run with queue synchronization (shows all hops)"
@@ -30,7 +36,6 @@ help:
 	@echo "  run-instant  Run with instant parallel processing"
 	@echo "  run-verbose  Run with DEBUG logging (see all traffic)"
 	@echo "  run-family   Run with family-friendly profile"
-	@echo "  run-api      Start REST API server"
 	@echo "  shell        Open Python shell with project context"
 	@echo ""
 	@echo "  🧪 Testing"
@@ -149,9 +154,81 @@ run-verbose:
 	@echo "🚀 Running with DEBUG logging..."
 	LOG_LEVEL=DEBUG uv run python main.py --demo --mode queue
 
+# ============================================================================
+# MIT-Level Architecture: API + Dashboard
+# ============================================================================
+# Strategy: UI always prefers REAL data, Tests/CI always use MOCK
+# See docs/API_STRATEGY.md for full documentation
+# ============================================================================
+
+# DEFAULT: Start with auto mode (prefers real APIs, fallback to mock)
+run-system:
+	@echo "╔═══════════════════════════════════════════════════════════════════╗"
+	@echo "║  🚀 STARTING FULL SYSTEM (MIT-Level Architecture)                 ║"
+	@echo "║     Mode: AUTO (prefers real APIs, fallback to mock)             ║"
+	@echo "║     API: http://localhost:8000/docs                               ║"
+	@echo "║     Dashboard: http://localhost:8051                              ║"
+	@echo "╚═══════════════════════════════════════════════════════════════════╝"
+	TOUR_GUIDE_API_MODE=auto uv run python run_full_system.py
+
+# LIVE: Force real APIs (for MIT presentations/demos)
+run-live:
+	@echo "╔═══════════════════════════════════════════════════════════════════╗"
+	@echo "║  🔴 LIVE MODE - Real APIs Only (MIT Demo)                         ║"
+	@echo "║     Requires: YouTube, Spotify, Claude, Google Maps API keys     ║"
+	@echo "╚═══════════════════════════════════════════════════════════════════╝"
+	TOUR_GUIDE_API_MODE=real uv run python run_full_system.py
+
+# Alias for run-live
+run-system-real: run-live
+
+# DEMO: Mock data (for testing UI without API costs)
+run-demo-system:
+	@echo "╔═══════════════════════════════════════════════════════════════════╗"
+	@echo "║  ⚪ DEMO MODE - Mock Data (No API Costs)                          ║"
+	@echo "║     Perfect for: UI development, demonstrations                   ║"
+	@echo "╚═══════════════════════════════════════════════════════════════════╝"
+	TOUR_GUIDE_API_MODE=mock uv run python run_full_system.py
+
+# Alias for run-demo-system
+run-system-mock: run-demo-system
+
+# API Only (for development)
 run-api:
-	@echo "🌐 Starting API server..."
-	uv run --extra api uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000
+	@echo "🌐 Starting API server only (Mode: AUTO)..."
+	@echo "   Swagger: http://localhost:8000/docs"
+	TOUR_GUIDE_API_MODE=auto uv run uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000
+
+run-api-live:
+	@echo "🔴 Starting API server (LIVE mode - Real APIs)..."
+	TOUR_GUIDE_API_MODE=real uv run uvicorn src.api.app:app --reload --host 0.0.0.0 --port 8000
+
+# Dashboard Only
+run-dashboard:
+	@echo "🎨 Starting Dashboard only (Mode: AUTO)..."
+	@echo "   URL: http://localhost:8051"
+	TOUR_GUIDE_API_MODE=auto uv run python run_tour_dashboard.py
+
+run-dashboard-live:
+	@echo "🔴 Starting Dashboard (LIVE mode)..."
+	TOUR_GUIDE_API_MODE=real uv run python run_tour_dashboard.py
+
+# Research Dashboard - Multiple Data Source Modes
+run-research:
+	@echo "🔬 Starting Research Dashboard (Simulated Data)..."
+	@echo "   URL: http://localhost:8050"
+	uv run python run_dashboard.py --data-source simulated
+
+run-research-live:
+	@echo "🔴 Starting Research Dashboard (LIVE API Data)..."
+	@echo "   WARNING: This makes real API calls!"
+	@echo "   URL: http://localhost:8050"
+	TOUR_GUIDE_API_MODE=auto uv run python run_dashboard.py --data-source live
+
+run-research-hybrid:
+	@echo "🔀 Starting Research Dashboard (Hybrid Mode)..."
+	@echo "   URL: http://localhost:8050"
+	TOUR_GUIDE_API_MODE=auto uv run python run_dashboard.py --data-source hybrid
 
 shell:
 	@echo "🐍 Opening Python shell..."

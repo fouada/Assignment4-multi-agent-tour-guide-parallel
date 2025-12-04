@@ -5,6 +5,24 @@ Dashboard Data Manager
 Manages simulation data, caching, and real-time updates for the dashboard.
 Provides a clean interface between the simulation engine and visualization.
 
+Data Source Modes (MIT-Level Architecture):
+-------------------------------------------
+1. "simulated" (default): Fast Monte Carlo with mathematical models
+   - 10,000+ simulations in seconds
+   - Reproducible results
+   - No API costs
+   - Best for: Sensitivity analysis, Pareto exploration, A/B testing
+
+2. "live": Real data from TourService API
+   - Actual tour processing results
+   - Real API calls (YouTube, Spotify, Claude)
+   - Best for: Validating models, Real-world benchmarks
+
+3. "hybrid": Mix of real historical data + simulated extrapolation
+   - Use cached real data as base
+   - Extrapolate with simulations
+   - Best for: Large-scale analysis with real-world grounding
+
 Edge Cases Handled:
 -------------------
 1. Empty parameter lists in sensitivity analysis
@@ -16,12 +34,14 @@ Edge Cases Handled:
 7. Invalid configuration combinations (hard <= soft)
 
 Author: Multi-Agent Tour Guide Research Team
-Version: 1.0.0
+Version: 2.0.0
 """
 
 from __future__ import annotations
 
 import json
+import logging
+import os
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -32,6 +52,21 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Data Source Enum for Research Dashboard
+# =============================================================================
+
+
+class DataSourceMode(Enum):
+    """Data source mode for the Research Dashboard."""
+
+    SIMULATED = "simulated"  # Fast Monte Carlo (default)
+    LIVE = "live"  # Real TourService API data
+    HYBRID = "hybrid"  # Cached real + simulated extrapolation
 
 
 class QueueStatus(Enum):
@@ -225,15 +260,43 @@ class DashboardDataManager:
     Manages all data operations for the dashboard.
 
     Provides:
-    - Simulation execution
+    - Simulation execution (default)
+    - Live data from TourService API
+    - Hybrid mode (real + simulated)
     - Data caching
     - Real-time updates
     - Historical data management
+
+    Data Source Modes:
+    ------------------
+    - SIMULATED: Fast Monte Carlo simulations (default)
+    - LIVE: Real data from TourService API
+    - HYBRID: Cached real data + simulated extrapolation
+
+    Usage:
+    ------
+    # Default (simulated)
+    manager = DashboardDataManager()
+
+    # Live data from API
+    manager = DashboardDataManager(data_source=DataSourceMode.LIVE)
+
+    # Hybrid mode
+    manager = DashboardDataManager(data_source=DataSourceMode.HYBRID)
     """
 
-    def __init__(self, cache_dir: Path | None = None):
+    def __init__(
+        self,
+        cache_dir: Path | None = None,
+        data_source: DataSourceMode | str = DataSourceMode.SIMULATED,
+    ):
         self.cache_dir = cache_dir or Path("./data/cache")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+        # Handle string input for data_source
+        if isinstance(data_source, str):
+            data_source = DataSourceMode(data_source.lower())
+        self.data_source = data_source
 
         self._cache: dict[str, Any] = {}
         self._lock = threading.Lock()
@@ -243,20 +306,137 @@ class DashboardDataManager:
         self._baseline_data: pd.DataFrame | None = None
         self._sensitivity_data: dict[str, pd.DataFrame] = {}
 
+        # Initialize API client for live/hybrid modes
+        self._api_client = None
+        if self.data_source in (DataSourceMode.LIVE, DataSourceMode.HYBRID):
+            self._init_api_client()
+
+        logger.info(f"DashboardDataManager initialized with data_source={self.data_source.value}")
+
+    def _init_api_client(self):
+        """Initialize the TourService API client for live data."""
+        try:
+            from src.api.client import TourGuideClient
+
+            api_base = os.environ.get("TOUR_GUIDE_API_URL", "http://localhost:8000")
+            self._api_client = TourGuideClient(base_url=api_base)
+            logger.info(f"API client connected to {api_base}")
+        except ImportError:
+            logger.warning("API client not available - falling back to simulated mode")
+            self.data_source = DataSourceMode.SIMULATED
+        except Exception as e:
+            logger.warning(f"Failed to connect to API: {e} - falling back to simulated mode")
+            self.data_source = DataSourceMode.SIMULATED
+
+    def get_data_source_info(self) -> dict:
+        """Get information about the current data source."""
+        return {
+            "mode": self.data_source.value,
+            "api_connected": self._api_client is not None,
+            "description": {
+                DataSourceMode.SIMULATED: "Fast Monte Carlo simulations (reproducible)",
+                DataSourceMode.LIVE: "Real data from TourService API",
+                DataSourceMode.HYBRID: "Cached real data + simulated extrapolation",
+            }.get(self.data_source, "Unknown"),
+        }
+
+    def _fetch_live_tour_data(self, n_tours: int = 10) -> pd.DataFrame:
+        """
+        Fetch real tour data from the TourService API.
+
+        This method runs actual tours and collects metrics.
+        USE WITH CAUTION - this makes real API calls!
+        """
+        if not self._api_client:
+            logger.warning("API client not available - using simulated data")
+            return self._generate_simulated_data(n_tours)
+
+        results = []
+        sample_routes = [
+            ("Tel Aviv, Israel", "Jerusalem, Israel"),
+            ("Haifa, Israel", "Nazareth, Israel"),
+            ("Eilat, Israel", "Dead Sea, Israel"),
+            ("Rome, Italy", "Florence, Italy"),
+            ("Paris, France", "Lyon, France"),
+        ]
+
+        for i in range(min(n_tours, len(sample_routes))):
+            source, dest = sample_routes[i % len(sample_routes)]
+            try:
+                # Create tour via API
+                tour_response = self._api_client.create_tour(
+                    source=source,
+                    destination=dest,
+                    profile={"preset": "default"},
+                )
+                tour_id = tour_response.get("tour_id")
+
+                # Wait for completion
+                final_status = self._api_client.wait_for_completion(tour_id, timeout=60)
+
+                # Extract metrics
+                results.append({
+                    "status": final_status.get("status", "unknown"),
+                    "latency": final_status.get("summary", {}).get("total_duration_seconds", 0),
+                    "quality": final_status.get("summary", {}).get("quality_score", 0),
+                    "num_results": len(final_status.get("playlist", [])),
+                    "source": "live_api",
+                })
+            except Exception as e:
+                logger.error(f"Failed to run tour {i}: {e}")
+                # Add a failed result
+                results.append({
+                    "status": "failed",
+                    "latency": 0,
+                    "quality": 0,
+                    "num_results": 0,
+                    "source": "live_api",
+                })
+
+        return pd.DataFrame(results) if results else self._generate_simulated_data(n_tours)
+
+    def _generate_simulated_data(self, n_sims: int, config: QueueConfig | None = None) -> pd.DataFrame:
+        """Generate simulated data using Monte Carlo."""
+        simulator = SmartQueueSimulator(queue_config=config)
+        df = simulator.run_monte_carlo(n_simulations=n_sims)
+        df["source"] = "simulated"
+        return df
+
     def get_baseline_simulation(
         self,
         n_sims: int = 5000,
         config: QueueConfig | None = None,
         force_refresh: bool = False,
     ) -> pd.DataFrame:
-        """Get or generate baseline simulation data."""
-        cache_key = f"baseline_{n_sims}"
+        """
+        Get or generate baseline data based on data source mode.
+
+        Data Source Behavior:
+        - SIMULATED: Fast Monte Carlo simulations
+        - LIVE: Fetch real data from TourService API
+        - HYBRID: Mix of cached real data + simulated extrapolation
+        """
+        cache_key = f"baseline_{self.data_source.value}_{n_sims}"
 
         if not force_refresh and cache_key in self._cache:
             return self._cache[cache_key]
 
-        simulator = SmartQueueSimulator(queue_config=config)
-        df = simulator.run_monte_carlo(n_simulations=n_sims)
+        # Select data generation method based on mode
+        if self.data_source == DataSourceMode.LIVE:
+            # Live mode: Fetch real data (limited to reasonable number)
+            df = self._fetch_live_tour_data(n_tours=min(n_sims, 20))
+            logger.info(f"Fetched {len(df)} live tour results")
+
+        elif self.data_source == DataSourceMode.HYBRID:
+            # Hybrid mode: Mix real + simulated
+            real_df = self._fetch_live_tour_data(n_tours=min(n_sims // 10, 10))
+            simulated_df = self._generate_simulated_data(n_sims - len(real_df), config)
+            df = pd.concat([real_df, simulated_df], ignore_index=True)
+            logger.info(f"Hybrid data: {len(real_df)} real + {len(simulated_df)} simulated")
+
+        else:
+            # Simulated mode (default): Fast Monte Carlo
+            df = self._generate_simulated_data(n_sims, config)
 
         with self._lock:
             self._cache[cache_key] = df

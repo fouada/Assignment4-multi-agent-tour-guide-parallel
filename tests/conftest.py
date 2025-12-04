@@ -8,12 +8,28 @@ This module provides shared fixtures for all test suites:
 - Mock agent fixtures
 
 MIT Level Testing - 85%+ Coverage Target
+
+API Mode Strategy:
+- Tests ALWAYS use mock mode (no real API calls)
+- This ensures: deterministic results, fast execution, no API costs
+- Real API testing should be done locally before push
 """
 
+import os
 import sys
 from pathlib import Path
 
 import pytest
+
+# =============================================================================
+# CRITICAL: Force mock mode for all tests
+# =============================================================================
+# This ensures tests are:
+# - Deterministic and reproducible
+# - Fast (no network calls)
+# - Cost-free (no API usage)
+# - CI/CD friendly (no API keys needed)
+os.environ["TOUR_GUIDE_API_MODE"] = "mock"
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
