@@ -55,7 +55,7 @@ Examples:
   uv run python run_tour_dashboard.py --host 0.0.0.0     # Network accessible
         """,
     )
-    
+
     parser.add_argument(
         "--host",
         type=str,
@@ -80,12 +80,12 @@ Examples:
         action="store_true",
         help="Disable debug mode (for production)",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Set API mode via environment variable
     os.environ["TOUR_GUIDE_API_MODE"] = args.mode
-    
+
     # Print mode banner
     mode_info = {
         "auto": ("🔄 AUTO", "Real APIs with mock fallback"),
@@ -94,10 +94,10 @@ Examples:
     }
     mode_emoji, mode_desc = mode_info[args.mode]
     print(f"\n📋 API Mode: {mode_emoji} - {mode_desc}\n")
-    
+
     try:
         from src.dashboard.tour_guide_dashboard import run_tour_guide_dashboard
-        
+
         run_tour_guide_dashboard(
             host=args.host,
             port=args.port,
@@ -122,10 +122,9 @@ Error: {e}
     except Exception as e:
         print(f"\n❌ Error starting dashboard: {e}")
         return 1
-    
+
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(main())
-

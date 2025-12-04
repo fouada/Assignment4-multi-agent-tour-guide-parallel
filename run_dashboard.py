@@ -40,7 +40,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 def main():
     """Main entry point for the dashboard."""
     parser = argparse.ArgumentParser(
-        description='🗺️ MIT-Level Research Dashboard for Multi-Agent Tour Guide System',
+        description="🗺️ MIT-Level Research Dashboard for Multi-Agent Tour Guide System",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -58,35 +58,30 @@ Dashboard Features:
 
 NOTE: This Research Dashboard uses SIMULATED data for reproducible experiments.
       For REAL API tour processing, use: python run_tour_dashboard.py
-        """
+        """,
     )
 
     parser.add_argument(
-        '--host',
+        "--host",
         type=str,
-        default='127.0.0.1',
-        help='Host address to bind to (default: 127.0.0.1)'
+        default="127.0.0.1",
+        help="Host address to bind to (default: 127.0.0.1)",
     )
 
     parser.add_argument(
-        '--port',
-        type=int,
-        default=8050,
-        help='Port to run on (default: 8050)'
+        "--port", type=int, default=8050, help="Port to run on (default: 8050)"
     )
 
     parser.add_argument(
-        '--no-debug',
-        action='store_true',
-        help='Disable debug mode (for production)'
+        "--no-debug", action="store_true", help="Disable debug mode (for production)"
     )
 
     parser.add_argument(
-        '--data-source',
+        "--data-source",
         type=str,
-        choices=['simulated', 'live', 'hybrid'],
-        default='simulated',
-        help='Data source mode: simulated (default), live (real API), hybrid (mixed)'
+        choices=["simulated", "live", "hybrid"],
+        default="simulated",
+        help="Data source mode: simulated (default), live (real API), hybrid (mixed)",
     )
 
     args = parser.parse_args()
@@ -96,9 +91,9 @@ NOTE: This Research Dashboard uses SIMULATED data for reproducible experiments.
 
     # Print mode banner based on data source
     data_source_info = {
-        'simulated': ('📊 SIMULATED', 'Fast Monte Carlo (10K+ runs, reproducible)'),
-        'live': ('🔴 LIVE', 'Real TourService API data (actual tours)'),
-        'hybrid': ('🔀 HYBRID', 'Mixed: Real data + simulated extrapolation'),
+        "simulated": ("📊 SIMULATED", "Fast Monte Carlo (10K+ runs, reproducible)"),
+        "live": ("🔴 LIVE", "Real TourService API data (actual tours)"),
+        "hybrid": ("🔀 HYBRID", "Mixed: Real data + simulated extrapolation"),
     }
     mode_emoji, mode_desc = data_source_info[args.data_source]
 
@@ -122,11 +117,8 @@ NOTE: This Research Dashboard uses SIMULATED data for reproducible experiments.
 
     try:
         from src.dashboard.app import run_dashboard
-        run_dashboard(
-            host=args.host,
-            port=args.port,
-            debug=not args.no_debug
-        )
+
+        run_dashboard(host=args.host, port=args.port, debug=not args.no_debug)
     except ImportError as e:
         print(f"""
 ╔══════════════════════════════════════════════════════════════════════╗
@@ -150,6 +142,5 @@ NOTE: This Research Dashboard uses SIMULATED data for reproducible experiments.
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

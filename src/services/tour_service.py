@@ -59,8 +59,8 @@ class TourStatus(str, Enum):
 
     PENDING = "pending"
     FETCHING_ROUTE = "fetching_route"  # Step 1: Google Maps API
-    SCHEDULING = "scheduling"          # Step 2: Scheduler preparing points
-    PROCESSING = "processing"          # Step 3: Orchestrator + Agents
+    SCHEDULING = "scheduling"  # Step 2: Scheduler preparing points
+    PROCESSING = "processing"  # Step 3: Orchestrator + Agents
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"

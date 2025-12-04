@@ -380,23 +380,27 @@ class DashboardDataManager:
 
                 # Extract metrics
                 summary = final_status.get("summary", {})
-                results.append({
-                    "status": final_status.get("status", "unknown"),
-                    "latency": summary.get("total_duration_seconds", 0),
-                    "quality": summary.get("quality_score", 0),
-                    "num_results": len(final_status.get("playlist", [])),
-                    "source": "live_api",
-                })
+                results.append(
+                    {
+                        "status": final_status.get("status", "unknown"),
+                        "latency": summary.get("total_duration_seconds", 0),
+                        "quality": summary.get("quality_score", 0),
+                        "num_results": len(final_status.get("playlist", [])),
+                        "source": "live_api",
+                    }
+                )
             except Exception as e:
                 logger.error(f"Failed to run tour {i}: {e}")
                 # Add a failed result
-                results.append({
-                    "status": "failed",
-                    "latency": 0,
-                    "quality": 0,
-                    "num_results": 0,
-                    "source": "live_api",
-                })
+                results.append(
+                    {
+                        "status": "failed",
+                        "latency": 0,
+                        "quality": 0,
+                        "num_results": 0,
+                        "source": "live_api",
+                    }
+                )
 
         if results:
             return pd.DataFrame(results)

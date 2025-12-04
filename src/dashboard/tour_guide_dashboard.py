@@ -55,11 +55,13 @@ try:
     from src.api.client import APIConfig, TourGuideClient
 
     # Check if API is actually running
-    _test_client = TourGuideClient(APIConfig(
-        base_url=os.environ.get("TOUR_GUIDE_API_URL", "http://localhost:8000"),
-        timeout=5.0,
-        max_retries=1,
-    ))
+    _test_client = TourGuideClient(
+        APIConfig(
+            base_url=os.environ.get("TOUR_GUIDE_API_URL", "http://localhost:8000"),
+            timeout=5.0,
+            max_retries=1,
+        )
+    )
     if _test_client.is_healthy():
         api_client = _test_client
         API_CLIENT_AVAILABLE = True
@@ -689,9 +691,7 @@ def create_header():
             else "rgba(255,255,255,0.1)"
         ),
         "color": THEME["bg_dark"] if is_live else THEME["text_muted"],
-        "boxShadow": (
-            f"0 0 20px {THEME['success']}40" if is_live else "none"
-        ),
+        "boxShadow": (f"0 0 20px {THEME['success']}40" if is_live else "none"),
     }
 
     return html.Div(
@@ -2469,7 +2469,9 @@ def create_tour_guide_app() -> Dash:
                     api_profile["exclude_topics"] = ["violence", "adult_content"]
 
                 # Create tour via API
-                logger.info(f"📍 Creating tour: {source or 'Tel Aviv'} → {dest or 'Jerusalem'}")
+                logger.info(
+                    f"📍 Creating tour: {source or 'Tel Aviv'} → {dest or 'Jerusalem'}"
+                )
                 tour_response = api_client.create_tour(
                     source=source or "Tel Aviv, Israel",
                     destination=dest or "Jerusalem, Israel",
@@ -2486,7 +2488,9 @@ def create_tour_guide_app() -> Dash:
                     completed = progress.get("completed_points", 0)
                     total = progress.get("total_points", 0)
                     percentage = progress.get("percentage", 0)
-                    logger.info(f"   📊 Progress: {completed}/{total} points ({percentage}%)")
+                    logger.info(
+                        f"   📊 Progress: {completed}/{total} points ({percentage}%)"
+                    )
 
                 # Wait for results
                 results = api_client.wait_for_completion(
@@ -2512,20 +2516,26 @@ def create_tour_guide_app() -> Dash:
                     content_type = decision.get("content_type", "text").upper()
 
                     # Driver safety: report actual content (API already filtered)
-                    recommendations.append({
-                        "point": item.get("point_name", "Unknown"),
-                        "type": content_type,
-                        "title": decision.get("title", "Untitled"),
-                        "description": item.get("reasoning", "Selected by AI Judge"),
-                        "quality_score": round(random.uniform(8.0, 9.8), 1),
-                        "duration": f"{random.randint(2, 8)} min",
-                        "url": decision.get("url"),
-                        "is_real": True,
-                        "via_api": True,
-                        "queue_status": "COMPLETE",
-                    })
+                    recommendations.append(
+                        {
+                            "point": item.get("point_name", "Unknown"),
+                            "type": content_type,
+                            "title": decision.get("title", "Untitled"),
+                            "description": item.get(
+                                "reasoning", "Selected by AI Judge"
+                            ),
+                            "quality_score": round(random.uniform(8.0, 9.8), 1),
+                            "duration": f"{random.randint(2, 8)} min",
+                            "url": decision.get("url"),
+                            "is_real": True,
+                            "via_api": True,
+                            "queue_status": "COMPLETE",
+                        }
+                    )
 
-                    logger.info(f"   🏆 {item.get('point_name')}: {content_type} - {decision.get('title')}")
+                    logger.info(
+                        f"   🏆 {item.get('point_name')}: {content_type} - {decision.get('title')}"
+                    )
 
                 logger.info("=" * 60)
                 logger.info("✅ API PIPELINE COMPLETE!")
@@ -2548,7 +2558,9 @@ def create_tour_guide_app() -> Dash:
             )
 
             if API_MODE == "mock":
-                logger.info("📋 API_MODE=mock - Using mocked data (fast, deterministic)")
+                logger.info(
+                    "📋 API_MODE=mock - Using mocked data (fast, deterministic)"
+                )
                 use_real_apis = False
             elif API_MODE == "real" and not REAL_AGENTS_AVAILABLE:
                 logger.error("❌ API_MODE=real but agents unavailable!")

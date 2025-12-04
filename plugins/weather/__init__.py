@@ -16,7 +16,7 @@ This plugin provides weather information for route points, showing:
 Usage:
     # The plugin is auto-discovered from the plugins/ directory
     # Just ensure plugin.yaml is present
-    
+
     # Or register manually:
     from plugins.weather import WeatherPlugin
     PluginRegistry.register("weather")(WeatherPlugin)
@@ -31,4 +31,3 @@ __all__ = [
     "WeatherAgent",
     "WeatherAgentConfig",
 ]
-
