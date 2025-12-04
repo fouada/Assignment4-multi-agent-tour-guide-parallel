@@ -689,7 +689,7 @@ We provide **7 mathematical theorems** with rigorous proofs:
 
 ## 🚀 Getting Started & Operation
 
-### Installation
+### 📦 Installation
 
 ```bash
 # 1. Install UV (High-speed package manager)
@@ -698,23 +698,431 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # 2. Clone & Setup
 git clone https://github.com/yourusername/multi-agent-tour-guide.git
 cd multi-agent-tour-guide
-make setup
 
-# 3. Verify
+# 3. Install all dependencies
+uv sync --all-extras
+
+# 4. Verify installation
 make info
 ```
 
-### Usage Examples
+### 🎯 Complete UV Command Reference
+
+<details>
+<summary><b>📦 Package Management</b></summary>
 
 ```bash
-# 🎬 Standard Queue Mode
-make run-queue
+# Sync production dependencies
+uv sync
 
-# 👪 Family Mode (Age 5+)
+# Sync with dev tools (testing, linting)
+uv sync --extra dev
+
+# Sync with API server
+uv sync --extra api
+
+# Sync with dashboard
+uv sync --extra dashboard
+
+# Sync ALL dependencies
+uv sync --all-extras
+
+# Add a new package
+uv add <package-name>
+
+# Remove a package
+uv remove <package-name>
+
+# Update all packages
+uv lock --upgrade && uv sync
+```
+
+</details>
+
+---
+
+### 🖥️ Feature Flows & How to Invoke
+
+#### 1️⃣ **Full System (API + Dashboard) — RECOMMENDED**
+
+```bash
+# Start the complete MIT-level architecture
+make run-system
+
+# What this does:
+# ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+# │   Dashboard     │──────▶│    FastAPI      │──────▶│  TourService    │
+# │   Port 8051     │ HTTP  │   Port 8000     │       │  (Agents+Queue) │
+# └─────────────────┘       └─────────────────┘       └─────────────────┘
+
+# Access points:
+# • Dashboard:  http://localhost:8051
+# • API Docs:   http://localhost:8000/docs
+# • Health:     http://localhost:8000/health
+```
+
+#### 2️⃣ **Tour Guide Dashboard Only**
+
+```bash
+# Start the interactive tour dashboard
+make run-dashboard
+# OR
+uv run python run_tour_dashboard.py
+
+# Features:
+# • Tour planning with source/destination
+# • User profile configuration (family, driver modes)
+# • Real-time pipeline visualization
+# • Content recommendations display
+
+# Access: http://localhost:8051
+```
+
+#### 3️⃣ **Research Dashboard (Statistical Analysis)**
+
+```bash
+# Start the research analytics dashboard
+make run-research
+# OR
+uv run python run_dashboard.py
+
+# Features:
+# • Monte Carlo simulations (10,000+ runs)
+# • Sensitivity analysis (Tornado charts)
+# • Pareto frontier exploration
+# • A/B statistical testing
+
+# Access: http://localhost:8050
+```
+
+#### 4️⃣ **REST API Server Only**
+
+```bash
+# Start FastAPI server
+make run-api
+# OR
+uv run uvicorn src.api.app:app --reload --port 8000
+
+# Endpoints:
+# POST /api/v1/tours        - Create new tour
+# GET  /api/v1/tours/{id}   - Get tour status
+# GET  /health              - Health check
+# GET  /docs                - Swagger documentation
+
+# Access: http://localhost:8000/docs
+```
+
+#### 5️⃣ **CLI Mode (Command Line)**
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# BASIC CLI FLOWS
+# ═══════════════════════════════════════════════════════════════
+
+# Standard demo with queue mode (recommended)
+make run-queue
+# OR
+uv run python main.py --demo --mode queue
+
+# Streaming mode (points emitted at intervals)
+uv run python main.py --demo --mode streaming --interval 5
+
+# Instant mode (all points processed immediately)
+uv run python main.py --demo --mode instant
+
+# Interactive setup (guided configuration)
+uv run python main.py --interactive
+
+# ═══════════════════════════════════════════════════════════════
+# PROFILE-BASED FLOWS
+# ═══════════════════════════════════════════════════════════════
+
+# Family mode (age-appropriate content)
 uv run python main.py --demo --profile family --min-age 5
 
-# 🚦 Driver Mode (Audio Only)
+# Driver mode (NO VIDEO - audio only)
 uv run python main.py --demo --profile driver
+
+# History buff (educational content)
+uv run python main.py --demo --profile history
+
+# Custom route
+uv run python main.py \
+  --source "Haifa, Israel" \
+  --destination "Jerusalem, Israel" \
+  --mode queue
+```
+
+---
+
+### 📋 Complete Makefile Commands
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# 🚀 RUNNING THE SYSTEM
+# ═══════════════════════════════════════════════════════════════
+
+make run-system        # Full system (API + Dashboard) - AUTO mode
+make run-live          # Full system with REAL APIs (for demos)
+make run-demo-system   # Full system with MOCK data (testing)
+
+make run-api           # API server only (port 8000)
+make run-dashboard     # Tour dashboard only (port 8051)
+make run-research      # Research dashboard (port 8050)
+
+make run-queue         # CLI queue mode
+make run-streaming     # CLI streaming mode
+make run-family        # CLI family profile
+
+# ═══════════════════════════════════════════════════════════════
+# 🧪 TESTING
+# ═══════════════════════════════════════════════════════════════
+
+make test              # Run all tests
+make test-unit         # Unit tests only
+make test-cov          # Tests with coverage report
+make test-e2e          # End-to-end tests
+
+# ═══════════════════════════════════════════════════════════════
+# 🔍 CODE QUALITY
+# ═══════════════════════════════════════════════════════════════
+
+make lint              # Run linters (ruff + mypy)
+make format            # Format code
+make check             # All checks (lint + test)
+
+# ═══════════════════════════════════════════════════════════════
+# 📦 PACKAGE MANAGEMENT
+# ═══════════════════════════════════════════════════════════════
+
+make sync              # Sync production deps
+make dev               # Sync dev deps
+make all               # Sync all deps
+
+# ═══════════════════════════════════════════════════════════════
+# 🧹 CLEANUP
+# ═══════════════════════════════════════════════════════════════
+
+make clean             # Remove cache files
+make clean-all         # Remove cache + venv
+```
+
+---
+
+### 🔄 Data Mode Strategy
+
+The system supports different data modes for different use cases:
+
+| Mode | Command | Use Case | Data Source |
+|------|---------|----------|-------------|
+| **AUTO** | `make run-system` | Development/Demo | Real APIs → Mock fallback |
+| **LIVE** | `make run-live` | MIT Presentations | Real APIs only |
+| **MOCK** | `make run-demo-system` | Testing/CI | Simulated data |
+
+```bash
+# Force specific mode via environment variable
+TOUR_GUIDE_API_MODE=real uv run python run_tour_dashboard.py
+TOUR_GUIDE_API_MODE=mock uv run pytest tests/
+```
+
+---
+
+### 🎮 Quick Start Flows
+
+<table>
+<tr>
+<td width="50%">
+
+**🎯 I want to see the full demo**
+```bash
+make run-system
+# Open http://localhost:8051
+# Click "Start Tour" button
+```
+
+</td>
+<td width="50%">
+
+**🧪 I want to run tests**
+```bash
+make test-cov
+# View htmlcov/index.html
+```
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+**📊 I want research analytics**
+```bash
+make run-research
+# Open http://localhost:8050
+# Run Monte Carlo simulations
+```
+
+</td>
+<td width="50%">
+
+**🔌 I want to use the API**
+```bash
+make run-api
+# Open http://localhost:8000/docs
+# Try POST /api/v1/tours
+```
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                    SYSTEM FLOW & INVOCATION GUIDE                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🔀 System Flow & Invocation Guide
+
+<div align="center">
+
+### *How Each Component Connects — Visual Map*
+
+</div>
+
+<br/>
+
+### 📐 Complete System Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                           MIT-LEVEL SYSTEM ARCHITECTURE                              │
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│   USER ENTRY POINTS                                                                  │
+│   ════════════════                                                                   │
+│                                                                                      │
+│   ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐                 │
+│   │ 🖥️ Tour Dashboard │  │ 🔬 Research Dash  │  │ 💻 CLI           │                 │
+│   │ make run-dashboard│  │ make run-research │  │ make run-queue   │                 │
+│   │ Port: 8051        │  │ Port: 8050        │  │ Terminal         │                 │
+│   └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘                 │
+│            │                     │                     │                            │
+│            ▼                     │                     ▼                            │
+│   ┌──────────────────────────────┴──────────────────────────────────────┐          │
+│   │                         🌐 FastAPI Server                            │          │
+│   │                         make run-api                                 │          │
+│   │                         Port: 8000                                   │          │
+│   │   ┌─────────────────────────────────────────────────────────────┐   │          │
+│   │   │ Endpoints:                                                   │   │          │
+│   │   │ • POST /api/v1/tours      → Create tour                     │   │          │
+│   │   │ • GET  /api/v1/tours/{id} → Get status                      │   │          │
+│   │   │ • GET  /health            → Health check                    │   │          │
+│   │   │ • WS   /api/v1/tours/{id}/ws → Real-time updates           │   │          │
+│   │   └─────────────────────────────────────────────────────────────┘   │          │
+│   └──────────────────────────────┬──────────────────────────────────────┘          │
+│                                  │                                                  │
+│                                  ▼                                                  │
+│   ┌──────────────────────────────────────────────────────────────────────┐         │
+│   │                        🎯 TourService                                 │         │
+│   │                     (Single Source of Truth)                          │         │
+│   │                                                                       │         │
+│   │   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐               │         │
+│   │   │ 1. Route    │──▶│ 2. Schedule │──▶│ 3. Process  │               │         │
+│   │   │   Fetch     │   │   Points    │   │   Points    │               │         │
+│   │   └─────────────┘   └─────────────┘   └──────┬──────┘               │         │
+│   └──────────────────────────────────────────────┼───────────────────────┘         │
+│                                                  │                                  │
+│                                                  ▼                                  │
+│   ┌──────────────────────────────────────────────────────────────────────┐         │
+│   │                        🔄 Orchestrator                                │         │
+│   │                                                                       │         │
+│   │   ┌─────────────────────────────────────────────────────────────┐   │         │
+│   │   │              ThreadPoolExecutor (Fan-Out)                    │   │         │
+│   │   │                                                              │   │         │
+│   │   │   ┌──────────┐   ┌──────────┐   ┌──────────┐               │   │         │
+│   │   │   │🎬 Video  │   │🎵 Music  │   │📖 Text   │               │   │         │
+│   │   │   │  Agent   │   │  Agent   │   │  Agent   │               │   │         │
+│   │   │   └────┬─────┘   └────┬─────┘   └────┬─────┘               │   │         │
+│   │   │        │              │              │                      │   │         │
+│   │   └────────┼──────────────┼──────────────┼──────────────────────┘   │         │
+│   │            │              │              │                          │         │
+│   │            ▼              ▼              ▼                          │         │
+│   │   ┌─────────────────────────────────────────────────────────────┐   │         │
+│   │   │                   📬 Smart Queue (Fan-In)                    │   │         │
+│   │   │                                                              │   │         │
+│   │   │   τ_soft = 15s (2/3 agents) │ τ_hard = 30s (1/3 agents)    │   │         │
+│   │   │                                                              │   │         │
+│   │   │   States: COMPLETE → SOFT_DEGRADED → HARD_DEGRADED → FAILED │   │         │
+│   │   └────────────────────────────┬─────────────────────────────────┘   │         │
+│   │                                │                                     │         │
+│   │                                ▼                                     │         │
+│   │   ┌─────────────────────────────────────────────────────────────┐   │         │
+│   │   │                   ⚖️ Judge Agent (LLM)                       │   │         │
+│   │   │                                                              │   │         │
+│   │   │   • Profile-aware scoring                                    │   │         │
+│   │   │   • Family mode filtering                                    │   │         │
+│   │   │   • Driver mode (no video)                                   │   │         │
+│   │   └─────────────────────────────────────────────────────────────┘   │         │
+│   └──────────────────────────────────────────────────────────────────────┘         │
+│                                                                                      │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+<br/>
+
+### 🎯 How to Invoke Each Component
+
+| Component | Command | URL | Purpose |
+|-----------|---------|-----|---------|
+| **Full System** | `make run-system` | 8051 + 8000 | Complete MIT demo |
+| **Tour Dashboard** | `make run-dashboard` | http://localhost:8051 | Interactive tour planning |
+| **Research Dashboard** | `make run-research` | http://localhost:8050 | Statistical analysis |
+| **API Server** | `make run-api` | http://localhost:8000/docs | REST endpoints |
+| **CLI Queue Mode** | `make run-queue` | Terminal | Command-line demo |
+| **CLI Family Mode** | `make run-family` | Terminal | Family-safe content |
+
+<br/>
+
+### 🔗 Component Interactions
+
+```mermaid
+graph LR
+    subgraph "Entry Points"
+        D[🖥️ Dashboard<br/>8051]
+        R[🔬 Research<br/>8050]
+        C[💻 CLI]
+    end
+    
+    subgraph "Backend"
+        A[🌐 API<br/>8000]
+        T[🎯 TourService]
+        O[🔄 Orchestrator]
+    end
+    
+    subgraph "Agents"
+        V[🎬 Video]
+        M[🎵 Music]
+        X[📖 Text]
+    end
+    
+    subgraph "Processing"
+        Q[📬 Queue]
+        J[⚖️ Judge]
+    end
+    
+    D --> A
+    R -.-> A
+    C --> T
+    A --> T
+    T --> O
+    O --> V & M & X
+    V & M & X --> Q
+    Q --> J
+    J --> T
 ```
 
 <br/>
@@ -728,6 +1136,111 @@ uv run python main.py --demo --profile driver
 <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
 ## 🔌 API Reference
+
+### 📡 REST Endpoints
+
+| Method | Endpoint | Description | Response |
+|--------|----------|-------------|----------|
+| `POST` | `/api/v1/tours` | Create new tour | `{ tour_id, status, created_at }` |
+| `GET` | `/api/v1/tours/{id}` | Get tour status | `{ status, progress, playlist }` |
+| `DELETE` | `/api/v1/tours/{id}` | Cancel tour | `{ success: true }` |
+| `GET` | `/api/v1/tours` | List all tours | `[{ tour_id, status }...]` |
+| `GET` | `/health` | Health check | `{ status, api_mode, agents }` |
+| `GET` | `/docs` | Swagger UI | Interactive docs |
+| `WS` | `/api/v1/tours/{id}/ws` | Real-time updates | WebSocket stream |
+
+### 📝 API Usage Examples
+
+<details>
+<summary><b>Create a Tour</b></summary>
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/tours" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source": "Tel Aviv, Israel",
+    "destination": "Jerusalem, Israel",
+    "profile": {
+      "is_driver": false,
+      "is_family_mode": true,
+      "min_age": 8
+    }
+  }'
+```
+
+Response:
+```json
+{
+  "tour_id": "tour_abc123",
+  "status": "processing",
+  "created_at": "2025-12-04T12:00:00Z",
+  "message": "Tour created. Processing route..."
+}
+```
+
+</details>
+
+<details>
+<summary><b>Get Tour Status</b></summary>
+
+```bash
+curl "http://localhost:8000/api/v1/tours/tour_abc123"
+```
+
+Response:
+```json
+{
+  "tour_id": "tour_abc123",
+  "status": "completed",
+  "progress": {
+    "completed_points": 5,
+    "total_points": 5,
+    "percentage": 100
+  },
+  "playlist": [
+    {
+      "point_name": "Tel Aviv",
+      "decision": {
+        "content_type": "VIDEO",
+        "title": "Tel Aviv - The City That Never Sleeps",
+        "url": "https://youtube.com/..."
+      }
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary><b>Health Check</b></summary>
+
+```bash
+curl "http://localhost:8000/health" | jq
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "version": "2.0.0",
+  "api_mode": "auto",
+  "checks": {
+    "data_mode": "🔴 LIVE",
+    "using_real_apis": true,
+    "agents": {
+      "video": { "status": "live", "icon": "🔴" },
+      "music": { "status": "live", "icon": "🔴" },
+      "text": { "status": "live", "icon": "🔴" },
+      "judge": { "status": "live", "icon": "🔴" }
+    }
+  }
+}
+```
+
+</details>
+
+### 🖼️ API Documentation
 
 <table>
 <tr>
@@ -760,6 +1273,40 @@ uv run python main.py --demo --profile driver
 </tr>
 </table>
 
+### 🐍 Python Client Usage
+
+```python
+from src.api.client import TourGuideClient, APIConfig
+
+# Initialize client
+client = TourGuideClient(APIConfig(
+    base_url="http://localhost:8000",
+    timeout=30.0,
+))
+
+# Create a tour
+response = client.create_tour(
+    source="Tel Aviv, Israel",
+    destination="Jerusalem, Israel",
+    profile={"is_family_mode": True, "min_age": 8},
+)
+tour_id = response["tour_id"]
+
+# Wait for completion with progress callback
+def on_progress(status):
+    print(f"Progress: {status['progress']['percentage']}%")
+
+results = client.wait_for_completion(
+    tour_id=tour_id,
+    timeout=120.0,
+    callback=on_progress,
+)
+
+# Get playlist
+for item in results["playlist"]:
+    print(f"📍 {item['point_name']}: {item['decision']['title']}")
+```
+
 <br/>
 
 ---
@@ -772,7 +1319,132 @@ uv run python main.py --demo --profile driver
 
 ## 🧪 Testing & Quality Assurance
 
-The project maintains strict MIT-level engineering standards with **1,750+ tests** and **89% coverage**.
+The project maintains strict MIT-level engineering standards with **1,765+ tests** and **89% coverage**.
+
+### 📊 Test Suite Overview
+
+| Test Category | Count | Purpose | Expected Results |
+|---------------|-------|---------|------------------|
+| **Unit Tests** | 1,599 | Test individual components in isolation | All pass, <50ms each |
+| **Integration Tests** | 51 | Test component interactions | All pass, <5s each |
+| **E2E Tests** | 103 | Test full system flows | All pass, <30s each |
+| **Performance Tests** | 12 | Benchmark throughput/latency | Meet SLA thresholds |
+| **Total** | **1,765** | Complete system validation | **89%+ coverage** |
+
+### 🔬 Test Categories & Expected Results
+
+<details>
+<summary><b>📁 Unit Tests (1,599 tests)</b></summary>
+
+| Module | Tests | Expected Result |
+|--------|-------|-----------------|
+| `test_orchestrator.py` | 45 | Parallel execution, fan-out/fan-in patterns |
+| `test_smart_queue.py` | 38 | COMPLETE/SOFT/HARD degradation states |
+| `test_judge_agent.py` | 42 | Content scoring, profile-based selection |
+| `test_user_profile.py` | 35 | Family mode, driver mode filtering |
+| `test_circuit_breaker.py` | 28 | Open/closed/half-open states |
+| `test_statistical_analysis.py` | 55 | Monte Carlo, sensitivity analysis |
+| `test_dashboard_*.py` | 120+ | UI components, visualization |
+| `test_resilience_*.py` | 80+ | Timeout, retry, bulkhead patterns |
+| `test_research_*.py` | 200+ | Bayesian, meta-learning, negotiation |
+
+</details>
+
+<details>
+<summary><b>🔗 Integration Tests (51 tests)</b></summary>
+
+| Test File | Purpose | Expected Result |
+|-----------|---------|-----------------|
+| `test_tour_guide_dashboard_integration.py` | Dashboard + API integration | Full pipeline works |
+| `test_orchestrator_integration.py` | Orchestrator + agents | Parallel processing OK |
+| `test_api_integration.py` | REST API endpoints | All endpoints respond |
+| `test_queue_integration.py` | Queue + circuit breaker | Graceful degradation |
+
+</details>
+
+<details>
+<summary><b>🎯 E2E Tests (103 tests)</b></summary>
+
+| Test Scenario | Expected Result |
+|---------------|-----------------|
+| Complete tour flow | 3/3 agents respond, COMPLETE status |
+| Soft degradation | 2/3 agents, returns partial results |
+| Hard degradation | 1/3 agents, emergency fallback works |
+| Family mode filtering | No adult content in results |
+| Driver mode safety | No video content selected |
+| API rate limiting | Graceful handling under load |
+
+</details>
+
+### 🚀 Running Tests
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# QUICK TEST COMMANDS (Using UV)
+# ═══════════════════════════════════════════════════════════════
+
+# Run all tests (recommended)
+make test
+
+# Run unit tests only (fast, ~30s)
+make test-unit
+
+# Run with coverage report
+make test-cov
+
+# Run specific test file
+uv run pytest tests/unit/test_orchestrator.py -v
+
+# Run tests matching a pattern
+uv run pytest tests/ -k "queue" -v
+
+# ═══════════════════════════════════════════════════════════════
+# DETAILED TEST COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+# Unit tests with verbose output
+uv run pytest tests/unit/ -v --tb=short
+
+# Integration tests
+uv run pytest tests/integration/ -v
+
+# E2E tests (requires more time)
+uv run pytest tests/e2e/ -v
+
+# Performance benchmarks
+uv run pytest tests/performance/ -v --benchmark-only
+
+# Generate HTML coverage report
+uv run pytest tests/ --cov=src --cov-report=html
+# Open htmlcov/index.html in browser
+```
+
+### ✅ Expected Test Output
+
+```
+========================= test session starts ==========================
+platform linux -- Python 3.11.14, pytest-9.0.1
+collected 1765 items
+
+tests/unit/test_orchestrator.py ............................       [  2%]
+tests/unit/test_smart_queue.py ..........................          [  4%]
+tests/unit/test_judge_agent.py ............................        [  7%]
+... (more tests) ...
+tests/e2e/test_full_pipeline.py ....                               [100%]
+
+========================= 1765 passed in 45.23s ========================
+
+---------- coverage: platform linux, python 3.11.14 ----------
+Name                                    Stmts   Miss  Cover
+-----------------------------------------------------------
+src/agents/base_agent.py                   45      2    96%
+src/agents/judge_agent.py                 120     12    90%
+src/core/orchestrator.py                  180     18    90%
+src/core/smart_queue.py                   150     10    93%
+... (more files) ...
+-----------------------------------------------------------
+TOTAL                                    8500    935    89%
+```
 
 ### Test Suite Verification
 
@@ -788,7 +1460,7 @@ The project maintains strict MIT-level engineering standards with **1,750+ tests
   <img src="assets/images/05-test-results.png" alt="Test Results" width="100%"/>
 </picture>
 
-*1,750+ tests across Unit, Integration, E2E, and Performance*
+*1,765+ tests across Unit, Integration, E2E, and Performance*
 
 </div>
 
@@ -822,6 +1494,17 @@ The project maintains strict MIT-level engineering standards with **1,750+ tests
 *Automated GitHub Actions pipeline for linting, testing, security, and Docker builds*
 
 </div>
+
+### 🔄 CI/CD Jobs & Expected Results
+
+| Job | Checks | Expected Result |
+|-----|--------|-----------------|
+| **🔍 Lint & Format** | Ruff, MyPy | 0 errors, 0 warnings |
+| **🧪 Unit Tests** | Python 3.10/3.11/3.12 | All pass, 85%+ coverage |
+| **🔗 Integration Tests** | Component interactions | All pass |
+| **⚡ Performance Tests** | Throughput benchmarks | Meet SLA |
+| **📊 Coverage Report** | Combined analysis | 85%+ threshold |
+| **🔒 Security Scan** | Bandit, pip-audit | No vulnerabilities |
 
 <br/>
 
