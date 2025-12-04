@@ -145,6 +145,9 @@ class TestRetryWithBackoff:
     @patch("src.utils.retry.time.sleep")
     def test_succeeds_after_retries(self, mock_sleep):
         """Test function succeeds after retries."""
+        # Reset mock to ensure clean state (in case of test pollution)
+        mock_sleep.reset_mock()
+
         attempt = 0
 
         @retry_with_backoff(max_retries=3, base_delay=0.1)
