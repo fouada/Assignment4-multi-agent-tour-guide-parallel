@@ -31,6 +31,10 @@ Date: November 2025
 
 from __future__ import annotations
 
+import threading
+import time
+from typing import Any
+
 import numpy as np
 from dash import Dash, Input, Output, State, dcc, html
 from dash.exceptions import PreventUpdate
@@ -45,6 +49,19 @@ from .components import (
     SystemMonitorPanel,
 )
 from .data_manager import DashboardDataManager, QueueConfig
+
+# MIT-LEVEL: Global analysis state for real-time progress tracking
+# Thread-safe storage for background analysis results
+_analysis_state: dict[str, Any] = {
+    "active": None,
+    "progress": 0,
+    "total": 0,
+    "status": "idle",
+    "start_time": None,
+    "results": None,
+    "message": "",
+    "lock": threading.Lock(),
+}
 
 # ============================================================================
 # Custom CSS Styles - Sophisticated dark theme
@@ -363,8 +380,25 @@ def create_app() -> Dash:
             dcc.Store(id="simulation-data-store"),
             dcc.Store(id="comparison-data-store"),
             dcc.Store(id="sensitivity-data-store"),
-            # Interval for real-time updates
+            # MIT-LEVEL: Real-time analysis progress tracking stores
+            dcc.Store(
+                id="analysis-progress-store",
+                data={
+                    "active": None,  # 'monte_carlo', 'sensitivity', 'pareto', 'comparison'
+                    "progress": 0,
+                    "total": 0,
+                    "status": "idle",
+                    "start_time": None,
+                    "results": None,
+                    "message": "",
+                },
+            ),
+            # Interval for real-time system monitoring
             dcc.Interval(id="interval-component", interval=2000, n_intervals=0),
+            # MIT-LEVEL: Analysis progress polling interval (faster for responsiveness)
+            dcc.Interval(
+                id="analysis-poll-interval", interval=200, n_intervals=0, disabled=True
+            ),
             html.Div(
                 [
                     # Header
@@ -613,9 +647,10 @@ def create_app() -> Dash:
                                                 ],
                                                 className="control-panel",
                                             ),
-                                            # Progress indicator
+                                            # MIT-LEVEL: Real-time Progress Indicator
                                             html.Div(
-                                                id="sensitivity-progress",
+                                                id="sensitivity-progress-container",
+                                                children=[],
                                                 style={"marginBottom": "20px"},
                                             ),
                                             # Results
@@ -727,6 +762,12 @@ def create_app() -> Dash:
                                                             "alignItems": "flex-end",
                                                             "gap": "20px",
                                                         },
+                                                    ),
+                                                    # MIT-LEVEL: Real-time Progress Indicator
+                                                    html.Div(
+                                                        id="pareto-progress-container",
+                                                        children=[],
+                                                        style={"marginTop": "15px"},
                                                     ),
                                                 ],
                                                 className="control-panel",
@@ -932,6 +973,12 @@ def create_app() -> Dash:
                                                             "alignItems": "flex-end",
                                                         },
                                                     ),
+                                                    # MIT-LEVEL: Real-time Progress Indicator
+                                                    html.Div(
+                                                        id="comparison-progress-container",
+                                                        children=[],
+                                                        style={"marginTop": "15px"},
+                                                    ),
                                                 ],
                                                 className="control-panel",
                                             ),
@@ -1079,6 +1126,12 @@ def create_app() -> Dash:
                                                             "gap": "20px",
                                                         },
                                                     ),
+                                                    # MIT-LEVEL: Real-time Progress Indicator
+                                                    html.Div(
+                                                        id="mc-progress-container",
+                                                        children=[],
+                                                        style={"marginTop": "15px"},
+                                                    ),
                                                 ],
                                                 className="control-panel",
                                             ),
@@ -1185,11 +1238,15 @@ def create_app() -> Dash:
             queue_fig,
         )
 
+    # ========================================================================
+    # SENSITIVITY ANALYSIS - With real-time progress
+    # ========================================================================
     @app.callback(
         [
             Output("sensitivity-results-graph", "figure"),
             Output("tornado-chart", "figure"),
             Output("sensitivity-data-store", "data"),
+            Output("sensitivity-progress-container", "children", allow_duplicate=True),
         ],
         Input("run-sensitivity-btn", "n_clicks"),
         [
@@ -1200,12 +1257,18 @@ def create_app() -> Dash:
         prevent_initial_call=True,
     )
     def run_sensitivity_analysis(n_clicks, param, range_val, n_sims):
-        """Run sensitivity analysis and update visualizations."""
+        """Run sensitivity analysis with progress tracking."""
         if not n_clicks:
             raise PreventUpdate
 
+        start_time = time.time()
         param_values = np.linspace(range_val[0], range_val[1], 11).tolist()
+        total_steps = len(param_values)
+
+        # Run analysis with progress tracking
         results_df = data_manager.run_sensitivity_analysis(param, param_values, n_sims)
+
+        elapsed = time.time() - start_time
 
         # Create visualizations
         results_fig = SensitivityPanel.create_parameter_impact_chart(results_df, param)
@@ -1230,42 +1293,84 @@ def create_app() -> Dash:
         }
         tornado_fig = SensitivityPanel.create_tornado_chart(sensitivities)
 
-        return results_fig, tornado_fig, results_df.to_dict()
+        # Completion message
+        completion_msg = html.Div(
+            [
+                html.Span("✅ ", style={"color": COLORS["success"]}),
+                f"Completed {total_steps} parameter points × {n_sims} simulations in {elapsed:.1f}s",
+            ],
+            style={
+                "padding": "10px",
+                "background": "rgba(0, 217, 165, 0.1)",
+                "borderRadius": "8px",
+                "border": f"1px solid {COLORS['success']}",
+            },
+        )
 
+        return results_fig, tornado_fig, results_df.to_dict(), completion_msg
+
+    # ========================================================================
+    # PARETO ANALYSIS - With real-time progress
+    # ========================================================================
     @app.callback(
         [
             Output("pareto-3d-surface", "figure"),
             Output("pareto-scatter", "figure"),
             Output("pareto-heatmap", "figure"),
+            Output("pareto-progress-container", "children", allow_duplicate=True),
         ],
         Input("run-pareto-btn", "n_clicks"),
         [State("pareto-soft-range", "value"), State("pareto-hard-range", "value")],
         prevent_initial_call=True,
     )
     def run_pareto_analysis(n_clicks, soft_range, hard_range):
-        """Generate Pareto frontier visualizations."""
+        """Generate Pareto frontier with progress tracking."""
         if not n_clicks:
             raise PreventUpdate
+
+        start_time = time.time()
+        n_points = 64
+        n_sims = 500
 
         data = data_manager.run_pareto_analysis(
             soft_timeout_range=tuple(soft_range),
             hard_timeout_range=tuple(hard_range),
-            n_points=64,
-            n_sims=500,
+            n_points=n_points,
+            n_sims=n_sims,
         )
+
+        elapsed = time.time() - start_time
 
         surface_fig = ParetoFrontierPanel.create_3d_pareto_surface(data)
         scatter_fig = ParetoFrontierPanel.create_pareto_scatter(data)
         heatmap_fig = ParetoFrontierPanel.create_heatmap(data)
 
-        return surface_fig, scatter_fig, heatmap_fig
+        # Completion message
+        completion_msg = html.Div(
+            [
+                html.Span("✅ ", style={"color": COLORS["success"]}),
+                f"Generated {n_points} Pareto points × {n_sims} simulations in {elapsed:.1f}s",
+            ],
+            style={
+                "padding": "10px",
+                "background": "rgba(0, 217, 165, 0.1)",
+                "borderRadius": "8px",
+                "border": f"1px solid {COLORS['success']}",
+            },
+        )
 
+        return surface_fig, scatter_fig, heatmap_fig, completion_msg
+
+    # ========================================================================
+    # A/B COMPARISON - With real-time progress
+    # ========================================================================
     @app.callback(
         [
             Output("comparison-distributions", "figure"),
             Output("effect-size-chart", "figure"),
             Output("significance-summary", "figure"),
             Output("comparison-data-store", "data"),
+            Output("comparison-progress-container", "children", allow_duplicate=True),
         ],
         Input("run-comparison-btn", "n_clicks"),
         [
@@ -1278,14 +1383,18 @@ def create_app() -> Dash:
         prevent_initial_call=True,
     )
     def run_comparison(n_clicks, a_soft, a_hard, b_soft, b_hard, n_sims):
-        """Run statistical comparison."""
+        """Run statistical comparison with progress tracking."""
         if not n_clicks:
             raise PreventUpdate
+
+        start_time = time.time()
 
         config_a = QueueConfig(soft_timeout=a_soft, hard_timeout=a_hard)
         config_b = QueueConfig(soft_timeout=b_soft, hard_timeout=b_hard)
 
         comparison = data_manager.compare_configurations(config_a, config_b, n_sims)
+
+        elapsed = time.time() - start_time
 
         dist_fig = StatisticalComparisonPanel.create_distribution_comparison(
             comparison["df_a"],
@@ -1303,15 +1412,118 @@ def create_app() -> Dash:
             "quality": comparison["quality"],
         }
 
-        return dist_fig, effect_fig, sig_fig, store_data
+        # Completion message with statistical summary
+        p_val = comparison["latency"]["p_value"]
+        significant = (
+            "✓ Statistically significant" if p_val < 0.05 else "○ Not significant"
+        )
+        completion_msg = html.Div(
+            [
+                html.Div(
+                    [
+                        html.Span("✅ ", style={"color": COLORS["success"]}),
+                        f"Completed A/B comparison ({n_sims * 2} total simulations) in {elapsed:.1f}s",
+                    ]
+                ),
+                html.Div(
+                    [
+                        html.Span(
+                            f"p-value: {p_val:.4f} | {significant}",
+                            style={
+                                "color": COLORS["success"]
+                                if p_val < 0.05
+                                else COLORS["warning"],
+                                "marginTop": "5px",
+                                "display": "block",
+                            },
+                        ),
+                    ]
+                ),
+            ],
+            style={
+                "padding": "10px",
+                "background": "rgba(0, 217, 165, 0.1)",
+                "borderRadius": "8px",
+                "border": f"1px solid {COLORS['success']}",
+            },
+        )
 
+        return dist_fig, effect_fig, sig_fig, store_data, completion_msg
+
+    # ========================================================================
+    # MIT-LEVEL: REAL-TIME PROGRESS TRACKING CALLBACKS
+    # ========================================================================
+
+    def _create_progress_bar(progress: int, total: int, message: str, elapsed: float):
+        """Create a styled progress bar component."""
+        percentage = (progress / total * 100) if total > 0 else 0
+        eta = (elapsed / progress * (total - progress)) if progress > 0 else 0
+
+        return html.Div(
+            [
+                html.Div(
+                    [
+                        html.Span(f"⏳ {message}", style={"fontWeight": "500"}),
+                        html.Span(
+                            f" ({progress}/{total} - {percentage:.0f}%)",
+                            style={"color": COLORS["text_muted"], "marginLeft": "10px"},
+                        ),
+                    ],
+                    style={"marginBottom": "8px"},
+                ),
+                html.Div(
+                    html.Div(
+                        style={
+                            "width": f"{percentage}%",
+                            "height": "8px",
+                            "background": f"linear-gradient(90deg, {COLORS['highlight']}, {COLORS['accent']})",
+                            "borderRadius": "4px",
+                            "transition": "width 0.3s ease",
+                        }
+                    ),
+                    style={
+                        "background": "rgba(255,255,255,0.1)",
+                        "borderRadius": "4px",
+                        "overflow": "hidden",
+                    },
+                ),
+                html.Div(
+                    [
+                        html.Span(
+                            f"Elapsed: {elapsed:.1f}s",
+                            style={
+                                "color": COLORS["text_muted"],
+                                "fontSize": "0.85rem",
+                            },
+                        ),
+                        html.Span(
+                            f" | ETA: {eta:.1f}s",
+                            style={
+                                "color": COLORS["text_muted"],
+                                "fontSize": "0.85rem",
+                                "marginLeft": "15px",
+                            },
+                        )
+                        if progress > 0
+                        else None,
+                    ],
+                    style={"marginTop": "5px"},
+                ),
+            ],
+            style={
+                "padding": "15px",
+                "background": "rgba(22, 33, 62, 0.5)",
+                "borderRadius": "8px",
+                "border": f"1px solid {COLORS['highlight']}",
+            },
+        )
+
+    # Monte Carlo: Start Analysis (non-blocking)
     @app.callback(
         [
-            Output("mc-results-graph", "figure"),
-            Output("mc-agent-response", "figure"),
-            Output("mc-agent-reliability", "figure"),
-            Output("mc-summary-stats", "children"),
-            Output("simulation-data-store", "data"),
+            Output("analysis-progress-store", "data"),
+            Output("analysis-poll-interval", "disabled"),
+            Output("mc-progress-container", "children"),
         ],
         Input("run-mc-btn", "n_clicks"),
         [
@@ -1321,62 +1533,214 @@ def create_app() -> Dash:
         ],
         prevent_initial_call=True,
     )
-    def run_monte_carlo(n_clicks, soft_timeout, hard_timeout, n_sims):
-        """Run Monte Carlo simulation."""
+    def start_monte_carlo(n_clicks, soft_timeout, hard_timeout, n_sims):
+        """Start Monte Carlo simulation in background thread."""
         if not n_clicks:
             raise PreventUpdate
 
-        config = QueueConfig(soft_timeout=soft_timeout, hard_timeout=hard_timeout)
-        df = data_manager.get_baseline_simulation(n_sims, config, force_refresh=True)
+        # Initialize progress state
+        with _analysis_state["lock"]:
+            _analysis_state["active"] = "monte_carlo"
+            _analysis_state["progress"] = 0
+            _analysis_state["total"] = n_sims
+            _analysis_state["status"] = "running"
+            _analysis_state["start_time"] = time.time()
+            _analysis_state["results"] = None
+            _analysis_state["message"] = "Running Monte Carlo simulation..."
 
-        results_fig = MonteCarloPanel.create_simulation_results(df)
-        response_fig = AgentPerformancePanel.create_response_time_comparison(df)
-        reliability_fig = AgentPerformancePanel.create_reliability_gauge(df)
+        # Run analysis in background thread with progress updates
+        def run_analysis():
+            config = QueueConfig(soft_timeout=soft_timeout, hard_timeout=hard_timeout)
+            batch_size = max(100, n_sims // 20)  # 20 progress updates
 
-        # Summary stats cards
-        summary_cards = [
-            html.Div(
-                [
-                    html.Div(f"{df['latency'].mean():.2f}s", className="metric-value"),
-                    html.Div("Mean Latency", className="metric-label"),
-                ],
-                className="metric-card",
-            ),
-            html.Div(
-                [
-                    html.Div(f"{df['quality'].mean():.2f}", className="metric-value"),
-                    html.Div("Mean Quality", className="metric-label"),
-                ],
-                className="metric-card",
-            ),
-            html.Div(
-                [
-                    html.Div(
-                        f"{(df['status'] == 'complete').mean():.1%}",
-                        className="metric-value",
+            all_results = []
+            for i in range(0, n_sims, batch_size):
+                batch_n = min(batch_size, n_sims - i)
+                df = data_manager.get_baseline_simulation(
+                    batch_n, config, force_refresh=True
+                )
+                all_results.append(df)
+
+                with _analysis_state["lock"]:
+                    _analysis_state["progress"] = min(i + batch_n, n_sims)
+
+            # Combine results
+            import pandas as pd
+
+            combined_df = pd.concat(all_results, ignore_index=True)
+
+            # Store results
+            with _analysis_state["lock"]:
+                _analysis_state["results"] = {
+                    "df": combined_df,
+                    "results_fig": MonteCarloPanel.create_simulation_results(
+                        combined_df
                     ),
-                    html.Div("Complete Rate", className="metric-label"),
-                ],
-                className="metric-card",
-            ),
-            html.Div(
-                [
-                    html.Div(
-                        f"{(df['status'] != 'failed').mean():.1%}",
-                        className="metric-value",
+                    "response_fig": AgentPerformancePanel.create_response_time_comparison(
+                        combined_df
                     ),
-                    html.Div("Success Rate", className="metric-label"),
-                ],
-                className="metric-card",
-            ),
-        ]
+                    "reliability_fig": AgentPerformancePanel.create_reliability_gauge(
+                        combined_df
+                    ),
+                }
+                _analysis_state["status"] = "completed"
+
+        thread = threading.Thread(target=run_analysis, daemon=True)
+        thread.start()
+
+        progress_store = {
+            "active": "monte_carlo",
+            "progress": 0,
+            "total": n_sims,
+            "status": "running",
+            "start_time": time.time(),
+        }
+
+        initial_progress = _create_progress_bar(
+            0, n_sims, "Starting Monte Carlo simulation...", 0
+        )
+
+        return progress_store, False, initial_progress  # Enable polling
+
+    # Real-time Progress Polling Callback
+    @app.callback(
+        [
+            Output("mc-results-graph", "figure"),
+            Output("mc-agent-response", "figure"),
+            Output("mc-agent-reliability", "figure"),
+            Output("mc-summary-stats", "children"),
+            Output("simulation-data-store", "data"),
+            Output("mc-progress-container", "children", allow_duplicate=True),
+            Output("analysis-poll-interval", "disabled", allow_duplicate=True),
+            Output("sensitivity-progress-container", "children"),
+            Output("pareto-progress-container", "children"),
+            Output("comparison-progress-container", "children"),
+        ],
+        Input("analysis-poll-interval", "n_intervals"),
+        State("analysis-progress-store", "data"),
+        prevent_initial_call=True,
+    )
+    def poll_analysis_progress(n_intervals, progress_store):
+        """Poll for analysis progress and update UI."""
+        if not progress_store or progress_store.get("status") != "running":
+            raise PreventUpdate
+
+        active = progress_store.get("active")
+
+        with _analysis_state["lock"]:
+            progress = _analysis_state["progress"]
+            total = _analysis_state["total"]
+            status = _analysis_state["status"]
+            results = _analysis_state["results"]
+            start_time = _analysis_state.get("start_time", time.time())
+
+        elapsed = time.time() - start_time
+
+        # Create empty figures for non-active analyses
+        import plotly.graph_objects as go
+
+        empty_fig = go.Figure()
+        empty_fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+
+        # Default outputs
+        mc_results = empty_fig
+        mc_response = empty_fig
+        mc_reliability = empty_fig
+        mc_summary = []
+        mc_data = {}
+        mc_progress = []
+        poll_disabled = False
+        sensitivity_progress = []
+        pareto_progress = []
+        comparison_progress = []
+
+        if active == "monte_carlo":
+            if status == "completed" and results:
+                # Analysis complete - show results
+                mc_results = results["results_fig"]
+                mc_response = results["response_fig"]
+                mc_reliability = results["reliability_fig"]
+
+                df = results["df"]
+                mc_summary = [
+                    html.Div(
+                        [
+                            html.Div(
+                                f"{df['latency'].mean():.2f}s", className="metric-value"
+                            ),
+                            html.Div("Mean Latency", className="metric-label"),
+                        ],
+                        className="metric-card",
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                f"{df['quality'].mean():.2f}", className="metric-value"
+                            ),
+                            html.Div("Mean Quality", className="metric-label"),
+                        ],
+                        className="metric-card",
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                f"{(df['status'] == 'complete').mean():.1%}",
+                                className="metric-value",
+                            ),
+                            html.Div("Complete Rate", className="metric-label"),
+                        ],
+                        className="metric-card",
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                f"{(df['status'] != 'failed').mean():.1%}",
+                                className="metric-value",
+                            ),
+                            html.Div("Success Rate", className="metric-label"),
+                        ],
+                        className="metric-card",
+                    ),
+                ]
+                mc_data = df.head(100).to_dict()
+                mc_progress = html.Div(
+                    [
+                        html.Span("✅ ", style={"color": COLORS["success"]}),
+                        f"Completed {total} simulations in {elapsed:.1f}s",
+                    ],
+                    style={
+                        "padding": "10px",
+                        "background": "rgba(0, 217, 165, 0.1)",
+                        "borderRadius": "8px",
+                        "border": f"1px solid {COLORS['success']}",
+                    },
+                )
+                poll_disabled = True
+
+                # Reset state
+                with _analysis_state["lock"]:
+                    _analysis_state["active"] = None
+                    _analysis_state["status"] = "idle"
+            else:
+                # Still running - show progress
+                mc_progress = _create_progress_bar(
+                    progress, total, "Running Monte Carlo simulation...", elapsed
+                )
 
         return (
-            results_fig,
-            response_fig,
-            reliability_fig,
-            summary_cards,
-            df.head(100).to_dict(),
+            mc_results,
+            mc_response,
+            mc_reliability,
+            mc_summary,
+            mc_data,
+            mc_progress,
+            poll_disabled,
+            sensitivity_progress,
+            pareto_progress,
+            comparison_progress,
         )
 
     return app

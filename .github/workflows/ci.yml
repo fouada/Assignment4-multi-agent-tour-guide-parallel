@@ -25,9 +25,8 @@ env:
   PYTHON_VERSION: "3.11"
   UV_VERSION: "0.1.0"
   # Coverage threshold - MIT Level academic publishing quality
-  # Note: Lowered from 85% to 83% after API refactor added new code paths
-  # TODO: Add more tests for src/api/client.py and src/services/tour_service.py
-  COVERAGE_THRESHOLD: 83
+  # Comprehensive testing with 85%+ coverage, edge cases documented
+  COVERAGE_THRESHOLD: 85
   # =========================================================================
   # API MODE STRATEGY (MIT-Level)
   # =========================================================================

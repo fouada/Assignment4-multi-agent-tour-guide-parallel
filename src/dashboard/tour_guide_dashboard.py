@@ -34,7 +34,6 @@ import logging
 import os
 import random
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from enum import Enum
 
 import numpy as np
@@ -84,21 +83,11 @@ except Exception as e:
 REAL_AGENTS_AVAILABLE = False
 
 try:
-    from src.agents.judge_agent import JudgeAgent
-    from src.agents.music_agent import MusicAgent
-    from src.agents.text_agent import TextAgent
-    from src.agents.video_agent import VideoAgent
-    from src.core.smart_queue import SmartAgentQueue
-    from src.models.route import RoutePoint
-    from src.models.user_profile import (
-        AgeGroup,
-        TravelMode,
-        TripPurpose,
-        UserProfile,
-    )
-    from src.services.google_maps import GoogleMapsClient, get_mock_route
+    # Check if agents are available (for API mode detection)
+    from src.agents.video_agent import VideoAgent as _VideoAgent  # noqa: F401
 
     REAL_AGENTS_AVAILABLE = True
+    del _VideoAgent  # Clean up namespace
 except ImportError as e:
     logging.warning(f"Direct agents not available: {e}")
 
@@ -1845,9 +1834,25 @@ def create_tour_guide_app() -> Dash:
             dcc.Store(id="profile-state-store", data={}),
             dcc.Store(id="results-store", data=[]),
             dcc.Store(id="tour-results-store", data={}),
+            # Real-time tour tracking store
+            dcc.Store(
+                id="current-tour-store",
+                data={
+                    "tour_id": None,
+                    "status": "idle",
+                    "progress": {"completed_points": 0, "total_points": 0},
+                    "recommendations": [],
+                    "route_points": [],
+                    "is_processing": False,
+                },
+            ),
             # Interval for animations
             dcc.Interval(
                 id="animation-interval", interval=800, n_intervals=0, disabled=True
+            ),
+            # Real-time polling interval (1 second when active)
+            dcc.Interval(
+                id="poll-interval", interval=1000, n_intervals=0, disabled=True
             ),
             html.Div(
                 [
@@ -2391,14 +2396,10 @@ def create_tour_guide_app() -> Dash:
 
     @app.callback(
         [
-            Output("recommendations-content", "children"),
-            Output("metric-points", "children"),
-            Output("metric-latency", "children"),
-            Output("metric-quality", "children"),
-            Output("metric-recommendations", "children"),
-            Output("content-distribution-chart", "figure"),
-            Output("main-tabs", "value"),
+            Output("current-tour-store", "data"),
+            Output("poll-interval", "disabled"),
             Output("tour-status-message", "children"),
+            Output("main-tabs", "value"),
         ],
         Input("start-tour-btn", "n_clicks"),
         [
@@ -2411,21 +2412,21 @@ def create_tour_guide_app() -> Dash:
         ],
         prevent_initial_call=True,
     )
-    def start_tour_simulation(
+    def start_tour_async(
         n_clicks, source, dest, profile, family_mode, driver_mode, content_pref
     ):
-        """Run the tour guide pipeline via API (MIT-Level Architecture).
+        """Start tour processing (non-blocking) - Real-time updates via polling.
 
-        ARCHITECTURE:
+        ARCHITECTURE (MIT-Level):
         ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
         │   Dashboard     │──────▶│    FastAPI      │──────▶│  TourService    │
-        │   (This Code)   │ HTTP  │   (Port 8000)   │       │  (Agents+Queue) │
+        │   (Polling)     │ HTTP  │   (Port 8000)   │       │  (Agents+Queue) │
         └─────────────────┘       └─────────────────┘       └─────────────────┘
 
-        PIPELINE VIA API:
+        REAL-TIME PIPELINE:
         1. POST /api/v1/tours → Create tour (async processing starts)
-        2. GET /api/v1/tours/{id} → Poll for status updates
-        3. GET /api/v1/tours/{id}/results → Get final playlist
+        2. RETURN IMMEDIATELY → Enable polling interval
+        3. poll_tour_status callback → Polls and updates UI in real-time
         """
         if not n_clicks:
             raise PreventUpdate
@@ -2434,437 +2435,281 @@ def create_tour_guide_app() -> Dash:
         is_driver = bool(driver_mode and "enabled" in driver_mode)
         is_family = bool(family_mode and "enabled" in family_mode)
 
-        recommendations = []
-        total_latency = 0.0
-        queue_metrics = []
-        using_api = False
-
-        # Default route points (used if real API fails or mock mode)
-        route_points = [
-            {"name": source or "Tel Aviv, Israel", "lat": 32.0853, "lon": 34.7818},
-            {"name": "Latrun Monastery", "lat": 31.8377, "lon": 34.9781},
-            {"name": "Bab al-Wad Memorial", "lat": 31.8419, "lon": 35.0614},
-            {"name": "Ein Karem", "lat": 31.7667, "lon": 35.1583},
-            {"name": dest or "Jerusalem, Israel", "lat": 31.7683, "lon": 35.2137},
-        ]
-
         # ================================================================
-        # MIT-LEVEL: TRY API CLIENT FIRST (Proper Architecture)
+        # REAL-TIME: Create tour and return immediately (non-blocking)
         # ================================================================
+        source_loc = source or "Tel Aviv, Israel"
+        dest_loc = dest or "Jerusalem, Israel"
+
+        # Build profile for API
+        api_profile = {
+            "is_driver": is_driver,
+            "is_family_mode": is_family,
+        }
+        if is_family:
+            api_profile["min_age"] = 5
+            api_profile["exclude_topics"] = ["violence", "adult_content"]
+
+        # Try API first
         if API_CLIENT_AVAILABLE and api_client and API_MODE != "mock":
             try:
                 logger.info("=" * 60)
-                logger.info("🚀 MIT-LEVEL: Using API Client (Proper Architecture)")
+                logger.info("🚀 REAL-TIME: Creating tour via API (non-blocking)")
                 logger.info("=" * 60)
 
-                start_time = time.time()
-
-                # Build profile for API
-                api_profile = {
-                    "is_driver": is_driver,
-                    "is_family_mode": is_family,
-                }
-                if is_family:
-                    api_profile["min_age"] = 5
-                    api_profile["exclude_topics"] = ["violence", "adult_content"]
-
-                # Create tour via API
-                logger.info(
-                    f"📍 Creating tour: {source or 'Tel Aviv'} → {dest or 'Jerusalem'}"
-                )
                 tour_response = api_client.create_tour(
-                    source=source or "Tel Aviv, Israel",
-                    destination=dest or "Jerusalem, Israel",
+                    source=source_loc,
+                    destination=dest_loc,
                     profile=api_profile,
                 )
                 tour_id = tour_response["tour_id"]
                 logger.info(f"✅ Tour created: {tour_id}")
+                logger.info("📡 Enabling real-time polling...")
 
-                # Poll for completion with status updates
-                logger.info("⏳ Waiting for processing to complete...")
+                # Return immediately with tour info - polling will update UI
+                tour_store = {
+                    "tour_id": tour_id,
+                    "status": "processing",
+                    "progress": {"completed_points": 0, "total_points": 0},
+                    "recommendations": [],
+                    "route_points": [],
+                    "is_processing": True,
+                    "start_time": time.time(),
+                    "source": source_loc,
+                    "destination": dest_loc,
+                    "profile": profile,
+                    "is_driver": is_driver,
+                    "is_family": is_family,
+                }
 
-                def status_callback(status):
-                    progress = status.get("progress", {})
-                    completed = progress.get("completed_points", 0)
-                    total = progress.get("total_points", 0)
-                    percentage = progress.get("percentage", 0)
-                    logger.info(
-                        f"   📊 Progress: {completed}/{total} points ({percentage}%)"
-                    )
-
-                # Wait for results
-                results = api_client.wait_for_completion(
-                    tour_id=tour_id,
-                    poll_interval=0.5,
-                    timeout=120.0,
-                    callback=status_callback,
+                status_msg = html.Div(
+                    [
+                        html.Span("⏳ ", style={"color": THEME["accent_primary"]}),
+                        f"Processing tour: {source_loc} → {dest_loc}",
+                        html.Span(
+                            " (Real-time updates enabled)",
+                            style={"color": THEME["text_muted"], "marginLeft": "5px"},
+                        ),
+                    ],
+                    style={"fontSize": "0.9rem"},
                 )
 
-                total_latency = time.time() - start_time
-                using_api = True
+                return (
+                    tour_store,
+                    False,  # Enable polling
+                    status_msg,
+                    "tab-pipeline",  # Switch to pipeline tab to show progress
+                )
 
-                # Extract recommendations from API results
-                playlist = results.get("playlist", [])
-                route_info = results.get("route_info", {})
+            except Exception as e:
+                logger.warning(f"⚠️ API tour creation failed: {e}")
 
-                # Update route_points from API response
-                if route_info.get("points"):
-                    route_points = route_info["points"]
+        # Fallback: mock mode
+        logger.info("📋 Using mock mode (API unavailable)")
+        tour_store = {
+            "tour_id": None,
+            "status": "mock",
+            "progress": {"completed_points": 0, "total_points": 5},
+            "recommendations": [],
+            "route_points": [
+                {"name": source_loc, "lat": 32.0853, "lon": 34.7818},
+                {"name": "Latrun Monastery", "lat": 31.8377, "lon": 34.9781},
+                {"name": "Bab al-Wad Memorial", "lat": 31.8419, "lon": 35.0614},
+                {"name": "Ein Karem", "lat": 31.7667, "lon": 35.1583},
+                {"name": dest_loc, "lat": 31.7683, "lon": 35.2137},
+            ],
+            "is_processing": True,
+            "start_time": time.time(),
+            "source": source_loc,
+            "destination": dest_loc,
+            "profile": profile,
+            "is_driver": is_driver,
+            "is_family": is_family,
+        }
 
-                for item in playlist:
-                    decision = item.get("decision", {})
-                    content_type = decision.get("content_type", "text").upper()
+        status_msg = html.Div(
+            [
+                html.Span("⏳ ", style={"color": THEME["accent_primary"]}),
+                f"Processing tour (Demo Mode): {source_loc} → {dest_loc}",
+            ],
+            style={"fontSize": "0.9rem"},
+        )
 
-                    # Driver safety: report actual content (API already filtered)
+        return (
+            tour_store,
+            False,  # Enable polling
+            status_msg,
+            "tab-pipeline",  # Switch to pipeline tab
+        )
+
+    # ========================================================================
+    # REAL-TIME POLLING CALLBACK - Updates UI progressively
+    # ========================================================================
+    @app.callback(
+        [
+            Output("recommendations-content", "children"),
+            Output("metric-points", "children"),
+            Output("metric-latency", "children"),
+            Output("metric-quality", "children"),
+            Output("metric-recommendations", "children"),
+            Output("content-distribution-chart", "figure"),
+            Output("current-tour-store", "data", allow_duplicate=True),
+            Output("poll-interval", "disabled", allow_duplicate=True),
+            Output("tour-state-store", "data"),
+            Output("tour-status-message", "children", allow_duplicate=True),
+        ],
+        Input("poll-interval", "n_intervals"),
+        State("current-tour-store", "data"),
+        prevent_initial_call=True,
+    )
+    def poll_tour_status(n_intervals, tour_store):
+        """Poll for tour status and update UI in real-time."""
+        if not tour_store or not tour_store.get("is_processing"):
+            raise PreventUpdate
+
+        tour_id = tour_store.get("tour_id")
+        recommendations = tour_store.get("recommendations", [])
+        route_points = tour_store.get("route_points", [])
+        is_driver = tour_store.get("is_driver", False)
+        is_family = tour_store.get("is_family", False)
+
+        # Calculate elapsed time
+        start_time = tour_store.get("start_time", time.time())
+        elapsed = time.time() - start_time
+
+        # ================================================================
+        # POLL API FOR STATUS
+        # ================================================================
+        if tour_id and API_CLIENT_AVAILABLE and api_client:
+            try:
+                status = api_client.get_tour_status(tour_id)
+                tour_status = status.get("status", "unknown")
+                progress = status.get("progress", {})
+                completed = progress.get("completed_points", 0)
+                total = progress.get("total_points", 0)
+
+                logger.info(
+                    f"📡 Poll #{n_intervals}: {tour_status} - {completed}/{total} points"
+                )
+
+                # Update tour store with progress
+                tour_store["status"] = tour_status
+                tour_store["progress"] = progress
+
+                # Check if completed
+                if tour_status in ["completed", "failed", "cancelled"]:
+                    logger.info(f"🏁 Tour {tour_status}!")
+                    tour_store["is_processing"] = False
+
+                    # Get final results
+                    if tour_status == "completed":
+                        try:
+                            results = api_client.get_tour_results(tour_id)
+                            playlist = results.get("playlist", [])
+                            route_info = results.get("route_info", {})
+
+                            if route_info.get("points"):
+                                route_points = route_info["points"]
+                                tour_store["route_points"] = route_points
+
+                            # Build recommendations from playlist
+                            recommendations = []
+                            for item in playlist:
+                                decision = item.get("decision", {})
+                                content_type = decision.get(
+                                    "content_type", "text"
+                                ).upper()
+
+                                recommendations.append(
+                                    {
+                                        "point": item.get("point_name", "Unknown"),
+                                        "type": content_type,
+                                        "title": decision.get("title", "Untitled"),
+                                        "description": item.get(
+                                            "reasoning", "Selected by AI Judge"
+                                        ),
+                                        "quality_score": round(
+                                            random.uniform(8.0, 9.8), 1
+                                        ),
+                                        "duration": f"{random.randint(2, 8)} min",
+                                        "url": decision.get("url"),
+                                        "is_real": True,
+                                    }
+                                )
+                            tour_store["recommendations"] = recommendations
+                        except Exception as e:
+                            logger.error(f"Failed to get results: {e}")
+
+            except Exception as e:
+                logger.warning(f"Poll error: {e}")
+                # Don't stop polling on transient errors
+                if "not found" in str(e).lower():
+                    tour_store["is_processing"] = False
+                    tour_store["status"] = "error"
+
+        # ================================================================
+        # MOCK MODE - Simulate progress
+        # ================================================================
+        elif tour_store.get("status") == "mock":
+            total = len(route_points)
+            completed = min(int(elapsed / 2), total)  # 2 seconds per point
+
+            tour_store["progress"] = {
+                "completed_points": completed,
+                "total_points": total,
+            }
+
+            if completed >= total:
+                tour_store["is_processing"] = False
+                tour_store["status"] = "completed"
+
+                # Generate mock recommendations
+                recommendations = []
+                content_types = ["TEXT", "MUSIC", "TEXT"]
+                if not is_driver:
+                    content_types.append("VIDEO")
+
+                for point in route_points:
+                    content_type = random.choice(content_types)
+                    if content_type == "VIDEO":
+                        title = f"Historical Tour of {point['name']}"
+                        desc = "Educational video about this location"
+                    elif content_type == "MUSIC":
+                        title = f"Ambient Music for {point['name']}"
+                        desc = "Curated playlist matching the atmosphere"
+                    else:
+                        title = f"The Rich History of {point['name']}"
+                        desc = "In-depth historical narrative"
+
+                    if is_family:
+                        title += " (Family Edition)"
+
                     recommendations.append(
                         {
-                            "point": item.get("point_name", "Unknown"),
-                            "type": content_type,
-                            "title": decision.get("title", "Untitled"),
-                            "description": item.get(
-                                "reasoning", "Selected by AI Judge"
-                            ),
-                            "quality_score": round(random.uniform(8.0, 9.8), 1),
-                            "duration": f"{random.randint(2, 8)} min",
-                            "url": decision.get("url"),
-                            "is_real": True,
-                            "via_api": True,
-                            "queue_status": "COMPLETE",
-                        }
-                    )
-
-                    logger.info(
-                        f"   🏆 {item.get('point_name')}: {content_type} - {decision.get('title')}"
-                    )
-
-                logger.info("=" * 60)
-                logger.info("✅ API PIPELINE COMPLETE!")
-                logger.info(f"   Total latency: {total_latency:.1f}s")
-                logger.info(f"   Recommendations: {len(recommendations)}")
-                logger.info("=" * 60)
-
-            except Exception as e:
-                logger.warning(f"⚠️ API pipeline failed: {e}")
-                logger.info("   Falling back to direct mode...")
-                recommendations = []  # Reset to trigger fallback
-
-        # ================================================================
-        # FALLBACK: Direct Mode (if API not available)
-        # ================================================================
-        if not recommendations and not using_api:
-            # Determine if we should use real agents directly
-            use_real_apis = API_MODE == "real" or (
-                API_MODE == "auto" and REAL_AGENTS_AVAILABLE
-            )
-
-            if API_MODE == "mock":
-                logger.info(
-                    "📋 API_MODE=mock - Using mocked data (fast, deterministic)"
-                )
-                use_real_apis = False
-            elif API_MODE == "real" and not REAL_AGENTS_AVAILABLE:
-                logger.error("❌ API_MODE=real but agents unavailable!")
-                raise PreventUpdate
-
-        # ================================================================
-        # STEP 1: GET ROUTE (Google Maps API or Mock) - DIRECT MODE
-        # ================================================================
-        use_real_apis = not using_api and REAL_AGENTS_AVAILABLE and API_MODE != "mock"
-
-        if not recommendations and use_real_apis:
-            try:
-                logger.info("=" * 60)
-                logger.info("🗺️ STEP 1: Getting Route from Google Maps API...")
-                logger.info("=" * 60)
-
-                try:
-                    # Try real Google Maps API
-                    maps_client = GoogleMapsClient()
-                    route = maps_client.get_route(
-                        origin=source or "Tel Aviv, Israel",
-                        destination=dest or "Jerusalem, Israel",
-                    )
-                    route_points = [
-                        {
-                            "name": p.location_name or p.address,
-                            "lat": p.latitude,
-                            "lon": p.longitude,
-                        }
-                        for p in route.points
-                    ]
-                    logger.info(
-                        f"✅ Real route: {len(route_points)} points from Google Maps"
-                    )
-                except Exception as e:
-                    logger.warning(f"Google Maps API failed: {e}, using mock route")
-                    route = get_mock_route()
-                    route_points = [
-                        {
-                            "name": p.location_name or p.address,
-                            "lat": p.latitude,
-                            "lon": p.longitude,
-                        }
-                        for p in route.points
-                    ]
-
-                logger.info(f"📍 Route: {source or 'Tel Aviv'} → {dest or 'Jerusalem'}")
-                logger.info(f"📊 Points: {len(route_points)}")
-
-                # ================================================================
-                # STEP 2: CREATE USER PROFILE
-                # ================================================================
-                logger.info("=" * 60)
-                logger.info("👤 STEP 2: Creating User Profile...")
-                logger.info("=" * 60)
-
-                age_group_map = {
-                    "kid": AgeGroup.KID,
-                    "teenager": AgeGroup.TEENAGER,
-                    "family": AgeGroup.ADULT,
-                    "senior": AgeGroup.SENIOR,
-                    "driver": AgeGroup.ADULT,
-                    "default": AgeGroup.ADULT,
-                }
-                user_profile = UserProfile(
-                    age_group=age_group_map.get(profile, AgeGroup.ADULT),
-                    is_driver=is_driver,
-                    travel_mode=TravelMode.CAR,
-                    trip_purpose=TripPurpose.VACATION,
-                    min_age=5 if is_family else None,
-                )
-                logger.info(f"✅ Profile: is_driver={is_driver}, is_family={is_family}")
-
-                # ================================================================
-                # STEP 3: INITIALIZE AGENTS
-                # ================================================================
-                logger.info("=" * 60)
-                logger.info("🤖 STEP 3: Initializing Agents...")
-                logger.info("=" * 60)
-
-                video_agent = VideoAgent()
-                music_agent = MusicAgent()
-                text_agent = TextAgent()
-                judge_agent = JudgeAgent()
-                logger.info("✅ All 4 agents initialized (Video, Music, Text, Judge)")
-
-                # ================================================================
-                # STEP 4: PROCESS EACH POINT WITH SMART QUEUE
-                # ================================================================
-                logger.info("=" * 60)
-                logger.info("⚡ STEP 4: Processing Points with Smart Queue...")
-                logger.info("=" * 60)
-
-                for idx, point in enumerate(route_points):
-                    point_start = time.time()
-                    location = f"{point['name']}, Israel"
-                    logger.info(
-                        f"\n📍 [{idx + 1}/{len(route_points)}] Processing: {point['name']}"
-                    )
-
-                    # Create RoutePoint object for agents
-                    route_point = RoutePoint(
-                        index=idx,
-                        address=location,
-                        location_name=point["name"],
-                        latitude=point["lat"],
-                        longitude=point["lon"],
-                    )
-
-                    # Create Smart Queue for this point
-                    queue = SmartAgentQueue(
-                        point_id=point["name"],
-                        expected_agents=3,
-                        soft_timeout=15.0,
-                        hard_timeout=30.0,
-                    )
-
-                    # Run agents in parallel and submit to queue
-                    def run_agent(agent, agent_type, rp, q):
-                        try:
-                            result = agent.execute(rp)
-                            if result:
-                                q.submit_success(agent_type.lower(), result)
-                                logger.info(f"  ✅ {agent_type} Agent submitted")
-                            return result
-                        except Exception as e:
-                            logger.warning(f"  ❌ {agent_type} Agent failed: {e}")
-                            q.submit_failure(agent_type.lower(), str(e))
-                            return None
-
-                    with ThreadPoolExecutor(max_workers=3) as executor:
-                        futures = [
-                            executor.submit(
-                                run_agent, video_agent, "VIDEO", route_point, queue
-                            ),
-                            executor.submit(
-                                run_agent, music_agent, "MUSIC", route_point, queue
-                            ),
-                            executor.submit(
-                                run_agent, text_agent, "TEXT", route_point, queue
-                            ),
-                        ]
-                        # Wait for all to complete or timeout
-                        for future in as_completed(futures, timeout=35):
-                            try:
-                                future.result(timeout=1)
-                            except Exception:
-                                pass
-
-                    # Wait for queue with timeouts
-                    results_list, metrics = queue.wait_for_results()
-                    # Convert list to dict for easier access
-                    results = {r.content_type.value: r for r in results_list}
-                    queue_metrics.append(
-                        {
                             "point": point["name"],
-                            "status": metrics.status.name,
-                            "agents_received": len(results),
+                            "type": content_type,
+                            "title": title,
+                            "description": desc,
+                            "quality_score": round(random.uniform(7.5, 9.8), 1),
+                            "duration": f"{random.randint(2, 8)} min",
+                            "is_real": False,
                         }
                     )
-                    logger.info(
-                        f"  📊 Queue Status: {metrics.status.name} ({len(results)}/3 agents)"
-                    )
-
-                    # ================================================================
-                    # STEP 5: JUDGE EVALUATION
-                    # ================================================================
-                    if results:
-                        try:
-                            decision = judge_agent.evaluate(
-                                route_point,
-                                list(results.values()),
-                                user_profile,
-                            )
-                            if decision and decision.selected_content:
-                                best = decision.selected_content
-                                content_type = best.content_type.name
-                                # Driver safety: exclude VIDEO
-                                if is_driver and content_type == "VIDEO":
-                                    # Pick non-video alternative
-                                    for alt_type, alt_result in results.items():
-                                        if alt_type.upper() != "VIDEO":
-                                            best = alt_result
-                                            content_type = alt_type.upper()
-                                            break
-
-                                recommendations.append(
-                                    {
-                                        "point": point["name"],
-                                        "type": content_type,
-                                        "title": best.title,
-                                        "description": best.description
-                                        or "Real content from API",
-                                        "quality_score": round(
-                                            best.relevance_score * 10, 1
-                                        ),
-                                        "duration": f"{random.randint(2, 8)} min",
-                                        "url": getattr(best, "url", None),
-                                        "is_real": True,
-                                        "queue_status": metrics.status.name,
-                                    }
-                                )
-                                logger.info(
-                                    f'  🏆 Winner: {content_type} - "{best.title}"'
-                                )
-                        except Exception as e:
-                            logger.warning(f"  ⚠️ Judge failed: {e}")
-                            # Fallback to first result
-                            for ctype, result in results.items():
-                                recommendations.append(
-                                    {
-                                        "point": point["name"],
-                                        "type": ctype.upper(),
-                                        "title": result.title,
-                                        "description": result.description
-                                        or "Real content",
-                                        "quality_score": round(
-                                            result.relevance_score * 10, 1
-                                        ),
-                                        "duration": f"{random.randint(2, 8)} min",
-                                        "is_real": True,
-                                        "queue_status": metrics.status.name,
-                                    }
-                                )
-                                break
-
-                    point_latency = time.time() - point_start
-                    total_latency += point_latency
-                    logger.info(f"  ⏱️ Point latency: {point_latency:.1f}s")
-
-                logger.info("=" * 60)
-                logger.info("✅ PIPELINE COMPLETE!")
-                logger.info(f"   Total latency: {total_latency:.1f}s")
-                logger.info(f"   Recommendations: {len(recommendations)}")
-                logger.info("=" * 60)
-
-            except Exception as e:
-                logger.error(f"❌ Real pipeline failed: {e}")
-                import traceback
-
-                traceback.print_exc()
-                recommendations = []  # Reset to trigger fallback
+                tour_store["recommendations"] = recommendations
 
         # ================================================================
-        # FALLBACK TO MOCKED DATA if real agents fail or unavailable
+        # BUILD UI COMPONENTS
         # ================================================================
-        if not recommendations:
-            logging.info("📋 Using mocked data (real agents unavailable or failed)")
+        progress = tour_store.get("progress", {})
+        completed = progress.get("completed_points", 0)
+        total = progress.get("total_points", 0) or len(route_points) or 1
+        is_complete = not tour_store.get("is_processing", True)
 
-            content_types = ["TEXT", "MUSIC", "TEXT"]
-            if not is_driver:
-                content_types.append("VIDEO")
-
-            for point in route_points:
-                content_type = random.choice(content_types)
-
-                if content_type == "VIDEO":
-                    titles = [
-                        f"Historical Tour of {point['name']}",
-                        f"Virtual Walk Through {point['name']}",
-                        f"Discover the Secrets of {point['name']}",
-                    ]
-                    desc = "Educational video about this fascinating location"
-                elif content_type == "MUSIC":
-                    titles = [
-                        f"Ambient Music for {point['name']}",
-                        "Local Folk Songs of the Region",
-                        "Relaxing Journey Through Israel",
-                    ]
-                    desc = "Curated playlist matching the atmosphere"
-                else:
-                    titles = [
-                        f"The Rich History of {point['name']}",
-                        f"Fascinating Facts About {point['name']}",
-                        f"Stories and Legends of {point['name']}",
-                    ]
-                    desc = "In-depth historical narrative"
-
-                title = random.choice(titles)
-                if is_family:
-                    title += " (Family Edition)"
-
-                recommendations.append(
-                    {
-                        "point": point["name"],
-                        "type": content_type,
-                        "title": title,
-                        "description": desc,
-                        "quality_score": round(random.uniform(7.5, 9.8), 1),
-                        "duration": f"{random.randint(2, 8)} min",
-                        "is_real": False,
-                    }
-                )
-            total_latency = random.uniform(2, 5)
-
-        # Create recommendation cards
+        # Recommendation cards
         recommendation_cards = []
-        is_using_real_data = any(rec.get("is_real", False) for rec in recommendations)
-
         for rec in recommendations:
             icon_class = rec["type"].lower()
             icon = {"VIDEO": "🎬", "MUSIC": "🎵", "TEXT": "📖"}.get(rec["type"], "📌")
-
-            # Badge for real vs mocked
             data_badge = html.Span(
                 "🔴 LIVE" if rec.get("is_real") else "⚪ DEMO",
                 style={
@@ -2880,7 +2725,6 @@ def create_tour_guide_app() -> Dash:
                     else THEME["text_muted"],
                 },
             )
-
             recommendation_cards.append(
                 html.Div(
                     [
@@ -2939,10 +2783,58 @@ def create_tour_guide_app() -> Dash:
                 )
             )
 
-        # Create content distribution chart
+        # If still processing, show progress indicator
+        if not is_complete:
+            progress_pct = (completed / total * 100) if total > 0 else 0
+            recommendation_cards.insert(
+                0,
+                html.Div(
+                    [
+                        html.H4(
+                            [
+                                html.Span("⏳ ", style={"marginRight": "10px"}),
+                                f"Processing: {completed}/{total} points ({progress_pct:.0f}%)",
+                            ],
+                            style={"color": THEME["accent_primary"]},
+                        ),
+                        html.Div(
+                            html.Div(
+                                style={
+                                    "width": f"{progress_pct}%",
+                                    "height": "8px",
+                                    "background": f"linear-gradient(90deg, {THEME['accent_primary']}, {THEME['success']})",
+                                    "borderRadius": "4px",
+                                    "transition": "width 0.5s ease",
+                                }
+                            ),
+                            style={
+                                "background": "rgba(255,255,255,0.1)",
+                                "borderRadius": "4px",
+                                "marginTop": "10px",
+                            },
+                        ),
+                        html.P(
+                            f"Elapsed: {elapsed:.1f}s",
+                            style={
+                                "color": THEME["text_muted"],
+                                "marginTop": "10px",
+                            },
+                        ),
+                    ],
+                    style={
+                        "padding": "20px",
+                        "background": "rgba(22, 33, 62, 0.5)",
+                        "borderRadius": "12px",
+                        "marginBottom": "20px",
+                    },
+                ),
+            )
+
+        # Content distribution chart
         content_counts = {"VIDEO": 0, "MUSIC": 0, "TEXT": 0}
         for rec in recommendations:
-            content_counts[rec["type"]] += 1
+            if rec["type"] in content_counts:
+                content_counts[rec["type"]] += 1
 
         dist_fig = go.Figure(
             data=[
@@ -2965,7 +2857,6 @@ def create_tour_guide_app() -> Dash:
                 )
             ]
         )
-
         dist_fig.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
@@ -2987,53 +2878,57 @@ def create_tour_guide_app() -> Dash:
             ],
         )
 
-        # Calculate metrics
-        avg_quality = sum(r["quality_score"] for r in recommendations) / len(
-            recommendations
+        # Metrics
+        avg_quality = (
+            sum(r["quality_score"] for r in recommendations) / len(recommendations)
+            if recommendations
+            else 0
         )
+
+        # Tour state for pipeline animation
+        pipeline_step = min(6, completed + 2) if not is_complete else 6
+        tour_state = {"running": not is_complete, "step": pipeline_step}
 
         # Status message
-        profile_name = {
-            "default": "Default Adult",
-            "family": "Family with Kids",
-            "kid": "Kid-Friendly",
-            "teenager": "Teenager",
-            "senior": "Senior",
-            "driver": "Driver (Audio Only)",
-            "history": "History Enthusiast",
-            "romantic": "Romantic Couple",
-            "custom": "Custom Profile",
-        }.get(profile, "Custom")
-
-        data_source = "🔴 LIVE API" if is_using_real_data else "⚪ DEMO DATA"
-
-        status_message = html.Div(
-            [
-                html.Span("✅ ", style={"color": THEME["success"]}),
-                f"Tour generated! {len(recommendations)} recommendations for ",
-                html.Strong(profile_name),
-                html.Span(
-                    f" [{data_source}]",
-                    style={
-                        "color": THEME["success"]
-                        if is_using_real_data
-                        else THEME["text_muted"],
-                        "marginLeft": "5px",
-                    },
-                ),
-            ],
-            style={"fontSize": "0.9rem"},
-        )
+        if is_complete:
+            is_real = any(r.get("is_real") for r in recommendations)
+            data_source = "🔴 LIVE API" if is_real else "⚪ DEMO DATA"
+            status_msg = html.Div(
+                [
+                    html.Span("✅ ", style={"color": THEME["success"]}),
+                    f"Tour complete! {len(recommendations)} recommendations",
+                    html.Span(
+                        f" [{data_source}]",
+                        style={
+                            "color": THEME["success"]
+                            if is_real
+                            else THEME["text_muted"],
+                            "marginLeft": "5px",
+                        },
+                    ),
+                ],
+                style={"fontSize": "0.9rem"},
+            )
+        else:
+            status_msg = html.Div(
+                [
+                    html.Span("⏳ ", style={"color": THEME["accent_primary"]}),
+                    f"Processing: {completed}/{total} points ({elapsed:.1f}s)",
+                ],
+                style={"fontSize": "0.9rem"},
+            )
 
         return (
             recommendation_cards,
-            str(len(route_points)),
-            f"{total_latency:.1f}s",
-            f"{avg_quality:.1f}",
+            str(total),
+            f"{elapsed:.1f}s",
+            f"{avg_quality:.1f}" if avg_quality else "-",
             str(len(recommendations)),
             dist_fig,
-            "tab-recommendations",  # Switch to recommendations tab
-            status_message,  # Show success message
+            tour_store,
+            is_complete,  # Disable polling when complete
+            tour_state,
+            status_msg,
         )
 
     @app.callback(
