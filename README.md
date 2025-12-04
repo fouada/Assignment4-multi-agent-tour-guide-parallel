@@ -375,9 +375,17 @@ stateDiagram-v2
     HARD_DEGRADED --> [*]: Return minimal results
     FAILED --> [*]: Raise NoResultsError
     
-    note right of WAITING: Collecting results
-    note right of SOFT_DEGRADED: Quality: 95%
-    note right of HARD_DEGRADED: Quality: 90%
+    note right of WAITING
+        Collecting results
+    end note
+    
+    note right of SOFT_DEGRADED
+        Quality 95%
+    end note
+    
+    note right of HARD_DEGRADED
+        Quality 90%
+    end note
 ```
 
 <br/>
