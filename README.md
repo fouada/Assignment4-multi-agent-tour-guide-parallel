@@ -9,7 +9,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/images/architecture-Overview.png">
   <source media="(prefers-color-scheme: light)" srcset="assets/images/architecture-Overview.png">
-  <img alt="Multi-Agent Tour Guide System" src="assets/images/architecture-Overview.png" width="600"/>
+  <img alt="Multi-Agent Tour Guide System" src="assets/images/architecture-Overview.png" width="100%"/>
 </picture>
 
 <br/>
@@ -126,16 +126,16 @@ Traditional multi-agent AI systems face critical limitations:
 
 We introduce a **Smart Queue with Graceful Degradation** — a novel architecture that provides **formal mathematical guarantees** for availability and quality:
 
-```
-┌─────────────┬────────────────┬──────────────────────────────┐
-│   Status    │   Condition    │          Behavior            │
-├─────────────┼────────────────┼──────────────────────────────┤
-│ ✅ COMPLETE │ 3/3 agents     │ Optimal quality output       │
-│ ⚠️ SOFT     │ 2/3 at τ=15s   │ Proceed with degraded quality│
-│ ⚡ HARD     │ 1/3 at τ=30s   │ Emergency fallback           │
-│ ❌ FAILED   │ 0/3 at τ=30s   │ Graceful error + cached data │
-└─────────────┴────────────────┴──────────────────────────────┘
-```
+<br/>
+
+| Status | Condition | Behavior |
+| :--- | :--- | :--- |
+| **✅ COMPLETE** | **3/3** agents respond | **Optimal quality output** |
+| **⚠️ SOFT** | **2/3** at $\tau=15s$ | **Proceed with degraded quality** |
+| **⚡ HARD** | **1/3** at $\tau=30s$ | **Emergency fallback** |
+| **❌ FAILED** | **0/3** at $\tau=30s$ | **Graceful error + cached data** |
+
+<br/>
 
 **Result:** System **never blocks indefinitely** and **always returns useful content**.
 
