@@ -166,6 +166,8 @@ class TestRetryWithBackoff:
     @patch("src.utils.retry.time.sleep")
     def test_exhausts_retries(self, mock_sleep):
         """Test raises after exhausting retries."""
+        # Reset mock to ensure clean state (in case of test pollution)
+        mock_sleep.reset_mock()
 
         @retry_with_backoff(max_retries=2)
         def always_fails():
