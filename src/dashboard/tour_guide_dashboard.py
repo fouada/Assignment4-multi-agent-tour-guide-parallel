@@ -40,8 +40,14 @@ try:
     from src.agents.video_agent import VideoAgent
     from src.core.smart_queue import SmartAgentQueue
     from src.models.route import RoutePoint
-    from src.models.user_profile import AgeGroup, TravelMode, TripPurpose, UserProfile
+    from src.models.user_profile import (
+        AgeGroup,
+        TravelMode,
+        TripPurpose,
+        UserProfile,
+    )
     from src.services.google_maps import GoogleMapsClient, get_mock_route
+
     REAL_AGENTS_AVAILABLE = True
 except ImportError as e:
     REAL_AGENTS_AVAILABLE = False
@@ -1775,7 +1781,10 @@ def create_tour_guide_app() -> Dash:
                                                                 [
                                                                     html.Button(
                                                                         [
-                                                                            html.Span("🚀 START TOUR", id="start-tour-text"),
+                                                                            html.Span(
+                                                                                "🚀 START TOUR",
+                                                                                id="start-tour-text",
+                                                                            ),
                                                                         ],
                                                                         id="start-tour-btn",
                                                                         className="btn-primary",
@@ -1791,8 +1800,12 @@ def create_tour_guide_app() -> Dash:
                                                                         style={
                                                                             "textAlign": "center",
                                                                             "marginTop": "10px",
-                                                                            "color": THEME["accent_primary"],
-                                                                            "fontFamily": FONTS["mono"],
+                                                                            "color": THEME[
+                                                                                "accent_primary"
+                                                                            ],
+                                                                            "fontFamily": FONTS[
+                                                                                "mono"
+                                                                            ],
                                                                         },
                                                                     ),
                                                                 ],
@@ -1945,7 +1958,9 @@ def create_tour_guide_app() -> Dash:
                                                                 config={
                                                                     "displayModeBar": False
                                                                 },
-                                                                style={"height": "300px"},
+                                                                style={
+                                                                    "height": "300px"
+                                                                },
                                                             ),
                                                         ],
                                                         className="glass-card",
@@ -1964,7 +1979,9 @@ def create_tour_guide_app() -> Dash:
                                                                 config={
                                                                     "displayModeBar": False
                                                                 },
-                                                                style={"height": "300px"},
+                                                                style={
+                                                                    "height": "300px"
+                                                                },
                                                             ),
                                                         ],
                                                         className="glass-card",
@@ -1989,7 +2006,9 @@ def create_tour_guide_app() -> Dash:
                                                                 config={
                                                                     "displayModeBar": False
                                                                 },
-                                                                style={"height": "300px"},
+                                                                style={
+                                                                    "height": "300px"
+                                                                },
                                                             ),
                                                         ],
                                                         className="glass-card",
@@ -2329,9 +2348,8 @@ def create_tour_guide_app() -> Dash:
         # ================================================================
         # DETERMINE API MODE
         # ================================================================
-        use_real_apis = (
-            API_MODE == "real" or
-            (API_MODE == "auto" and REAL_AGENTS_AVAILABLE)
+        use_real_apis = API_MODE == "real" or (
+            API_MODE == "auto" and REAL_AGENTS_AVAILABLE
         )
 
         if API_MODE == "mock":
@@ -2358,15 +2376,25 @@ def create_tour_guide_app() -> Dash:
                         destination=dest or "Jerusalem, Israel",
                     )
                     route_points = [
-                        {"name": p.location_name or p.address, "lat": p.latitude, "lon": p.longitude}
+                        {
+                            "name": p.location_name or p.address,
+                            "lat": p.latitude,
+                            "lon": p.longitude,
+                        }
                         for p in route.points
                     ]
-                    logger.info(f"✅ Real route: {len(route_points)} points from Google Maps")
+                    logger.info(
+                        f"✅ Real route: {len(route_points)} points from Google Maps"
+                    )
                 except Exception as e:
                     logger.warning(f"Google Maps API failed: {e}, using mock route")
                     route = get_mock_route()
                     route_points = [
-                        {"name": p.location_name or p.address, "lat": p.latitude, "lon": p.longitude}
+                        {
+                            "name": p.location_name or p.address,
+                            "lat": p.latitude,
+                            "lon": p.longitude,
+                        }
                         for p in route.points
                     ]
 
@@ -2420,7 +2448,9 @@ def create_tour_guide_app() -> Dash:
                 for idx, point in enumerate(route_points):
                     point_start = time.time()
                     location = f"{point['name']}, Israel"
-                    logger.info(f"\n📍 [{idx+1}/{len(route_points)}] Processing: {point['name']}")
+                    logger.info(
+                        f"\n📍 [{idx + 1}/{len(route_points)}] Processing: {point['name']}"
+                    )
 
                     # Create RoutePoint object for agents
                     route_point = RoutePoint(
@@ -2454,9 +2484,15 @@ def create_tour_guide_app() -> Dash:
 
                     with ThreadPoolExecutor(max_workers=3) as executor:
                         futures = [
-                            executor.submit(run_agent, video_agent, "VIDEO", route_point, queue),
-                            executor.submit(run_agent, music_agent, "MUSIC", route_point, queue),
-                            executor.submit(run_agent, text_agent, "TEXT", route_point, queue),
+                            executor.submit(
+                                run_agent, video_agent, "VIDEO", route_point, queue
+                            ),
+                            executor.submit(
+                                run_agent, music_agent, "MUSIC", route_point, queue
+                            ),
+                            executor.submit(
+                                run_agent, text_agent, "TEXT", route_point, queue
+                            ),
                         ]
                         # Wait for all to complete or timeout
                         for future in as_completed(futures, timeout=35):
@@ -2469,12 +2505,16 @@ def create_tour_guide_app() -> Dash:
                     results_list, metrics = queue.wait_for_results()
                     # Convert list to dict for easier access
                     results = {r.content_type.value: r for r in results_list}
-                    queue_metrics.append({
-                        "point": point["name"],
-                        "status": metrics.status.name,
-                        "agents_received": len(results),
-                    })
-                    logger.info(f"  📊 Queue Status: {metrics.status.name} ({len(results)}/3 agents)")
+                    queue_metrics.append(
+                        {
+                            "point": point["name"],
+                            "status": metrics.status.name,
+                            "agents_received": len(results),
+                        }
+                    )
+                    logger.info(
+                        f"  📊 Queue Status: {metrics.status.name} ({len(results)}/3 agents)"
+                    )
 
                     # ================================================================
                     # STEP 5: JUDGE EVALUATION
@@ -2498,32 +2538,44 @@ def create_tour_guide_app() -> Dash:
                                             content_type = alt_type.upper()
                                             break
 
-                                recommendations.append({
-                                    "point": point["name"],
-                                    "type": content_type,
-                                    "title": best.title,
-                                    "description": best.description or "Real content from API",
-                                    "quality_score": round(best.relevance_score * 10, 1),
-                                    "duration": f"{random.randint(2, 8)} min",
-                                    "url": getattr(best, "url", None),
-                                    "is_real": True,
-                                    "queue_status": metrics.status.name,
-                                })
-                                logger.info(f"  🏆 Winner: {content_type} - \"{best.title}\"")
+                                recommendations.append(
+                                    {
+                                        "point": point["name"],
+                                        "type": content_type,
+                                        "title": best.title,
+                                        "description": best.description
+                                        or "Real content from API",
+                                        "quality_score": round(
+                                            best.relevance_score * 10, 1
+                                        ),
+                                        "duration": f"{random.randint(2, 8)} min",
+                                        "url": getattr(best, "url", None),
+                                        "is_real": True,
+                                        "queue_status": metrics.status.name,
+                                    }
+                                )
+                                logger.info(
+                                    f'  🏆 Winner: {content_type} - "{best.title}"'
+                                )
                         except Exception as e:
                             logger.warning(f"  ⚠️ Judge failed: {e}")
                             # Fallback to first result
                             for ctype, result in results.items():
-                                recommendations.append({
-                                    "point": point["name"],
-                                    "type": ctype.upper(),
-                                    "title": result.title,
-                                    "description": result.description or "Real content",
-                                    "quality_score": round(result.relevance_score * 10, 1),
-                                    "duration": f"{random.randint(2, 8)} min",
-                                    "is_real": True,
-                                    "queue_status": metrics.status.name,
-                                })
+                                recommendations.append(
+                                    {
+                                        "point": point["name"],
+                                        "type": ctype.upper(),
+                                        "title": result.title,
+                                        "description": result.description
+                                        or "Real content",
+                                        "quality_score": round(
+                                            result.relevance_score * 10, 1
+                                        ),
+                                        "duration": f"{random.randint(2, 8)} min",
+                                        "is_real": True,
+                                        "queue_status": metrics.status.name,
+                                    }
+                                )
                                 break
 
                     point_latency = time.time() - point_start
@@ -2539,6 +2591,7 @@ def create_tour_guide_app() -> Dash:
             except Exception as e:
                 logger.error(f"❌ Real pipeline failed: {e}")
                 import traceback
+
                 traceback.print_exc()
                 recommendations = []  # Reset to trigger fallback
 
@@ -2581,15 +2634,17 @@ def create_tour_guide_app() -> Dash:
                 if is_family:
                     title += " (Family Edition)"
 
-                recommendations.append({
-                    "point": point["name"],
-                    "type": content_type,
-                    "title": title,
-                    "description": desc,
-                    "quality_score": round(random.uniform(7.5, 9.8), 1),
-                    "duration": f"{random.randint(2, 8)} min",
-                    "is_real": False,
-                })
+                recommendations.append(
+                    {
+                        "point": point["name"],
+                        "type": content_type,
+                        "title": title,
+                        "description": desc,
+                        "quality_score": round(random.uniform(7.5, 9.8), 1),
+                        "duration": f"{random.randint(2, 8)} min",
+                        "is_real": False,
+                    }
+                )
             total_latency = random.uniform(2, 5)
 
         # Create recommendation cards
@@ -2608,8 +2663,12 @@ def create_tour_guide_app() -> Dash:
                     "padding": "2px 6px",
                     "borderRadius": "4px",
                     "marginLeft": "8px",
-                    "background": "rgba(0, 245, 212, 0.2)" if rec.get("is_real") else "rgba(255,255,255,0.1)",
-                    "color": THEME["success"] if rec.get("is_real") else THEME["text_muted"],
+                    "background": "rgba(0, 245, 212, 0.2)"
+                    if rec.get("is_real")
+                    else "rgba(255,255,255,0.1)",
+                    "color": THEME["success"]
+                    if rec.get("is_real")
+                    else THEME["text_muted"],
                 },
             )
 
@@ -2747,7 +2806,9 @@ def create_tour_guide_app() -> Dash:
                 html.Span(
                     f" [{data_source}]",
                     style={
-                        "color": THEME["success"] if is_using_real_data else THEME["text_muted"],
+                        "color": THEME["success"]
+                        if is_using_real_data
+                        else THEME["text_muted"],
                         "marginLeft": "5px",
                     },
                 ),
@@ -2919,7 +2980,11 @@ def create_tour_guide_app() -> Dash:
 
         if triggered_id == "start-tour-btn":
             # Start animation from beginning
-            return {"running": True, "step": 0, "start_interval": n_intervals or 0}, False
+            return {
+                "running": True,
+                "step": 0,
+                "start_interval": n_intervals or 0,
+            }, False
 
         elif triggered_id == "animation-interval":
             if not current_state or not current_state.get("running"):
@@ -2934,7 +2999,11 @@ def create_tour_guide_app() -> Dash:
                 return {"running": False, "step": 7, "completed": True}, True
 
             # Keep running
-            return {"running": True, "step": current_step, "start_interval": start}, False
+            return {
+                "running": True,
+                "step": current_step,
+                "start_interval": start,
+            }, False
 
         raise PreventUpdate
 
@@ -2959,7 +3028,9 @@ def create_tour_guide_app() -> Dash:
             # Default styles - all steps inactive
             default_style = {}
             default_agent = [
-                html.Div("Ready", className="profile-badge", style={"marginTop": "10px"}),
+                html.Div(
+                    "Ready", className="profile-badge", style={"marginTop": "10px"}
+                ),
                 html.P(
                     "Waiting for tour...",
                     style={
@@ -2970,9 +3041,16 @@ def create_tour_guide_app() -> Dash:
                 ),
             ]
             return (
-                default_style, default_style, default_style,
-                default_style, default_style, default_style,
-                default_agent, default_agent, default_agent, default_agent,
+                default_style,
+                default_style,
+                default_style,
+                default_style,
+                default_style,
+                default_style,
+                default_agent,
+                default_agent,
+                default_agent,
+                default_agent,
             )
 
         step = state.get("step", 0)
@@ -3011,10 +3089,16 @@ def create_tour_guide_app() -> Dash:
         # Agent status based on step
         def agent_ready():
             return [
-                html.Div("Ready", className="profile-badge", style={"marginTop": "10px"}),
+                html.Div(
+                    "Ready", className="profile-badge", style={"marginTop": "10px"}
+                ),
                 html.P(
                     "Waiting...",
-                    style={"fontSize": "0.85rem", "color": THEME["text_muted"], "marginTop": "8px"},
+                    style={
+                        "fontSize": "0.85rem",
+                        "color": THEME["text_muted"],
+                        "marginTop": "8px",
+                    },
                 ),
             ]
 
@@ -3023,11 +3107,18 @@ def create_tour_guide_app() -> Dash:
                 html.Div(
                     "⏳ Running",
                     className="profile-badge",
-                    style={"marginTop": "10px", "background": "rgba(252, 163, 17, 0.3)"},
+                    style={
+                        "marginTop": "10px",
+                        "background": "rgba(252, 163, 17, 0.3)",
+                    },
                 ),
                 html.P(
                     f"Searching for {name}...",
-                    style={"fontSize": "0.85rem", "color": THEME["warning"], "marginTop": "8px"},
+                    style={
+                        "fontSize": "0.85rem",
+                        "color": THEME["warning"],
+                        "marginTop": "8px",
+                    },
                 ),
             ]
 
@@ -3040,7 +3131,11 @@ def create_tour_guide_app() -> Dash:
                 ),
                 html.P(
                     result,
-                    style={"fontSize": "0.85rem", "color": THEME["success"], "marginTop": "8px"},
+                    style={
+                        "fontSize": "0.85rem",
+                        "color": THEME["success"],
+                        "marginTop": "8px",
+                    },
                 ),
             ]
 
@@ -3072,8 +3167,16 @@ def create_tour_guide_app() -> Dash:
             judge_status = agent_complete("Best content selected!")
 
         return (
-            styles[0], styles[1], styles[2], styles[3], styles[4], styles[5],
-            video_status, music_status, text_status, judge_status,
+            styles[0],
+            styles[1],
+            styles[2],
+            styles[3],
+            styles[4],
+            styles[5],
+            video_status,
+            music_status,
+            text_status,
+            judge_status,
         )
 
     return app
