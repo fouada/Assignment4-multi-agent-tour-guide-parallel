@@ -311,7 +311,9 @@ class DashboardDataManager:
         if self.data_source in (DataSourceMode.LIVE, DataSourceMode.HYBRID):
             self._init_api_client()
 
-        logger.info(f"DashboardDataManager initialized with data_source={self.data_source.value}")
+        logger.info(
+            f"DashboardDataManager initialized with data_source={self.data_source.value}"
+        )
 
     def _init_api_client(self):
         """Initialize the TourService API client for live data."""
@@ -325,7 +327,9 @@ class DashboardDataManager:
             logger.warning("API client not available - falling back to simulated mode")
             self.data_source = DataSourceMode.SIMULATED
         except Exception as e:
-            logger.warning(f"Failed to connect to API: {e} - falling back to simulated mode")
+            logger.warning(
+                f"Failed to connect to API: {e} - falling back to simulated mode"
+            )
             self.data_source = DataSourceMode.SIMULATED
 
     def get_data_source_info(self) -> dict:
@@ -375,10 +379,11 @@ class DashboardDataManager:
                 final_status = self._api_client.wait_for_completion(tour_id, timeout=60)
 
                 # Extract metrics
+                summary = final_status.get("summary", {})
                 results.append({
                     "status": final_status.get("status", "unknown"),
-                    "latency": final_status.get("summary", {}).get("total_duration_seconds", 0),
-                    "quality": final_status.get("summary", {}).get("quality_score", 0),
+                    "latency": summary.get("total_duration_seconds", 0),
+                    "quality": summary.get("quality_score", 0),
                     "num_results": len(final_status.get("playlist", [])),
                     "source": "live_api",
                 })
@@ -393,9 +398,13 @@ class DashboardDataManager:
                     "source": "live_api",
                 })
 
-        return pd.DataFrame(results) if results else self._generate_simulated_data(n_tours)
+        if results:
+            return pd.DataFrame(results)
+        return self._generate_simulated_data(n_tours)
 
-    def _generate_simulated_data(self, n_sims: int, config: QueueConfig | None = None) -> pd.DataFrame:
+    def _generate_simulated_data(
+        self, n_sims: int, config: QueueConfig | None = None
+    ) -> pd.DataFrame:
         """Generate simulated data using Monte Carlo."""
         simulator = SmartQueueSimulator(queue_config=config)
         df = simulator.run_monte_carlo(n_simulations=n_sims)
@@ -429,10 +438,13 @@ class DashboardDataManager:
 
         elif self.data_source == DataSourceMode.HYBRID:
             # Hybrid mode: Mix real + simulated
-            real_df = self._fetch_live_tour_data(n_tours=min(n_sims // 10, 10))
+            n_real = min(n_sims // 10, 10)
+            real_df = self._fetch_live_tour_data(n_tours=n_real)
             simulated_df = self._generate_simulated_data(n_sims - len(real_df), config)
             df = pd.concat([real_df, simulated_df], ignore_index=True)
-            logger.info(f"Hybrid data: {len(real_df)} real + {len(simulated_df)} simulated")
+            logger.info(
+                f"Hybrid data: {len(real_df)} real + {len(simulated_df)} simulated"
+            )
 
         else:
             # Simulated mode (default): Fast Monte Carlo
