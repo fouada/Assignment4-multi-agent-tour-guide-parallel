@@ -132,7 +132,9 @@ def run_demo_pipeline(
         def on_point_arrival(point: RoutePoint) -> None:
             nonlocal processed_count
             idx = point.index
-            print(f"\n📍 [{idx + 1}/{route.point_count}] Arrived at: {point.location_name or point.address}")
+            print(
+                f"\n📍 [{idx + 1}/{route.point_count}] Arrived at: {point.location_name or point.address}"
+            )
             print("─" * 40)
 
             # Process point with queue
@@ -148,12 +150,13 @@ def run_demo_pipeline(
             on_point_arrival=on_point_arrival,
         )
 
-        print(f"🚗 Starting travel simulation...")
+        print("🚗 Starting travel simulation...")
         simulator.start()
 
         # Wait for completion
         while simulator.is_running:
             import time
+
             time.sleep(0.5)
 
         # Collect results in order
