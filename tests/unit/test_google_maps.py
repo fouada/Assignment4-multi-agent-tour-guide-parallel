@@ -30,8 +30,7 @@ from src.services.google_maps import (  # noqa: E402
 
 # Skip marker for tests that require googlemaps package
 requires_googlemaps = pytest.mark.skipif(
-    not GOOGLEMAPS_AVAILABLE,
-    reason="googlemaps package not installed"
+    not GOOGLEMAPS_AVAILABLE, reason="googlemaps package not installed"
 )
 
 
