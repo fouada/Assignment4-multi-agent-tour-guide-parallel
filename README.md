@@ -1,203 +1,931 @@
 <div align="center">
 
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                              HERO SECTION                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
 <br/>
 
-<img src="assets/images/architecture-Overview.png" alt="Multi-Agent Tour Guide System" width="120"/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/images/architecture-Overview.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/images/architecture-Overview.png">
+  <img alt="Multi-Agent Tour Guide System" src="assets/images/architecture-Overview.png" width="180"/>
+</picture>
 
-# Multi-Agent Tour Guide System
+<br/>
+<br/>
 
-### *Parallel AI Agent Orchestration with Formal Verification*
+# 🌍 Multi-Agent Tour Guide System
+
+### *A First-of-Its-Kind Parallel AI Agent Orchestration Framework*
+### *with Formal Mathematical Verification & Research-Grade Analytics*
 
 <br/>
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-1750+-3b82f6?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
-[![Coverage](https://img.shields.io/badge/Coverage-85%25+-10b981?style=for-the-badge)](htmlcov/)
+[![Coverage](https://img.shields.io/badge/Coverage-89%25-10b981?style=for-the-badge)](htmlcov/)
 [![ISO 25010](https://img.shields.io/badge/ISO_25010-Compliant-f59e0b?style=for-the-badge)](docs/ISO_IEC_25010_COMPLIANCE.md)
 
 <br/>
 
-[**Paper**](docs/research/MATHEMATICAL_ANALYSIS.md) · [**Quick Start**](#-quick-start) · [**Dashboard**](#-interactive-dashboards) · [**API**](#-api-reference) · [**Docs**](docs/)
+<p align="center">
+<a href="#-visual-architecture-showcase"><img src="https://img.shields.io/badge/🏗️_Architecture-View_Diagrams-6366f1?style=flat-square" alt="Architecture"/></a>
+<a href="#-system-design-flow-gallery"><img src="https://img.shields.io/badge/📊_System_Flow-View_Gallery-8b5cf6?style=flat-square" alt="System Flow"/></a>
+<a href="#-interactive-dashboard-showcase"><img src="https://img.shields.io/badge/🖥️_Dashboard-Live_Demo-ec4899?style=flat-square" alt="Dashboard"/></a>
+<a href="#-research-analytics--innovations"><img src="https://img.shields.io/badge/🔬_Research-Publications-f97316?style=flat-square" alt="Research"/></a>
+</p>
 
 <br/>
 
 ---
 
-*An intelligent multi-agent system that orchestrates parallel AI agents to deliver personalized, real-time content recommendations for travelers. Features formal mathematical verification, graceful degradation under uncertainty, and publication-quality research tooling.*
+<br/>
+
+> **🎯 Mission Statement**
+> 
+> *An intelligent multi-agent system that orchestrates parallel AI agents to deliver personalized,*
+> *real-time content recommendations for travelers — featuring formal mathematical verification,*
+> *graceful degradation under uncertainty, and publication-quality research tooling.*
+
+<br/>
+
+[**📄 Research Paper**](docs/research/MATHEMATICAL_ANALYSIS.md) · [**🚀 Quick Start**](#-quick-start-guide) · [**📊 Dashboard**](#-interactive-dashboard-showcase) · [**🔌 API**](#-api-reference) · [**📚 Documentation**](docs/)
+
+<br/>
+
+</div>
+
+---
+
+<br/>
+
+## 📑 Table of Contents
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎨 Visual Presentation
+- [🏆 Executive Summary](#-executive-summary)
+- [🏗️ Visual Architecture Showcase](#-visual-architecture-showcase)
+- [📊 System Design Flow Gallery](#-system-design-flow-gallery)
+- [🖥️ Interactive Dashboard Showcase](#-interactive-dashboard-showcase)
+- [📸 Feature Screenshots Gallery](#-feature-screenshots-gallery)
+
+</td>
+<td width="50%">
+
+### 🔧 Technical Deep-Dive
+- [⭐ Key Features](#-key-features)
+- [🚀 Quick Start Guide](#-quick-start-guide)
+- [👤 User Profiles & Personalization](#-user-profiles--personalization)
+- [🔌 API Reference](#-api-reference)
+- [🔬 Research Analytics & Innovations](#-research-analytics--innovations)
+- [🧪 Testing & Quality Assurance](#-testing--quality-assurance)
+- [📁 Project Structure](#-project-structure)
+- [📚 Documentation](#-documentation)
+- [🤝 Contributing & Community](#-contributing--community)
+
+</td>
+</tr>
+</table>
+
+---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                           EXECUTIVE SUMMARY                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🏆 Executive Summary
+
+<div align="center">
+
+### *What Makes This Project Unique*
 
 </div>
 
 <br/>
 
-## Table of Contents
-
-- [Overview](#overview)
-- [🏆 Project Highlights Gallery](#-project-highlights-gallery)
-- [Key Features](#key-features)
-- [Quick Start](#-quick-start)
-- [System Architecture](#-system-architecture)
-- [Interactive Dashboards](#-interactive-dashboards)
-- [Demo & Screenshots](#-demo--screenshots)
-- [User Profiles](#-user-profiles)
-- [API Reference](#-api-reference)
-- [Research Innovations](#-research-innovations)
-- [Testing & Quality](#-testing--quality)
-- [Project Structure](#-project-structure)
-- [Documentation](#-documentation)
-- [Citation](#-citation)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
-## 🏆 Project Highlights Gallery
-
-> **A visual tour of MIT-level achievements in this multi-agent system**
-
 <table>
 <tr>
-<td align="center" width="33%">
-<a href="#-smart-queue-with-graceful-degradation-core-innovation">
-<img src="assets/images/07-queue-mode.png" alt="Smart Queue" width="100%"/>
-<br/><strong>⭐ Smart Queue</strong>
-<br/><sub>Graceful Degradation with Formal Guarantees</sub>
-</a>
-</td>
-<td align="center" width="33%">
-<a href="#-system-architecture">
-<img src="assets/images/architecture-Overview.png" alt="Architecture" width="100%"/>
-<br/><strong>🏗️ 8-Phase Pipeline</strong>
-<br/><sub>Fan-Out/Fan-In Agent Orchestration</sub>
-</a>
-</td>
-<td align="center" width="33%">
-<a href="#-cicd-pipeline-production-quality">
-<img src="assets/images/06-cicd-pipeline.png" alt="CI/CD" width="100%"/>
-<br/><strong>🚀 Production CI/CD</strong>
-<br/><sub>GitHub Actions + Docker + Security Scanning</sub>
-</a>
-</td>
-</tr>
-<tr>
-<td align="center" width="33%">
-<a href="#-tour-guide-dashboard-new">
-<img src="assets/images/14-tourplan-TelAviv-Netanya-dashboard.png" alt="Tour Dashboard" width="100%"/>
-<br/><strong>🗺️ Interactive Dashboard</strong>
-<br/><sub>Real-time Tour Planning & Visualization</sub>
-</a>
-</td>
-<td align="center" width="33%">
-<a href="#research-analysis-panels">
-<img src="assets/images/13-monte-carlo.png" alt="Monte Carlo" width="100%"/>
-<br/><strong>🔬 Research Analytics</strong>
-<br/><sub>Monte Carlo + Sobol + Pareto Analysis</sub>
-</a>
-</td>
-<td align="center" width="33%">
-<a href="#-quality-assurance-mit-level-testing">
-<img src="assets/images/05-test-results.png" alt="Test Results" width="100%"/>
-<br/><strong>🧪 1,750+ Tests</strong>
-<br/><sub>89% Coverage · ISO 25010 Compliant</sub>
-</a>
-</td>
-</tr>
-</table>
+<td width="60%">
 
-<details>
-<summary><strong>📸 Click to see all 26 screenshots organized by category</strong></summary>
+### The Challenge
 
-### Architecture & Flow (3 images)
-| Screenshot | Description |
-|------------|-------------|
-| `architecture-Overview.png` | High-level system architecture with 8-phase pipeline |
-| `System-sequence-Overview.png` | UML sequence diagram showing parallel agent execution |
-| `14-pipelineflow-TelAviv-Netanya-dashboard.png` | Real-time pipeline visualization in dashboard |
+Traditional multi-agent AI systems face critical limitations:
 
-### Tour Guide Dashboard (7 images)
-| Screenshot | Description |
-|------------|-------------|
-| `14-tourplan-TelAviv-Netanya-dashboard.png` | Tour planning interface with profile configuration |
-| `14-tourplan-TelAviv-Netanya-dashboard_1.png` | Route visualization with waypoints |
-| `14-recommendation-TelAviv-Netanya-dashboard.png` | AI-curated content recommendations |
-| `14-recommendation-TelAviv-Netanya-dashboard_1.png` | Recommendation details with scores |
-| `14-recommendation-TelAviv-Netanya-dashboard_2_Content_Distribution.png` | Content type distribution analysis |
-| `14-livemonitoring-TelAviv-Netanya-dashboard.png` | Real-time system health monitoring |
-| `14-livemonitoring-TelAviv-Netanya-dashboard_1.png` | Performance metrics dashboard |
-
-### Research & Analytics (5 images)
-| Screenshot | Description |
-|------------|-------------|
-| `10-System-monitor-Dashboard.png` | Production system monitoring dashboard |
-| `12-sensitivity-analysis.png` | Sobol sensitivity analysis (first/total-order indices) |
-| `09-pareto-frontier.png` | Quality-Latency Pareto frontier optimization |
-| `13-monte-carlo.png` | Monte Carlo simulation (N=10,000+) |
-| `StasticalComprisonA-B-TESTING.png` | A/B testing with statistical significance |
-
-### Core Features Demo (5 images)
-| Screenshot | Description |
-|------------|-------------|
-| `07-queue-mode.png` | ⭐ Smart Queue with graceful degradation |
-| `08-family-mode.png` | Family-safe content filtering |
-| `09-driver-mode-No-Video.png` | Driver safety mode (audio only) |
-| `11-CustomizedPathTourFromHaifaToJerusalem.png` | Custom route planning demo |
-| `06-cicd-pipeline.png` | GitHub Actions CI/CD pipeline |
-
-### Testing & Quality (4 images)
-| Screenshot | Description |
-|------------|-------------|
-| `04-make-check.png` | `make check` validation output |
-| `04-test-results-1655tests-89percentage.png` | Detailed test execution results |
-| `05-test-results.png` | Test suite summary (1,750+ tests) |
-| `06-coverage-terminal.png` | Code coverage report (89%+) |
-
-### API Documentation (2 images)
-| Screenshot | Description |
-|------------|-------------|
-| `15-swagger-docs.png` | OpenAPI/Swagger interactive documentation |
-| `16-api-health.png` | Health endpoint response with component status |
-
-</details>
-
----
-
-## Overview
-
-The **Multi-Agent Tour Guide System** addresses a fundamental challenge in AI systems: **orchestrating multiple agents with uncertain response times while maintaining quality guarantees**.
-
-### The Problem
-
-Traditional multi-agent systems suffer from critical limitations:
-
-| Challenge | Impact |
-|-----------|--------|
-| **Slowest Agent Bottleneck** | System blocks waiting for the slowest responder |
+| Challenge | Industry Impact |
+|-----------|-----------------|
+| **Slowest Agent Bottleneck** | System blocks waiting for slowest responder |
 | **Hard Failures** | Single agent failure cascades to complete system failure |
 | **No Partial Results** | Users receive nothing until all agents complete |
 | **Unpredictable Latency** | No guarantees on response time bounds |
 
-### Our Solution
+### Our Innovation
 
-We introduce a **Smart Queue with Graceful Degradation** that provides formal guarantees:
+We introduce a **Smart Queue with Graceful Degradation** — a novel architecture that provides **formal mathematical guarantees** for availability and quality:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        SMART QUEUE STATUS TRANSITIONS                   │
-├─────────────┬────────────────┬─────────────────────────────────────────┤
-│   Status    │   Condition    │              Behavior                   │
-├─────────────┼────────────────┼─────────────────────────────────────────┤
-│ ✅ COMPLETE │ 3/3 agents     │ Optimal quality output                  │
-│ ⚠️ SOFT     │ 2/3 at τ=15s   │ Proceed with degraded quality           │
-│ ⚡ HARD     │ 1/3 at τ=30s   │ Emergency fallback with minimal content │
-│ ❌ FAILED   │ 0/3 at τ=30s   │ Graceful error with cached content      │
-└─────────────┴────────────────┴─────────────────────────────────────────┘
+┌─────────────┬────────────────┬──────────────────────────────┐
+│   Status    │   Condition    │          Behavior            │
+├─────────────┼────────────────┼──────────────────────────────┤
+│ ✅ COMPLETE │ 3/3 agents     │ Optimal quality output       │
+│ ⚠️ SOFT     │ 2/3 at τ=15s   │ Proceed with degraded quality│
+│ ⚡ HARD     │ 1/3 at τ=30s   │ Emergency fallback           │
+│ ❌ FAILED   │ 0/3 at τ=30s   │ Graceful error + cached data │
+└─────────────┴────────────────┴──────────────────────────────┘
 ```
 
-**Result:** The system **never blocks indefinitely** and **always returns useful content**.
+**Result:** System **never blocks indefinitely** and **always returns useful content**.
+
+</td>
+<td width="40%" align="center">
+
+<br/>
+
+### Project Metrics
+
+<br/>
+
+| Metric | Value |
+|:------:|:-----:|
+| **Lines of Code** | 15,000+ |
+| **Test Cases** | 1,753+ |
+| **Coverage** | 89%+ |
+| **Formal Theorems** | 7 |
+| **Monte Carlo Simulations** | 10,000+ |
+| **ISO 25010 Compliance** | ✅ All 8 |
+| **Documentation Pages** | 50+ |
+| **Architecture Decisions** | 5 ADRs |
+
+<br/>
+
+### Technology Stack
+
+[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)](#)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](#)
+[![Dash](https://img.shields.io/badge/Plotly_Dash-3F4F75?logo=plotly&logoColor=white)](#)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](#)
+[![Kubernetes](https://img.shields.io/badge/K8s-326CE5?logo=kubernetes&logoColor=white)](#)
+
+</td>
+</tr>
+</table>
+
+<br/>
 
 ---
 
-## Key Features
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                     VISUAL ARCHITECTURE SHOWCASE                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🏗️ Visual Architecture Showcase
+
+<div align="center">
+
+### *System Architecture & Design Diagrams*
+
+<sub>Click any diagram for detailed explanation</sub>
+
+</div>
+
+<br/>
+
+### 📐 Diagram 1: High-Level System Architecture
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/architecture-Overview.png" alt="Multi-Agent Tour Guide Architecture" width="95%"/>
+</picture>
+
+<br/>
+<br/>
+
+**Figure 1: System Architecture Overview**
+
+*8-Phase Pipeline with Fan-Out/Fan-In Pattern for Parallel Agent Orchestration*
+
+</div>
+
+<br/>
+
+<details>
+<summary><b>🔍 Architecture Explanation (Click to expand)</b></summary>
+
+<br/>
+
+The architecture diagram illustrates our **production-grade multi-agent orchestration system**:
+
+| Phase | Component | Role | Key Innovation |
+|:-----:|-----------|------|----------------|
+| 1 | **User Interface** | CLI / Dashboard / REST API | Multiple interaction modes |
+| 2 | **Route Planner** | Google Maps integration | Intelligent waypoint selection |
+| 3 | **Agent Orchestrator** | Fan-out coordinator | Parallel thread spawning |
+| 4 | **Content Agents (3x)** | Video, Music, Text generation | Independent API integrations |
+| 5 | **Smart Queue** | Result aggregation | τ_soft/τ_hard timeout tiers |
+| 6 | **Judge Agent** | LLM-powered evaluation | Profile-aware scoring |
+| 7 | **Circuit Breaker** | Fault isolation | Prevents cascade failures |
+| 8 | **Output Formatter** | Personalized delivery | Multi-format support |
+
+**Key Design Decisions:**
+- **Stateless agents** enable horizontal scaling
+- **Event-driven communication** reduces coupling
+- **Graceful degradation** ensures availability
+- **Formal timeout guarantees** bound latency
+
+</details>
+
+<br/>
+
+---
+
+### 📐 Diagram 2: UML Sequence Diagram
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/System-sequence-Overview.png" alt="Sequence Diagram" width="95%"/>
+</picture>
+
+<br/>
+<br/>
+
+**Figure 2: Parallel Agent Execution Sequence**
+
+*Complete message flow showing parallel agent spawning, timeout handling, and result aggregation*
+
+</div>
+
+<br/>
+
+<details>
+<summary><b>🔍 Sequence Flow Explanation (Click to expand)</b></summary>
+
+<br/>
+
+The sequence diagram demonstrates the **temporal orchestration** of our multi-agent system:
+
+```
+Time →
+────────────────────────────────────────────────────────────────────────
+│ User Request │────▶│ Orchestrator │
+│              │     │              │────┬────▶│ Video Agent │──────────┐
+│              │     │              │    │     │             │          │
+│              │     │              │────┼────▶│ Music Agent │──────────┤
+│              │     │              │    │     │             │          │
+│              │     │              │────┴────▶│ Text Agent  │──────────┤
+│              │     │              │                                    │
+│              │     │   [WAIT: Smart Queue with τ_soft=15s, τ_hard=30s]│
+│              │     │              │◀───────────────────────────────────┘
+│              │     │              │────▶│ Judge Agent │
+│              │     │              │◀────│             │
+│ Response     │◀────│              │
+────────────────────────────────────────────────────────────────────────
+```
+
+**Key Temporal Guarantees:**
+
+| Guarantee | Implementation | Bound |
+|-----------|----------------|:-----:|
+| **Parallel Spawning** | All 3 agents start simultaneously | < 1ms |
+| **Independent Execution** | Agents don't block each other | — |
+| **Soft Timeout (τ=15s)** | Proceed with 2/3 agents if needed | 15s |
+| **Hard Timeout (τ=30s)** | Emergency fallback with 1/3 agents | 30s |
+| **Maximum Latency** | Response guaranteed | 35s worst-case |
+
+</details>
+
+<br/>
+
+---
+
+### 📐 Diagram 3: Processing Pipeline Architecture
+
+<div align="center">
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                            PROCESSING PIPELINE ARCHITECTURE                       │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│   ┌─────────┐    ┌─────────┐    ┌───────────────┐    ┌─────────────────────────┐│
+│   │  USER   │───▶│  ROUTE  │───▶│   SCHEDULER   │───▶│       FAN-OUT           ││
+│   │  INPUT  │    │  FETCH  │    │    (Timer)    │    │     (Parallel)          ││
+│   └─────────┘    └─────────┘    └───────────────┘    └─────────────────────────┘│
+│       │              │                │                        │                 │
+│       │              │                │                        ▼                 │
+│   ┌───┴──────────────┴────────────────┴────────────────────────────────────────┐│
+│   │                      PARALLEL AGENT EXECUTION LAYER                         ││
+│   │                                                                             ││
+│   │    ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐        ││
+│   │    │   🎬 VIDEO       │  │   🎵 MUSIC       │  │   📖 TEXT        │        ││
+│   │    │      AGENT       │  │      AGENT       │  │      AGENT       │        ││
+│   │    │                  │  │                  │  │                  │        ││
+│   │    │  YouTube API     │  │  Spotify API     │  │  Web + LLM       │        ││
+│   │    │  5-12s latency   │  │  4-10s latency   │  │  6-15s latency   │        ││
+│   │    └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘        ││
+│   │             │                     │                     │                   ││
+│   │             └─────────────────────┼─────────────────────┘                   ││
+│   └───────────────────────────────────┼─────────────────────────────────────────┘│
+│                                       ▼                                          │
+│   ┌─────────────────┐    ┌───────────────────────┐    ┌────────────────────────┐│
+│   │    FAN-IN       │───▶│     SMART QUEUE       │───▶│   ⚖️ JUDGE AGENT      ││
+│   │   (Collect)     │    │   τ_soft = 15s        │    │                        ││
+│   │                 │    │   τ_hard = 30s        │    │   LLM-Powered          ││
+│   └─────────────────┘    └───────────────────────┘    │   Profile-Aware        ││
+│                                                        │   Content Selection    ││
+│                                                        └───────────┬────────────┘│
+│                                                                    │             │
+│                                                                    ▼             │
+│                                                        ┌────────────────────────┐│
+│                                                        │  📤 PERSONALIZED       ││
+│                                                        │      OUTPUT            ││
+│                                                        └────────────────────────┘│
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Figure 3: Fan-Out/Fan-In Processing Pipeline**
+
+*Detailed view of parallel execution with timeout-based result aggregation*
+
+</div>
+
+<br/>
+
+---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                      SYSTEM DESIGN FLOW GALLERY                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 📊 System Design Flow Gallery
+
+<div align="center">
+
+### *End-to-End System Flows & State Diagrams*
+
+<sub>Visual representation of all system states and transitions</sub>
+
+</div>
+
+<br/>
+
+### 🔄 Flow 1: Smart Queue State Machine
+
+<div align="center">
+
+```
+                              ┌──────────────────────────────────────────────────────────────┐
+                              │                  SMART QUEUE STATE MACHINE                   │
+                              └──────────────────────────────────────────────────────────────┘
+                                                           │
+                                                           ▼
+                                                  ┌─────────────────┐
+                                                  │   INITIALIZING  │
+                                                  │   (0/3 agents)  │
+                                                  └────────┬────────┘
+                                                           │
+                              ┌─────────────────────────────┼─────────────────────────────┐
+                              │                             │                             │
+                              ▼                             ▼                             ▼
+                   ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+                   │    Agent 1 Ready    │     │    Agent 2 Ready    │     │    Agent 3 Ready    │
+                   │    (1/3 received)   │     │    (2/3 received)   │     │    (3/3 received)   │
+                   └──────────┬──────────┘     └──────────┬──────────┘     └──────────┬──────────┘
+                              │                           │                           │
+                              │                           │                           │
+        ┌─────────────────────┼───────────────────────────┼───────────────────────────┤
+        │                     │                           │                           │
+        ▼                     ▼                           ▼                           ▼
+┌───────────────┐   ┌─────────────────────┐   ┌─────────────────────┐   ┌─────────────────────┐
+│  ❌ TIMEOUT   │   │   ⚡ HARD DEGRADED   │   │   ⚠️ SOFT DEGRADED  │   │    ✅ COMPLETE      │
+│   (FAILED)    │   │   (1/3 at τ_hard)   │   │   (2/3 at τ_soft)   │   │   (3/3 on time)     │
+│               │   │                     │   │                     │   │                     │
+│  Fallback to  │   │  Minimum viable     │   │  Acceptable quality │   │  Optimal quality    │
+│  cached data  │   │  output             │   │  with degradation   │   │  full output        │
+└───────────────┘   └─────────────────────┘   └─────────────────────┘   └─────────────────────┘
+        │                     │                           │                           │
+        └─────────────────────┴───────────────────────────┴───────────────────────────┘
+                                                 │
+                                                 ▼
+                                        ┌─────────────────┐
+                                        │  JUDGE AGENT    │
+                                        │  Evaluation     │
+                                        └─────────────────┘
+```
+
+**Figure 4: Smart Queue State Transitions**
+
+*Complete state machine showing all possible queue states and transition conditions*
+
+</div>
+
+<br/>
+
+### 🔄 Flow 2: Request Processing Lifecycle
+
+<div align="center">
+
+| Step | Component | Description | Typical Time |
+|:----:|-----------|-------------|:------------:|
+| 1 | **User Input** | Source, destination, user profile | — |
+| 2 | **Route Fetch** | Google Maps Directions API | ~1s |
+| 3 | **Fan-Out** | Spawn 3 parallel agent threads | <1ms |
+| 4 | **Video Agent** | YouTube search + ranking | 5-12s |
+| 5 | **Music Agent** | Spotify/YouTube Music search | 4-10s |
+| 6 | **Text Agent** | Web search + LLM synthesis | 6-15s |
+| 7 | **Smart Queue** | Collect results with timeouts | 0-30s |
+| 8 | **Judge Agent** | Evaluate and select best content | 1-3s |
+| 9 | **Output** | Deliver personalized recommendation | <1ms |
+
+**Figure 5: Processing Pipeline Timeline**
+
+</div>
+
+<br/>
+
+### 🔄 Flow 3: Real-Time Pipeline Visualization
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-pipelineflow-TelAviv-Netanya-dashboard.png" alt="Pipeline Flow Visualization" width="95%"/>
+</picture>
+
+<br/>
+<br/>
+
+**Figure 6: Live Pipeline Flow Dashboard**
+
+*Real-time visualization of the 8-phase processing pipeline with agent status cards and execution metrics*
+
+</div>
+
+<br/>
+
+---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                    INTERACTIVE DASHBOARD SHOWCASE                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🖥️ Interactive Dashboard Showcase
+
+<div align="center">
+
+### *Tour Guide Dashboard — Complete User Journey*
+
+<sub>Four-tab interactive dashboard for end-to-end tour planning and monitoring</sub>
+
+<br/>
+
+```bash
+# Launch the dashboard
+python run_tour_dashboard.py
+# Open http://localhost:8051
+```
+
+</div>
+
+<br/>
+
+### Tab 1: 🗺️ Plan Your Tour
+
+<table>
+<tr>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-tourplan-TelAviv-Netanya-dashboard.png" alt="Tour Planning Dashboard" width="100%"/>
+</picture>
+
+<br/>
+
+**Screenshot 1: Tour Configuration**
+
+*Source/destination input with user profile configuration and travel preferences*
+
+</div>
+
+</td>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-tourplan-TelAviv-Netanya-dashboard_1.png" alt="Tour Planning Results" width="100%"/>
+</picture>
+
+<br/>
+
+**Screenshot 2: Route Visualization**
+
+*Waypoint mapping with estimated content delivery timeline*
+
+</div>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+### Tab 2: ⚡ Pipeline Flow
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-pipelineflow-TelAviv-Netanya-dashboard.png" alt="Pipeline Flow Visualization" width="95%"/>
+</picture>
+
+<br/>
+
+**Screenshot 3: Real-time Pipeline Visualization**
+
+*Visual representation of the 8-phase processing pipeline with agent status cards and execution metrics*
+
+</div>
+
+<br/>
+
+### Tab 3: 🎯 Recommendations
+
+<table>
+<tr>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-recommendation-TelAviv-Netanya-dashboard.png" alt="Content Recommendations" width="100%"/>
+</picture>
+
+<br/>
+
+**Screenshot 4: AI-Curated Recommendations**
+
+*Personalized content cards with quality scores and relevance metrics*
+
+</div>
+
+</td>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-recommendation-TelAviv-Netanya-dashboard_1.png" alt="Recommendation Details" width="100%"/>
+</picture>
+
+<br/>
+
+**Screenshot 5: Recommendation Details**
+
+*Expanded view with source attribution and confidence scores*
+
+</div>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-recommendation-TelAviv-Netanya-dashboard_2_Content_Distribution.png" alt="Content Distribution Analysis" width="80%"/>
+</picture>
+
+<br/>
+
+**Screenshot 6: Content Distribution Analysis**
+
+*Statistical breakdown of content types (Video/Music/Text) across recommendations*
+
+</div>
+
+<br/>
+
+### Tab 4: 📊 Live Monitor
+
+<table>
+<tr>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-livemonitoring-TelAviv-Netanya-dashboard.png" alt="Live System Monitoring" width="100%"/>
+</picture>
+
+<br/>
+
+**Screenshot 7: Real-time System Health**
+
+*Agent status, queue depth, and throughput metrics*
+
+</div>
+
+</td>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/14-livemonitoring-TelAviv-Netanya-dashboard_1.png" alt="Live Monitoring Details" width="100%"/>
+</picture>
+
+<br/>
+
+**Screenshot 8: Performance Metrics**
+
+*Response time distributions and circuit breaker status*
+
+</div>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                     FEATURE SCREENSHOTS GALLERY                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 📸 Feature Screenshots Gallery
+
+<div align="center">
+
+### *Core Features Demonstration*
+
+<sub>MIT-level production quality across all system capabilities</sub>
+
+</div>
+
+<br/>
+
+### ⭐ Core Innovation: Smart Queue with Graceful Degradation
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/07-queue-mode.png" alt="Queue Mode Demo" width="95%"/>
+</picture>
+
+<br/>
+<br/>
+
+**THE MAIN FEATURE — Smart Queue in Action**
+
+*COMPLETE/SOFT_DEGRADED/HARD_DEGRADED status transitions with 3 parallel agents,*
+*real-time quality scoring, and intelligent winner selection*
+
+</div>
+
+<br/>
+
+---
+
+### 🔒 Safety-Critical Features
+
+<table>
+<tr>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/08-family-mode.png" alt="Family Mode Demo" width="100%"/>
+</picture>
+
+<br/>
+
+**Family-Safe Mode**
+
+*Age-appropriate content filtering with safety constraints for children ages 5+*
+
+</div>
+
+</td>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/09-driver-mode-No-Video.png" alt="Driver Mode - No Video" width="100%"/>
+</picture>
+
+<br/>
+
+**Driver Safety Mode**
+
+*Video content automatically disabled (weight=0.0) for safe hands-free operation. Audio and text only.*
+
+</div>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+---
+
+### 🗺️ Custom Tour Planning
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/11-CustomizedPathTourFromHaifaToJerusalem.png" alt="Custom Tour Haifa to Jerusalem" width="95%"/>
+</picture>
+
+<br/>
+<br/>
+
+**Customized Route Planning**
+
+*Personalized tour from Haifa to Jerusalem with intelligent waypoint selection and content curation*
+
+</div>
+
+<br/>
+
+---
+
+### 🚀 Production CI/CD Pipeline
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/06-cicd-pipeline.png" alt="CI/CD Pipeline" width="95%"/>
+</picture>
+
+<br/>
+<br/>
+
+**GitHub Actions Production Pipeline**
+
+*Automated linting, type checking, security scanning, 1,750+ tests, and Docker builds*
+
+</div>
+
+<br/>
+
+---
+
+### 🧪 Quality Assurance — MIT-Level Testing
+
+<table>
+<tr>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/05-test-results.png" alt="Test Results" width="100%"/>
+</picture>
+
+<br/>
+
+**1,750+ Tests Passing**
+
+*Unit, integration, E2E, and performance test categories*
+
+</div>
+
+</td>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/06-coverage-terminal.png" alt="Test Coverage" width="100%"/>
+</picture>
+
+<br/>
+
+**89%+ Code Coverage**
+
+*Exceeds 85% MIT academic standard threshold*
+
+</div>
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/04-make-check.png" alt="Make Check Validation" width="100%"/>
+</picture>
+
+<br/>
+
+**make check Validation**
+
+*Ruff linting + MyPy type checking + Pytest validation*
+
+</div>
+
+</td>
+<td width="50%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/04-test-results-1655tests-89percentage.png" alt="Test Results Detail" width="100%"/>
+</picture>
+
+<br/>
+
+**Detailed Test Execution**
+
+*1,655+ individual test cases with comprehensive coverage*
+
+</div>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+---
+
+### 🔌 API Documentation
+
+<table>
+<tr>
+<td width="60%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/15-swagger-docs.png" alt="Swagger API Documentation" width="100%"/>
+</picture>
+
+<br/>
+
+**OpenAPI/Swagger Documentation**
+
+*Interactive API explorer with request/response schemas*
+
+</div>
+
+</td>
+<td width="40%">
+
+<div align="center">
+
+<picture>
+  <img src="assets/images/16-api-health.png" alt="API Health Endpoint" width="100%"/>
+</picture>
+
+<br/>
+
+**Health Check Endpoint**
+
+*Component status monitoring including database connectivity and circuit breaker states*
+
+</div>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                            KEY FEATURES                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## ⭐ Key Features
 
 <table>
 <tr>
@@ -251,9 +979,17 @@ We introduce a **Smart Queue with Graceful Degradation** that provides formal gu
 </tr>
 </table>
 
+<br/>
+
 ---
 
-## 🚀 Quick Start
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                            QUICK START                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🚀 Quick Start Guide
 
 ### Prerequisites
 
@@ -264,11 +1000,11 @@ We introduce a **Smart Queue with Graceful Degradation** that provides formal gu
 | **Git** | Any | Version control |
 | **API Keys** | Optional | Enhanced features (demo works without) |
 
-### Step-by-Step Installation
+### Installation
 
 ```bash
 # ╔══════════════════════════════════════════════════════════════════════════╗
-# ║                     INSTALLATION GUIDE                                   ║
+# ║                         QUICK INSTALLATION                               ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
 
 # Step 1: Install UV Package Manager (Rust-based, ~100x faster than pip)
@@ -279,32 +1015,15 @@ source ~/.bashrc  # or restart terminal
 git clone https://github.com/yourusername/multi-agent-tour-guide.git
 cd multi-agent-tour-guide
 
-# Step 3: Setup environment and install all dependencies
+# Step 3: Setup environment and install dependencies
 make setup
-# This runs: uv sync --all-extras (installs core + dev + api dependencies)
 
 # Step 4: Verify installation
 make info
-# Shows: UV version, Python version, installed packages
 
-# Step 5: (Optional) Configure API keys for full functionality
+# Step 5: (Optional) Configure API keys
 cp env.example .env
-nano .env  # Add your API keys:
-           # ANTHROPIC_API_KEY=sk-ant-...
-           # GOOGLE_MAPS_API_KEY=AIza...
-           # YOUTUBE_API_KEY=AIza...
-```
-
-### Verifying Installation
-
-```bash
-# Run quick validation
-make check
-
-# Expected output:
-# ✅ Ruff linter: All checks passed!
-# ✅ MyPy type checker: Success - no issues
-# ✅ Pytest: 1753 passed (89% coverage)
+nano .env  # Add your API keys
 ```
 
 ### Run Your First Tour
@@ -342,283 +1061,71 @@ python run_tour_dashboard.py
    ⏱️  Latency: 3.2s | Status: COMPLETE
 ```
 
----
-
-## 🏗️ System Architecture
-
-### High-Level Architecture Diagram
-
-<p align="center">
-<img src="assets/images/architecture-Overview.png" alt="Multi-Agent Tour Guide Architecture" width="95%"/>
-</p>
-
-<p align="center"><em><strong>Figure 1: System Architecture Overview</strong> — 8-Phase Pipeline with Fan-Out/Fan-In Pattern for Parallel Agent Orchestration</em></p>
-
-<details>
-<summary><strong>🔍 Diagram Explanation (Click to expand)</strong></summary>
-
-The architecture diagram illustrates our **production-grade multi-agent orchestration system**:
-
-| Component | Role | Key Innovation |
-|-----------|------|----------------|
-| **User Interface** | CLI / Dashboard / REST API | Multiple interaction modes |
-| **Route Planner** | Google Maps integration | Intelligent waypoint selection |
-| **Agent Orchestrator** | Fan-out coordinator | Parallel thread spawning |
-| **Content Agents (3x)** | Video, Music, Text generation | Independent API integrations |
-| **Smart Queue** | Result aggregation | τ_soft/τ_hard timeout tiers |
-| **Judge Agent** | LLM-powered evaluation | Profile-aware scoring |
-| **Circuit Breaker** | Fault isolation | Prevents cascade failures |
-| **Output Formatter** | Personalized delivery | Multi-format support |
-
-**Key Design Decisions:**
-- **Stateless agents** enable horizontal scaling
-- **Event-driven communication** reduces coupling
-- **Graceful degradation** ensures availability
-- **Formal timeout guarantees** bound latency
-
-</details>
-
-### Architecture Flow Pattern
-
-The system implements a **fan-out/fan-in pattern** with intelligent timeout management:
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                         SYSTEM ARCHITECTURE FLOW                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│   ┌─────────┐    ┌─────────┐    ┌───────────────┐    ┌─────────────────────┐│
-│   │  User   │───▶│  Route  │───▶│   Scheduler   │───▶│     Fan-Out         ││
-│   │  Input  │    │  Fetch  │    │   (Timer)     │    │   (Parallel)        ││
-│   └─────────┘    └─────────┘    └───────────────┘    └─────────────────────┘│
-│       │                                                      │               │
-│       ▼                                                      ▼               │
-│   ┌─────────────────────────────────────────────────────────────────────────┤│
-│   │                    PARALLEL AGENT EXECUTION                             ││
-│   │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                   ││
-│   │  │ 🎬 Video     │  │ 🎵 Music     │  │ 📖 Text      │                   ││
-│   │  │    Agent     │  │    Agent     │  │    Agent     │                   ││
-│   │  │ YouTube API  │  │ Spotify API  │  │ Web + LLM    │                   ││
-│   │  └──────────────┘  └──────────────┘  └──────────────┘                   ││
-│   └─────────────────────────────────────────────────────────────────────────┤│
-│                                       │                                      │
-│                                       ▼                                      │
-│   ┌─────────────────┐    ┌───────────────────┐    ┌──────────────────────┐  │
-│   │    Fan-In       │───▶│   Smart Queue     │───▶│    ⚖️ Judge Agent    │  │
-│   │   (Collect)     │    │  τ_soft=15s       │    │   LLM Evaluation     │  │
-│   └─────────────────┘    │  τ_hard=30s       │    └──────────────────────┘  │
-│                          └───────────────────┘              │                │
-│                                                             ▼                │
-│                                                    ┌──────────────────────┐  │
-│                                                    │  📤 Personalized     │  │
-│                                                    │     Output           │  │
-│                                                    └──────────────────────┘  │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Processing Pipeline
-
-| Step | Component | Description | Typical Time |
-|:----:|-----------|-------------|:------------:|
-| 1 | **User Input** | Source, destination, user profile | — |
-| 2 | **Route Fetch** | Google Maps Directions API | ~1s |
-| 3 | **Fan-Out** | Spawn 3 parallel agent threads | <1ms |
-| 4 | **Video Agent** | YouTube search + ranking | 5-12s |
-| 5 | **Music Agent** | Spotify/YouTube Music search | 4-10s |
-| 6 | **Text Agent** | Web search + LLM synthesis | 6-15s |
-| 7 | **Smart Queue** | Collect results with timeouts | 0-30s |
-| 8 | **Judge Agent** | Evaluate and select best content | 1-3s |
-| 9 | **Output** | Deliver personalized recommendation | <1ms |
-
-### Sequence Diagram — Parallel Agent Execution
-
-<p align="center">
-<img src="assets/images/System-sequence-Overview.png" alt="Sequence Diagram" width="95%"/>
-</p>
-
-<p align="center"><em><strong>Figure 2: UML Sequence Diagram</strong> — Complete message flow showing parallel agent spawning, timeout handling, and result aggregation</em></p>
-
-<details>
-<summary><strong>🔍 Sequence Flow Explanation (Click to expand)</strong></summary>
-
-The sequence diagram demonstrates the **temporal orchestration** of our multi-agent system:
-
-```
-Time →
-────────────────────────────────────────────────────────────────────────
-│ User Request │────▶│ Orchestrator │
-│              │     │              │────┬────▶│ Video Agent │──────────┐
-│              │     │              │    │     │             │          │
-│              │     │              │────┼────▶│ Music Agent │──────────┤
-│              │     │              │    │     │             │          │
-│              │     │              │────┴────▶│ Text Agent  │──────────┤
-│              │     │              │                                    │
-│              │     │   [WAIT: Smart Queue with τ_soft=15s, τ_hard=30s]│
-│              │     │              │◀───────────────────────────────────┘
-│              │     │              │────▶│ Judge Agent │
-│              │     │              │◀────│             │
-│ Response     │◀────│              │
-────────────────────────────────────────────────────────────────────────
-```
-
-**Key Temporal Guarantees:**
-1. **Parallel Spawning** — All 3 agents start simultaneously (< 1ms)
-2. **Independent Execution** — Agents don't block each other
-3. **Soft Timeout (τ=15s)** — Proceed with 2/3 agents if needed
-4. **Hard Timeout (τ=30s)** — Emergency fallback with 1/3 agents
-5. **Maximum Latency** — Response guaranteed within 35s worst-case
-
-</details>
+<br/>
 
 ---
 
-## 📊 Interactive Dashboards
+<br/>
 
-The system provides **two comprehensive dashboards** for different use cases:
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                     RESEARCH ANALYTICS & INNOVATIONS                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
-### 🗺️ Tour Guide Dashboard (New!)
+## 🔬 Research Analytics & Innovations
 
-An interactive dashboard for planning and visualizing personalized tours.
+<div align="center">
 
-```bash
-python run_tour_dashboard.py
-# Open http://localhost:8051
-```
+### *Publication-Quality Statistical Analysis*
 
-**Features:**
-- Complete **tour planning** with source/destination inputs
-- Full **user profile configuration** (family mode, age groups, preferences)
-- Real-time **pipeline flow visualization**
-- Animated **agent orchestration** display
-- Personalized **content recommendations**
-- Live **system metrics** monitoring
+<sub>Research-grade tools for rigorous system evaluation</sub>
 
-#### 🗺️ Tab 1: Plan Your Tour
+</div>
 
-<table>
-<tr>
-<td width="50%">
+<br/>
 
-<p align="center">
-<img src="assets/images/14-tourplan-TelAviv-Netanya-dashboard.png" alt="Tour Planning Dashboard" width="100%"/>
-</p>
-
-<p align="center"><em><strong>Tour Planning Interface</strong> — Source/destination input with user profile configuration and preferences</em></p>
-
-</td>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/14-tourplan-TelAviv-Netanya-dashboard_1.png" alt="Tour Planning Results" width="100%"/>
-</p>
-
-<p align="center"><em><strong>Planning Results</strong> — Route visualization with waypoints and estimated content delivery</em></p>
-
-</td>
-</tr>
-</table>
-
-#### ⚡ Tab 2: Pipeline Flow
-
-<p align="center">
-<img src="assets/images/14-pipelineflow-TelAviv-Netanya-dashboard.png" alt="Pipeline Flow Visualization" width="95%"/>
-</p>
-
-<p align="center"><em><strong>Real-time Pipeline Visualization</strong> — Visual representation of the 8-phase processing pipeline with agent status cards and execution metrics</em></p>
-
-#### 🎯 Tab 3: Recommendations
-
-<table>
-<tr>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/14-recommendation-TelAviv-Netanya-dashboard.png" alt="Content Recommendations" width="100%"/>
-</p>
-
-<p align="center"><em><strong>AI-Curated Recommendations</strong> — Personalized content cards with quality scores and relevance metrics</em></p>
-
-</td>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/14-recommendation-TelAviv-Netanya-dashboard_1.png" alt="Recommendation Details" width="100%"/>
-</p>
-
-<p align="center"><em><strong>Recommendation Details</strong> — Expanded view with source attribution and confidence scores</em></p>
-
-</td>
-</tr>
-</table>
-
-<p align="center">
-<img src="assets/images/14-recommendation-TelAviv-Netanya-dashboard_2_Content_Distribution.png" alt="Content Distribution Analysis" width="80%"/>
-</p>
-
-<p align="center"><em><strong>Content Distribution Analysis</strong> — Statistical breakdown of content types (Video/Music/Text) across recommendations</em></p>
-
-#### 📊 Tab 4: Live Monitor
-
-<table>
-<tr>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/14-livemonitoring-TelAviv-Netanya-dashboard.png" alt="Live System Monitoring" width="100%"/>
-</p>
-
-<p align="center"><em><strong>Real-time System Health</strong> — Agent status, queue depth, and throughput metrics</em></p>
-
-</td>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/14-livemonitoring-TelAviv-Netanya-dashboard_1.png" alt="Live Monitoring Details" width="100%"/>
-</p>
-
-<p align="center"><em><strong>Performance Metrics</strong> — Response time distributions and circuit breaker status</em></p>
-
-</td>
-</tr>
-</table>
-
-| Tab | Features |
-|-----|----------|
-| **🗺️ Plan Your Tour** | Source/destination input, profile presets, custom settings |
-| **⚡ Pipeline Flow** | Visual pipeline stages, agent status cards, metrics |
-| **🎯 Recommendations** | Content cards with quality scores, distribution charts |
-| **📊 Live Monitor** | Real-time throughput, response times, queue status |
-
-### 📈 Research Dashboard
-
-Publication-quality research analysis and monitoring.
+### Research Dashboard
 
 ```bash
 python run_dashboard.py
 # Open http://localhost:8050
 ```
 
-#### System Monitor Panel
+### System Monitor Panel
 
-<p align="center">
-<img src="assets/images/10-System-monitor-Dashboard.png" alt="System Monitor Dashboard" width="95%"/>
-</p>
+<div align="center">
 
-<p align="center"><em><strong>Real-time System Monitoring</strong> — Agent health gauges, circuit breaker status, queue depth metrics, and throughput indicators for production observability</em></p>
+<picture>
+  <img src="assets/images/10-System-monitor-Dashboard.png" alt="System Monitor Dashboard" width="95%"/>
+</picture>
 
-#### Research Analysis Panels
+<br/>
+<br/>
 
-> **Publication-quality statistical analysis tools for rigorous system evaluation**
+**Figure 7: Real-time System Monitoring**
+
+*Agent health gauges, circuit breaker status, queue depth metrics, and throughput indicators*
+
+</div>
+
+<br/>
+
+### Research Analysis Panels
 
 <table>
 <tr>
 <td width="50%">
 
-<p align="center">
-<img src="assets/images/12-sensitivity-analysis.png" alt="Sensitivity Analysis" width="100%"/>
-</p>
+<div align="center">
 
-<p align="center"><em><strong>Figure 3: Sobol Sensitivity Analysis</strong></em></p>
+<picture>
+  <img src="assets/images/12-sensitivity-analysis.png" alt="Sensitivity Analysis" width="100%"/>
+</picture>
+
+<br/>
+
+**Figure 8: Sobol Sensitivity Analysis**
+
+</div>
 
 **What it shows:** First-order (S₁) and total-order (Sₜ) sensitivity indices for all configuration parameters.
 
@@ -627,11 +1134,17 @@ python run_dashboard.py
 </td>
 <td width="50%">
 
-<p align="center">
-<img src="assets/images/09-pareto-frontier.png" alt="Pareto Frontier" width="100%"/>
-</p>
+<div align="center">
 
-<p align="center"><em><strong>Figure 4: Pareto Frontier Analysis</strong></em></p>
+<picture>
+  <img src="assets/images/09-pareto-frontier.png" alt="Pareto Frontier" width="100%"/>
+</picture>
+
+<br/>
+
+**Figure 9: Pareto Frontier Analysis**
+
+</div>
 
 **What it shows:** Quality vs. Latency tradeoff curve identifying optimal non-dominated configurations.
 
@@ -641,15 +1154,23 @@ python run_dashboard.py
 </tr>
 </table>
 
+<br/>
+
 <table>
 <tr>
 <td width="50%">
 
-<p align="center">
-<img src="assets/images/13-monte-carlo.png" alt="Monte Carlo Simulation" width="100%"/>
-</p>
+<div align="center">
 
-<p align="center"><em><strong>Figure 5: Monte Carlo Simulation (N=10,000+)</strong></em></p>
+<picture>
+  <img src="assets/images/13-monte-carlo.png" alt="Monte Carlo Simulation" width="100%"/>
+</picture>
+
+<br/>
+
+**Figure 10: Monte Carlo Simulation (N=10,000+)**
+
+</div>
 
 **What it shows:** Stochastic simulation of system behavior under random agent response times following exponential distributions.
 
@@ -658,11 +1179,17 @@ python run_dashboard.py
 </td>
 <td width="50%">
 
-<p align="center">
-<img src="assets/images/StasticalComprisonA-B-TESTING.png" alt="A/B Testing Statistical Comparison" width="100%"/>
-</p>
+<div align="center">
 
-<p align="center"><em><strong>Figure 6: A/B Testing Framework</strong></em></p>
+<picture>
+  <img src="assets/images/StasticalComprisonA-B-TESTING.png" alt="A/B Testing Statistical Comparison" width="100%"/>
+</picture>
+
+<br/>
+
+**Figure 11: A/B Testing Framework**
+
+</div>
 
 **What it shows:** Statistical comparison between configuration variants using parametric (t-test) and non-parametric (Mann-Whitney U) tests.
 
@@ -672,114 +1199,57 @@ python run_dashboard.py
 </tr>
 </table>
 
-| Panel | Capability | Use Case |
-|-------|------------|----------|
-| **System Monitor** | Real-time agent health gauges | Production monitoring |
-| **Sensitivity Analysis** | Sobol indices, parameter impact | Configuration tuning |
-| **Pareto Frontier** | Quality-Latency tradeoff curves | SLA optimization |
-| **A/B Testing** | Statistical comparison (t-test, Mann-Whitney) | Configuration validation |
-| **Monte Carlo** | N=10,000+ stochastic simulations | Risk analysis |
-| **Agent Performance** | Historical trends, reliability tracking | Capacity planning |
+<br/>
+
+### Research Innovations
+
+This project introduces **5 novel contributions** to multi-agent systems research:
+
+| Innovation | Technique | Application |
+|------------|-----------|-------------|
+| **Adaptive Learning** | Thompson Sampling, UCB | Dynamic agent selection |
+| **Causal Inference** | Structural Causal Models | Decision explanation |
+| **Bayesian Optimization** | Gaussian Process | Hyperparameter tuning |
+| **Explainable AI** | SHAP, LIME | Transparency & trust |
+| **Information Theory** | Lai-Robbins bounds | Theoretical guarantees |
+
+### Formal Verification
+
+We provide **7 mathematical theorems** with rigorous proofs:
+
+| Theorem | Statement | Guarantee |
+|---------|-----------|-----------|
+| **Thm 2.1 (Liveness)** | Queue terminates within τ_hard | System never hangs |
+| **Thm 2.2 (Safety)** | No premature partial returns | Data consistency |
+| **Thm 2.3 (Progress)** | Non-empty if ≥1 agent succeeds | Useful output guaranteed |
+| **Thm 3.1 (Complexity)** | E[T] = O(m·n·s) | Predictable performance |
+| **Thm 7.1 (Optimal)** | τ* = (1/λ)ln(n/k) | Optimal timeout config |
+
+### Timeout Optimization Formula
+
+```
+Given: Agent response times ~ Exp(λ), n=3 agents, k=minimum acceptable
+
+Optimal Formula: τ* = (1/λ) × ln(n/k)
+
+For our system (λ ≈ 0.1):
+  τ_soft* ≈ 15s (for k=2)
+  τ_hard* ≈ 30s (for k=1)
+```
+
+> 📄 **Full proofs:** [docs/research/MATHEMATICAL_ANALYSIS.md](docs/research/MATHEMATICAL_ANALYSIS.md)
+
+<br/>
 
 ---
 
-## 📸 Demo & Screenshots
+<br/>
 
-> **These screenshots demonstrate MIT-level production quality and research capabilities**
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                         USER PROFILES                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
-### ⭐ Smart Queue with Graceful Degradation (Core Innovation)
-
-<p align="center">
-<img src="assets/images/07-queue-mode.png" alt="Queue Mode Demo" width="95%"/>
-</p>
-
-<p align="center"><em><strong>⭐ THE MAIN FEATURE</strong> — Smart Queue with COMPLETE/SOFT_DEGRADED/HARD_DEGRADED status transitions. 3 parallel agents with real-time quality scoring and winner selection.</em></p>
-
-### ⭐ CI/CD Pipeline (Production Quality)
-
-<p align="center">
-<img src="assets/images/06-cicd-pipeline.png" alt="CI/CD Pipeline" width="95%"/>
-</p>
-
-<p align="center"><em><strong>⭐ PRODUCTION READY</strong> — GitHub Actions with automated linting, type checking, security scanning, 1,750+ tests, and Docker builds.</em></p>
-
-### ⭐ Quality Assurance (MIT-Level Testing)
-
-<table>
-<tr>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/05-test-results.png" alt="Test Results" width="100%"/>
-</p>
-
-<p align="center"><em><strong>1,750+ tests</strong> passing across unit, integration, E2E, and performance categories</em></p>
-
-</td>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/06-coverage-terminal.png" alt="Test Coverage" width="100%"/>
-</p>
-
-<p align="center"><em><strong>89%+ code coverage</strong> (exceeds 85% MIT threshold)</em></p>
-
-</td>
-</tr>
-</table>
-
-<table>
-<tr>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/04-make-check.png" alt="Make Check Validation" width="100%"/>
-</p>
-
-<p align="center"><em><strong>make check</strong> — Ruff linting + MyPy type checking + Pytest validation in single command</em></p>
-
-</td>
-<td width="50%">
-
-<p align="center">
-<img src="assets/images/04-test-results-1655tests-89percentage.png" alt="Test Results Detail" width="100%"/>
-</p>
-
-<p align="center"><em><strong>Detailed test execution</strong> — 1,655+ individual test cases with 89% coverage</em></p>
-
-</td>
-</tr>
-</table>
-
-### Family-Safe Mode (Personalization)
-
-<p align="center">
-<img src="assets/images/08-family-mode.png" alt="Family Mode Demo" width="90%"/>
-</p>
-
-<p align="center"><em>Family Mode — Age-appropriate content filtering with ✨ safety constraints for children ages 5+</em></p>
-
-### ⭐ Driver Mode (Safety-Critical)
-
-<p align="center">
-<img src="assets/images/09-driver-mode-No-Video.png" alt="Driver Mode - No Video" width="90%"/>
-</p>
-
-<p align="center"><em><strong>Driver Safety Mode</strong> — Video content automatically disabled (weight=0.0) for safe hands-free operation. Audio and text content only.</em></p>
-
-### ⭐ Custom Tour Planning
-
-<p align="center">
-<img src="assets/images/11-CustomizedPathTourFromHaifaToJerusalem.png" alt="Custom Tour Haifa to Jerusalem" width="95%"/>
-</p>
-
-<p align="center"><em><strong>Customized Route Planning</strong> — Personalized tour from Haifa to Jerusalem with intelligent waypoint selection and content curation.</em></p>
-
----
-
-## 👤 User Profiles
-
-The Judge Agent adapts content selection based on comprehensive user profiles:
+## 👤 User Profiles & Personalization
 
 ### Profile Presets
 
@@ -794,7 +1264,7 @@ The Judge Agent adapts content selection based on comprehensive user profiles:
 | **History** | 1.2 | 0.8 | 1.5 | Documentary, educational |
 | **Romantic** | 1.0 | 1.3 | 1.0 | Beautiful, atmospheric |
 
-### Profile Configuration Options
+### Configuration Options
 
 ```python
 UserProfile(
@@ -821,20 +1291,15 @@ UserProfile(
 )
 ```
 
-### CLI Usage
-
-```bash
-# Family mode with minimum age
-uv run python main.py --demo --profile family --min-age 8
-
-# Driver mode (audio only - no video for safety)
-uv run python main.py --demo --profile driver
-
-# History enthusiast
-uv run python main.py --demo --profile history
-```
+<br/>
 
 ---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                            API REFERENCE                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
 ## 🔌 API Reference
 
@@ -844,22 +1309,6 @@ uv run python main.py --demo --profile history
 make run-api
 # OpenAPI docs: http://localhost:8000/docs
 ```
-
-### Interactive API Documentation
-
-<p align="center">
-<img src="assets/images/15-swagger-docs.png" alt="Swagger API Documentation" width="95%"/>
-</p>
-
-<p align="center"><em><strong>OpenAPI/Swagger Documentation</strong> — Interactive API explorer with request/response schemas, authentication, and live testing capabilities</em></p>
-
-### Health Monitoring Endpoint
-
-<p align="center">
-<img src="assets/images/16-api-health.png" alt="API Health Endpoint" width="80%"/>
-</p>
-
-<p align="center"><em><strong>Health Check Response</strong> — Component status monitoring including database connectivity, external API availability, and circuit breaker states</em></p>
 
 ### Endpoints
 
@@ -896,66 +1345,30 @@ make run-api         # Start REST API server
 make run-dashboard   # Start research dashboard
 ```
 
----
-
-## 🔬 Research Innovations
-
-This project introduces **5 novel contributions** to multi-agent systems research:
-
-### Innovation Framework
-
-| Innovation | Technique | Application |
-|------------|-----------|-------------|
-| **Adaptive Learning** | Thompson Sampling, UCB | Dynamic agent selection |
-| **Causal Inference** | Structural Causal Models | Decision explanation |
-| **Bayesian Optimization** | Gaussian Process | Hyperparameter tuning |
-| **Explainable AI** | SHAP, LIME | Transparency & trust |
-| **Information Theory** | Lai-Robbins bounds | Theoretical guarantees |
-
-### Formal Verification
-
-We provide **7 mathematical theorems** with rigorous proofs:
-
-| Theorem | Statement | Guarantee |
-|---------|-----------|-----------|
-| **Thm 2.1 (Liveness)** | Queue terminates within τ_hard | System never hangs |
-| **Thm 2.2 (Safety)** | No premature partial returns | Data consistency |
-| **Thm 2.3 (Progress)** | Non-empty if ≥1 agent succeeds | Useful output guaranteed |
-| **Thm 3.1 (Complexity)** | E[T] = O(m·n·s) | Predictable performance |
-| **Thm 7.1 (Optimal)** | τ* = (1/λ)ln(n/k) | Optimal timeout config |
-
-### Timeout Optimization Formula
-
-```
-Given: Agent response times ~ Exp(λ), n=3 agents, k=minimum acceptable
-
-Optimal Formula: τ* = (1/λ) × ln(n/k)
-
-For our system (λ ≈ 0.1):
-  τ_soft* ≈ 15s (for k=2)
-  τ_hard* ≈ 30s (for k=1)
-```
-
-> 📄 **Full proofs:** [docs/research/MATHEMATICAL_ANALYSIS.md](docs/research/MATHEMATICAL_ANALYSIS.md)
+<br/>
 
 ---
 
-## 🧪 Testing & Quality
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                       TESTING & QUALITY ASSURANCE                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🧪 Testing & Quality Assurance
 
 ### Test Metrics
 
 | Metric | Value | Description |
 |--------|-------|-------------|
-| **Total Tests** | 1,753+ | Comprehensive test coverage across all components |
-| **Code Coverage** | 89%+ | Exceeds MIT academic standard (85%+) |
-| **Unit Tests** | 1,200+ | Component isolation tests with mocked dependencies |
-| **Integration Tests** | 350+ | Multi-component flow validation |
-| **E2E Tests** | 150+ | Full pipeline end-to-end scenarios |
-| **Performance Tests** | 50+ | Latency, throughput, and stress benchmarks |
+| **Total Tests** | 1,753+ | Comprehensive test coverage |
+| **Code Coverage** | 89%+ | Exceeds MIT standard (85%+) |
+| **Unit Tests** | 1,200+ | Component isolation tests |
+| **Integration Tests** | 350+ | Multi-component validation |
+| **E2E Tests** | 150+ | Full pipeline scenarios |
+| **Performance Tests** | 50+ | Latency & throughput benchmarks |
 
-### Test Categories & Expected Results
-
-Our test suite validates every aspect of the system:
+### Test Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -965,118 +1378,49 @@ Our test suite validates every aspect of the system:
 │  ├─ test_agents       │ Agent behavior, API integration, content generation     │
 │  ├─ test_smart_queue  │ Timeout handling, graceful degradation states          │
 │  ├─ test_resilience   │ Circuit breaker, retry logic, rate limiting            │
-│  ├─ test_dashboard    │ UI components, chart generation, user interactions     │
+│  ├─ test_dashboard    │ UI components, chart generation                        │
 │  └─ test_models       │ Pydantic validation, data serialization               │
 ├───────────────────────┼────────────────────────────────────────────────────────┤
 │  Integration (350+)   │ Component interaction and data flow                    │
-│  ├─ Agent Pipeline    │ Video→Music→Text parallel execution                    │
-│  ├─ Queue Collection  │ Fan-in result aggregation with timeouts               │
-│  └─ Dashboard Flow    │ User input → Pipeline → Results visualization         │
 ├───────────────────────┼────────────────────────────────────────────────────────┤
 │  E2E Tests (150+)     │ Complete user journeys                                 │
-│  ├─ Tour Planning     │ Source→Destination→Recommendations                    │
-│  ├─ Profile Modes     │ Family, Driver, Senior preset behaviors               │
-│  └─ Error Recovery    │ Network failures, API timeouts, graceful fallback     │
 ├───────────────────────┼────────────────────────────────────────────────────────┤
-│  Performance (50+)    │ Latency and throughput benchmarks                      │
-│  ├─ Response Time     │ P50 < 5s, P95 < 15s, P99 < 30s                        │
-│  ├─ Concurrent Users  │ 100+ simultaneous requests                            │
-│  └─ Memory Usage      │ < 500MB under load                                    │
+│  Performance (50+)    │ P50 < 5s, P95 < 15s, P99 < 30s                        │
 └───────────────────────┴────────────────────────────────────────────────────────┘
 ```
-
-### Edge Cases Documented & Tested
-
-We systematically document and test **76+ edge cases** across all components:
-
-| Category | Edge Cases | Coverage | Examples |
-|----------|:----------:|:--------:|----------|
-| **User Input** | 9 | 89% | Empty source, Unicode locations, 500+ char strings |
-| **Profile Config** | 8 | 88% | Age 0 (infant), age 120, rapid preset switching |
-| **Driver Mode** | 5 | 80% | No video content, audio-only fallback |
-| **Family Mode** | 5 | 80% | Content filtering, min age validation |
-| **Smart Queue** | 6 | 100% | Soft timeout, hard timeout, partial results |
-| **Dashboard** | 8 | 100% | Empty DataFrames, NaN values, extreme values |
-| **Performance** | 6 | 83% | 50 route points, 10K simulations, memory leaks |
-
-> 📄 **Full edge case catalog:** [docs/EDGE_CASES.md](docs/EDGE_CASES.md)
 
 ### Running Tests
 
 ```bash
-# Full test suite
-make test              # Run all tests (unit + integration + e2e)
-
-# With coverage report
-make test-cov          # Generate HTML coverage report in htmlcov/
-uv run pytest tests/ --cov=src --cov-report=html --cov-fail-under=85
-
-# Specific test categories
-make test-unit         # Unit tests only (~3 min)
-make test-integration  # Integration tests (~5 min)
-make test-e2e          # End-to-end tests (~10 min)
-
-# Quick validation
-make check             # Lint (ruff) + Type check (mypy) + Tests
-
-# Dashboard-specific tests
-uv run pytest tests/unit/test_tour_guide_dashboard.py -v
-uv run pytest tests/ -k "dashboard" -v
-
-# Edge case tests
-uv run pytest tests/ -k "edge" -v
-```
-
-### Expected Test Output
-
-```
-╔══════════════════════════════════════════════════════════════════════════╗
-║                          TEST RESULTS SUMMARY                            ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║  ✅ tests/unit/              │ 1,200 passed │ Coverage: 92%              ║
-║  ✅ tests/integration/       │   350 passed │ Coverage: 88%              ║
-║  ✅ tests/e2e/               │   150 passed │ Coverage: 85%              ║
-║  ✅ tests/performance/       │    53 passed │ All benchmarks met         ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║  TOTAL: 1,753 passed, 0 failed, 2 skipped                               ║
-║  COVERAGE: 89% (threshold: 85%)                                         ║
-║  TIME: 16m 30s                                                          ║
-╚══════════════════════════════════════════════════════════════════════════╝
-```
-
-### Continuous Integration (CI/CD)
-
-The project includes a comprehensive CI/CD pipeline:
-
-```yaml
-# .github/workflows/ci.yml
-jobs:
-  lint:           # Ruff linter + MyPy type checker
-  unit-tests:     # Python 3.10, 3.11, 3.12 matrix
-  integration:    # Component integration validation
-  performance:    # Latency benchmarks
-  coverage:       # 85%+ coverage enforcement
-  security:       # Bandit + Trivy vulnerability scanning
-  build:          # Docker image build
-  release:        # Automated PyPI/GitHub release
+make test              # Full test suite
+make test-cov          # With coverage report
+make check             # Lint + Type check + Tests
 ```
 
 ### ISO/IEC 25010 Compliance
 
-| Characteristic | Status | Implementation | Test Coverage |
-|----------------|:------:|----------------|:-------------:|
-| Functional Suitability | ✅ | Multi-agent architecture | 92% |
-| Performance Efficiency | ✅ | Thread pools, caching, async I/O | 88% |
-| Compatibility | ✅ | REST API, Docker, Kubernetes | 85% |
-| Usability | ✅ | CLI, Rich terminal UI, Dashboard | 90% |
-| Reliability | ✅ | Circuit breaker, retry, graceful degradation | 95% |
-| Security | ✅ | Environment secrets, input validation | 82% |
-| Maintainability | ✅ | Plugin architecture, DI container | 88% |
-| Portability | ✅ | Docker, Kubernetes, cross-platform | 85% |
+| Characteristic | Status | Coverage |
+|----------------|:------:|:--------:|
+| Functional Suitability | ✅ | 92% |
+| Performance Efficiency | ✅ | 88% |
+| Compatibility | ✅ | 85% |
+| Usability | ✅ | 90% |
+| Reliability | ✅ | 95% |
+| Security | ✅ | 82% |
+| Maintainability | ✅ | 88% |
+| Portability | ✅ | 85% |
 
 > 📄 **Full compliance report:** [docs/ISO_IEC_25010_COMPLIANCE.md](docs/ISO_IEC_25010_COMPLIANCE.md)
 
+<br/>
+
 ---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                          PROJECT STRUCTURE                                       -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
 ## 📁 Project Structure
 
@@ -1088,38 +1432,28 @@ multi-agent-tour-guide/
 ├── 📁 src/
 │   ├── agents/                     # 🤖 AI Agents (video, music, text, judge)
 │   ├── core/                       # 🏗️ Orchestrator, Smart Queue, Resilience
-│   │   ├── orchestrator.py         # Parallel execution coordinator
-│   │   ├── smart_queue.py          # Graceful degradation queue
-│   │   └── resilience/             # Circuit breaker, retry patterns
 │   ├── dashboard/                  # 📊 Interactive Dashboards
-│   │   ├── app.py                  # Research dashboard
-│   │   └── tour_guide_dashboard.py # Tour planning dashboard
 │   ├── research/                   # 🔬 Statistical Analysis Framework
 │   ├── cost_analysis/              # 💰 Cost Optimization Engine
 │   ├── api/                        # 🌐 REST API (FastAPI)
 │   └── models/                     # 📋 Pydantic Data Models
 ├── 📁 tests/                       # 🧪 1,753+ Tests (89% coverage)
-│   ├── unit/                       # 1,200+ Component isolation tests
-│   │   ├── test_agents.py          # Agent behavior validation
-│   │   ├── test_smart_queue.py     # Timeout & degradation logic
-│   │   ├── test_tour_guide_dashboard.py  # 165 dashboard tests
-│   │   └── test_resilience_*.py    # Circuit breaker, retry patterns
-│   ├── integration/                # 350+ Multi-component flow tests
-│   │   └── test_tour_guide_dashboard_integration.py
-│   ├── e2e/                        # 150+ Full pipeline validation
-│   │   └── test_tour_guide_dashboard_e2e.py
-│   └── performance/                # 50+ Latency benchmarks
 ├── 📁 docs/                        # 📚 Comprehensive Documentation
-│   ├── research/                   # Research papers & analysis
-│   ├── adr/                        # Architecture Decision Records
-│   └── *.md                        # Guides and references
 ├── 📁 notebooks/                   # 📓 Jupyter Research Notebooks
 ├── 📁 plugins/                     # 🔌 Plugin System (weather, food)
 ├── 📁 deploy/                      # 🚀 Docker, Kubernetes, Prometheus
 └── 📁 assets/                      # 🖼️ Images and Diagrams
 ```
 
+<br/>
+
 ---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                            DOCUMENTATION                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
 ## 📚 Documentation
 
@@ -1131,9 +1465,17 @@ multi-agent-tour-guide/
 | **🏆 Quality** | [ISO 25010 Compliance](docs/ISO_IEC_25010_COMPLIANCE.md) · [Testing Guide](docs/TESTING.md) · [Edge Cases](docs/EDGE_CASES.md) |
 | **📝 ADRs** | [Parallel Architecture](docs/adr/001-parallel-agent-architecture.md) · [Smart Queue](docs/adr/002-smart-queue-timeout-strategy.md) |
 
+<br/>
+
 ---
 
-## 🆚 Comparison with Alternatives
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                     COMPARISON & DIFFERENTIATION                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🆚 Why This Project is Unique
 
 | Capability | This Project | LangChain | AutoGPT | MS AutoGen |
 |------------|:------------:|:---------:|:-------:|:----------:|
@@ -1145,7 +1487,35 @@ multi-agent-tour-guide/
 | Sensitivity Analysis (Sobol) | ✅ | ❌ | ❌ | ❌ |
 | ISO/IEC 25010 Compliance | ✅ | ❌ | ❌ | ❌ |
 
+<br/>
+
 ---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                        CONTRIBUTING & COMMUNITY                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+
+## 🤝 Contributing & Community
+
+We welcome contributions from the community! Please see our:
+
+- 📋 [Contributing Guide](CONTRIBUTING.md)
+- 📜 [Code of Conduct](CODE_OF_CONDUCT.md)
+- 🔒 [Security Policy](SECURITY.md)
+- 📖 [Support Guidelines](SUPPORT.md)
+- 🏛️ [Governance](GOVERNANCE.md)
+
+<br/>
+
+---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                              CITATION                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
 ## 📖 Citation
 
@@ -1164,36 +1534,74 @@ If you use this work in your research, please cite:
 }
 ```
 
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see:
-
-- [Contributing Guide](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security Policy](SECURITY.md)
+<br/>
 
 ---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                              LICENSE                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+<br/>
+
 ---
+
+<br/>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+<!--                              FOOTER                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════════════ -->
 
 <div align="center">
 
-### Built with ❤️ for MIT-Level Excellence
+<br/>
+
+### 🏆 Built with Excellence for MIT-Level Standards
+
+<br/>
 
 **Parallel Agents** · **Formal Verification** · **Statistical Analysis** · **Explainable AI**
 
 <br/>
 
-[**Paper**](docs/research/MATHEMATICAL_ANALYSIS.md) · [**Dashboard**](#-interactive-dashboards) · [**API**](#-api-reference) · [**Issues**](https://github.com/yourusername/multi-agent-tour-guide/issues)
+---
 
 <br/>
 
-*This project demonstrates that academic rigor and production-ready code can coexist.*
+<sub>
+
+[📄 Research Paper](docs/research/MATHEMATICAL_ANALYSIS.md) · 
+[📊 Dashboard Demo](#-interactive-dashboard-showcase) · 
+[🔌 API Reference](#-api-reference) · 
+[🐛 Report Issues](https://github.com/yourusername/multi-agent-tour-guide/issues)
+
+</sub>
+
+<br/>
+
+*This project demonstrates that academic rigor and production-ready code can coexist —*
+*a first-of-its-kind system combining formal mathematical guarantees with real-world applicability.*
+
+<br/>
+
+---
+
+<br/>
+
+<picture>
+  <img src="assets/images/architecture-Overview.png" alt="Multi-Agent Tour Guide System" width="80"/>
+</picture>
+
+<br/>
+
+**Multi-Agent Tour Guide System v2.0.0**
+
+*© 2025 LLMs and Multi-Agent Orchestration Course*
 
 </div>
