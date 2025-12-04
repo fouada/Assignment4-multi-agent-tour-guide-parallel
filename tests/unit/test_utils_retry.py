@@ -240,6 +240,9 @@ class TestRetryExecutor:
     @patch("src.utils.retry.time.sleep")
     def test_retries_on_failure(self, mock_sleep):
         """Test retries on failure."""
+        # Reset mock to ensure clean state (in case of test pollution)
+        mock_sleep.reset_mock()
+
         executor = RetryExecutor(max_retries=2, base_delay=0.1)
         attempt = 0
 
@@ -253,6 +256,7 @@ class TestRetryExecutor:
         result = executor.execute(fails_then_succeeds, agent_type="test")
         assert result == "success"
         assert executor.attempts_made == 2
+        # Verify sleep was called once (between attempt 1 and 2)
         assert mock_sleep.call_count == 1
 
     @patch("src.utils.retry.time.sleep")
