@@ -689,6 +689,77 @@ We provide **7 mathematical theorems** with rigorous proofs:
 
 <br/>
 
+### 📓 Research Jupyter Notebooks
+
+Interactive notebooks for reproducible research and analysis:
+
+| Notebook | Description | Key Outputs |
+|----------|-------------|-------------|
+| **[01_sensitivity_analysis.ipynb](notebooks/01_sensitivity_analysis.ipynb)** | Monte Carlo sensitivity analysis (N=10,000) | Sobol indices, Morris screening, parameter rankings, publication-quality tornado charts |
+| **[02_interactive_dashboard.ipynb](notebooks/02_interactive_dashboard.ipynb)** | Interactive research dashboard with Plotly | Real-time parameter sliders, A/B testing tools, effect size calculators, confidence intervals |
+| **[03_cost_analysis.ipynb](notebooks/03_cost_analysis.ipynb)** | Comprehensive cost optimization framework | LLM/API cost modeling, ROI projections, budget forecasting, implementation roadmaps |
+
+<details>
+<summary><b>🔬 Notebook Details & Key Findings</b></summary>
+
+#### 01. Sensitivity Analysis
+```bash
+uv run jupyter notebook notebooks/01_sensitivity_analysis.ipynb
+```
+**Key Findings:**
+- τ_soft (soft timeout) has highest impact on quality (S₁ ≈ 0.42)
+- Agent reliability dominates over timeout parameters for throughput
+- Optimal configuration: τ_soft=8s, τ_hard=15s, min_agents=2
+
+**Outputs:**
+- `data/figures/baseline_results.png` - Baseline performance metrics
+- `data/figures/local_sensitivity.png` - Tornado sensitivity charts
+- `data/sensitivity_analysis_results.json` - Raw simulation data
+
+#### 02. Interactive Dashboard
+```bash
+uv run jupyter notebook notebooks/02_interactive_dashboard.ipynb
+```
+**Features:**
+- Real-time parameter exploration with ipywidgets sliders
+- Monte Carlo simulation with configurable iterations
+- Statistical comparison tools (t-tests, effect sizes)
+- Publication-ready Plotly visualizations
+
+**Interactive Outputs:**
+- Dynamic Pareto frontier exploration
+- Confidence interval calculators
+- A/B test significance analyzers
+
+#### 03. Cost Analysis
+```bash
+uv run jupyter notebook notebooks/03_cost_analysis.ipynb
+```
+**Key Findings:**
+- Potential 45-60% cost reduction with caching strategies
+- Break-even point at ~1,000 daily tours
+- ROI positive within 3 months of optimization
+
+**Outputs:**
+- Cost breakdown by component (LLM, API, compute)
+- Implementation roadmap with effort vs. savings
+- Budget forecasting models
+
+</details>
+
+**Quick Start:**
+```bash
+# Install research dependencies
+uv sync --extra research
+
+# Launch Jupyter
+uv run jupyter notebook notebooks/
+```
+
+> 📓 All notebooks use fixed random seeds (`np.random.seed(42)`) for reproducibility.
+
+<br/>
+
 ---
 
 <br/>

@@ -10,10 +10,9 @@ This directory contains Jupyter notebooks for systematic research and analysis o
 
 | # | Notebook | Description | Status |
 |---|----------|-------------|--------|
-| 01 | [01_sensitivity_analysis.ipynb](01_sensitivity_analysis.ipynb) | Monte Carlo sensitivity analysis | ✅ Complete |
-| 02 | [02_statistical_comparison.ipynb](02_statistical_comparison.ipynb) | Configuration comparison | 📝 Planned |
-| 03 | [03_optimization_study.ipynb](03_optimization_study.ipynb) | Multi-objective optimization | 📝 Planned |
-| 04 | [04_agent_reliability.ipynb](04_agent_reliability.ipynb) | Agent failure analysis | 📝 Planned |
+| 01 | [01_sensitivity_analysis.ipynb](01_sensitivity_analysis.ipynb) | Monte Carlo sensitivity analysis (N=10,000) | ✅ Complete |
+| 02 | [02_interactive_dashboard.ipynb](02_interactive_dashboard.ipynb) | Interactive research dashboard with Plotly | ✅ Complete |
+| 03 | [03_cost_analysis.ipynb](03_cost_analysis.ipynb) | Comprehensive cost optimization framework | ✅ Complete |
 
 ---
 
@@ -66,35 +65,41 @@ Navigate to `notebooks/` and open the desired notebook.
 
 **Runtime**: ~5-10 minutes
 
-### 02. Statistical Comparison (Planned)
+### 02. Interactive Dashboard (`02_interactive_dashboard.ipynb`)
 
-**Purpose**: Rigorous comparison of configuration alternatives
-
-**Contents**:
-- Multiple configuration comparison
-- Effect size analysis (Cohen's d)
-- Power analysis
-- Confidence intervals
-
-### 03. Optimization Study (Planned)
-
-**Purpose**: Multi-objective optimization of timeout parameters
+**Purpose**: Interactive parameter exploration and real-time analysis
 
 **Contents**:
-- Pareto optimization
-- NSGA-II implementation
-- Trade-off analysis
-- Optimal configuration identification
+- ipywidgets sliders for parameter tuning
+- Plotly-based interactive visualizations
+- Real-time Monte Carlo simulations
+- A/B testing and effect size analysis
 
-### 04. Agent Reliability Analysis (Planned)
+**Key Outputs**:
+- Dynamic Pareto frontier exploration
+- Confidence interval calculators
+- Statistical comparison tools
+- Publication-ready interactive charts
 
-**Purpose**: Analyze agent failure patterns and mitigation
+**Runtime**: Interactive (varies by simulation settings)
+
+### 03. Cost Analysis (`03_cost_analysis.ipynb`)
+
+**Purpose**: Comprehensive cost optimization framework
 
 **Contents**:
-- Failure mode analysis
-- Circuit breaker effectiveness
-- Recovery time analysis
-- Reliability engineering
+- LLM, API, and compute cost modeling
+- Real-time and historical cost analysis
+- Actionable optimization recommendations
+- Budget forecasting and ROI projections
+
+**Key Outputs**:
+- Cost breakdown by component
+- Implementation roadmap (effort vs. savings)
+- Break-even analysis
+- 45-60% potential cost reduction strategies
+
+**Runtime**: ~2-3 minutes
 
 ---
 

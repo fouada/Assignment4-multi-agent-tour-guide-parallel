@@ -1,0 +1,39 @@
+{
+  "analysis_date": "2025-11-30",
+  "analysis_type": "MIT-Level Sensitivity Analysis",
+  "baseline_config": {
+    "soft_timeout": 15,
+    "hard_timeout": 30
+  },
+  "baseline_metrics": {
+    "mean_latency_s": 5.577,
+    "p95_latency_s": 15.0,
+    "mean_quality": 8.004,
+    "complete_rate": 0.8615,
+    "success_rate": 0.9999
+  },
+  "key_findings": [
+    "soft_timeout has the largest impact on latency (most sensitive parameter)",
+    "Agent reliability dominates quality variation",
+    "Diminishing returns on quality beyond 20s soft timeout",
+    "Aggressive timeouts reduce latency by ~40% with ~5% quality penalty",
+    "All statistical comparisons significant at \u03b1=0.05"
+  ],
+  "recommended_configs": {
+    "balanced": {
+      "soft_timeout": 15,
+      "hard_timeout": 30,
+      "use_case": "default"
+    },
+    "low_latency": {
+      "soft_timeout": 8,
+      "hard_timeout": 15,
+      "use_case": "real-time"
+    },
+    "high_quality": {
+      "soft_timeout": 25,
+      "hard_timeout": 45,
+      "use_case": "batch processing"
+    }
+  }
+}
