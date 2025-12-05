@@ -79,6 +79,7 @@
 
 ### 🔧 Technical Deep-Dive
 - [🚀 Getting Started & Operation](#-getting-started--operation)
+- [🔑 API Keys Configuration](#-api-keys-configuration)
 - [🔌 API Reference](#-api-reference)
 - [🧪 Testing & Quality Assurance](#-testing--quality-assurance)
 - [📁 Project Structure](#-project-structure)
@@ -783,9 +784,154 @@ cd multi-agent-tour-guide
 # 3. Install all dependencies
 uv sync --all-extras
 
-# 4. Verify installation
+# 4. Configure API keys (see below)
+cp env.example .env
+# Edit .env with your API keys
+
+# 5. Verify installation
 make info
 ```
+
+### 🔑 API Keys Configuration
+
+The system uses several external APIs. Configure them by creating a `.env` file:
+
+```bash
+cp env.example .env
+```
+
+#### Required vs Optional APIs
+
+| API | Required? | Purpose | When Needed |
+|-----|-----------|---------|-------------|
+| **Anthropic Claude** | ⭐ Required (or OpenAI) | LLM reasoning for agents | Always - core agent intelligence |
+| **OpenAI GPT** | 🔄 Fallback | Alternative LLM provider | If Claude unavailable |
+| **Google Maps** | 📍 Optional | Real route generation | For actual driving directions |
+| **YouTube Data** | 🎬 Optional | Video search for locations | For real video content |
+| **Spotify** | 🎵 Optional | Music search for locations | For real music content |
+
+> **💡 Demo Mode:** The system works WITHOUT any API keys using intelligent mock data. Perfect for testing and development!
+
+#### API Key Details
+
+<details>
+<summary><b>🤖 LLM Providers (Required - choose ONE)</b></summary>
+
+**Anthropic Claude (Preferred) ⭐**
+```bash
+# Get your key: https://console.anthropic.com/
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+- Used by: All agents (Video, Music, Text, Judge)
+- Cost: ~$0.003 per 1K input tokens, ~$0.015 per 1K output tokens
+- Model: `claude-sonnet-4-20250514` (configurable)
+
+**OpenAI GPT (Fallback)**
+```bash
+# Get your key: https://platform.openai.com/api-keys
+OPENAI_API_KEY=sk-proj-your-key-here
+```
+- Used as fallback if Claude fails
+- Cost: ~$0.005 per 1K tokens (GPT-4)
+- Model: `gpt-4` (configurable)
+
+</details>
+
+<details>
+<summary><b>🗺️ Google Maps API (Optional)</b></summary>
+
+```bash
+# Get your key: https://console.cloud.google.com/apis/credentials
+GOOGLE_MAPS_API_KEY=AIza-your-key-here
+```
+- **Used for:** Real driving directions between locations
+- **Without it:** Uses mock routes (Tel Aviv → Jerusalem demo route)
+- **Setup:** Enable "Directions API" in Google Cloud Console
+- **Cost:** $5 per 1,000 requests (first $200/month free)
+
+**When to enable:**
+- ✅ Production deployments
+- ✅ Real route planning features
+- ❌ Not needed for demos or testing
+
+</details>
+
+<details>
+<summary><b>🎬 YouTube Data API (Optional)</b></summary>
+
+```bash
+# Get your key: https://console.cloud.google.com/apis/credentials
+YOUTUBE_API_KEY=AIza-your-key-here
+```
+- **Used for:** Searching location-relevant videos
+- **Without it:** Uses curated mock video results
+- **Setup:** Enable "YouTube Data API v3" in Google Cloud Console
+- **Cost:** 10,000 units/day free quota
+
+**When to enable:**
+- ✅ Real video content recommendations
+- ❌ Not needed for architecture testing
+
+</details>
+
+<details>
+<summary><b>🎵 Spotify API (Optional)</b></summary>
+
+```bash
+# Get credentials: https://developer.spotify.com/dashboard
+SPOTIFY_CLIENT_ID=your-client-id
+SPOTIFY_CLIENT_SECRET=your-client-secret
+```
+- **Used for:** Searching location-relevant music
+- **Without it:** Uses curated mock music results
+- **Setup:** Create app in Spotify Developer Dashboard
+- **Cost:** Free (rate limited)
+
+**When to enable:**
+- ✅ Real music recommendations
+- ❌ Not needed for architecture testing
+
+</details>
+
+#### Environment File Example
+
+```bash
+# .env file
+# ═══════════════════════════════════════════════════════════════
+
+# 🤖 LLM (Required - at least one)
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxx          # ⭐ Preferred
+# OPENAI_API_KEY=sk-proj-xxxxx                 # Fallback
+
+# 🗺️ Google Maps (Optional - for real routes)
+# GOOGLE_MAPS_API_KEY=AIza-xxxxx
+
+# 🎬 YouTube (Optional - for real videos)
+# YOUTUBE_API_KEY=AIza-xxxxx
+
+# 🎵 Spotify (Optional - for real music)
+# SPOTIFY_CLIENT_ID=xxxxx
+# SPOTIFY_CLIENT_SECRET=xxxxx
+
+# ⚙️ System Config
+LOG_LEVEL=INFO
+TOUR_GUIDE_API_MODE=auto                       # auto|mock|real
+```
+
+#### API Mode Control
+
+```bash
+# Force DEMO mode (no external APIs, uses mocks)
+TOUR_GUIDE_API_MODE=mock uv run python run_tour_dashboard.py
+
+# Force REAL APIs (requires keys)
+TOUR_GUIDE_API_MODE=real uv run python run_tour_dashboard.py
+
+# AUTO mode (uses real if keys present, mock otherwise)
+TOUR_GUIDE_API_MODE=auto uv run python run_tour_dashboard.py
+```
+
+---
 
 ### 🎯 Complete UV Command Reference
 
